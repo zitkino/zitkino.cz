@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="utf-8">
+    <title>Kina</title>
+</head>
+<body>
+    <style>
+        body { font-family: ubuntu, sans-serif; }
+        table { border-collapse: collapse; }
+        th, td { padding: 0.5em 1em; }
+    </style>
+
+    <table>
+        <tr>
+            <th>Datum</th>
+            <th>Film</th>
+            <th>Kino</th>
+        </tr>
+
+        {% for film in films %}
+            <tr>
+                <th>{{ film.date|format_date }}</th>
+                <td>{{ film.name }}</td>
+                <td>{{ film.cinema }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+</body>

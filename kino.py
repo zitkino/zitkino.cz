@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 import re
 from datetime import datetime, timedelta
 from dateutil import rrule
+from jinja2 import Environment, FileSystemLoader
 
 
 films = []
@@ -28,7 +29,7 @@ if response.ok:
             film_title = match.group(3).strip().upper()
 
             films.append(
-                (u'Art', film_date, film_title)
+                {'cinema': u'Art', 'date': film_date, 'name': film_title}
             )
 
 
@@ -79,7 +80,7 @@ if response.ok:
 
             for film_date in dates:
                 films.append(
-                    (u'Lucerna', film_date, film_title)
+                    {'cinema': u'Lucerna', 'date': film_date, 'name': film_title}
                 )
 
 
@@ -97,25 +98,15 @@ if response.ok:
         film_title = name.get_text().strip().upper()
 
         films.append(
-            (u'Dobrák', film_date, film_title)
+            {'cinema': u'Dobrák', 'date': film_date, 'name': film_title}
         )
 
 
-films = sorted(films, key=lambda film: film[1])
-print '''
-<!DOCTYPE html>
-<html lang="cs"><head><meta charset="utf-8"><title>Kina</title></head>
-<body>
-<style>
-    body { font-family: ubuntu, sans-serif; }
-    table { border-collapse: collapse; }
-    th, td { padding: 0.5em 1em; }
-</style>
-<table><tr><th>Datum</th><th>Film</th><th>Kino</th></tr>
-'''
-for film in films:
-    film = film[1].strftime('%d. %m.'), film[2], film[0]
-    print ('<tr><th>%s</th><td>%s</td><td>%s</td></tr>' % film).encode('utf8')
-print '''
-<table></body></html>
-'''
+films = sorted(films, key=lambda film: film['date'])
+
+
+env = Environment(loader=FileSystemLoader('.'))
+env.filters['format_date'] = lambda dt: dt.strftime('%d. %m.')
+
+template = env.get_template('kino.html')
+print template.render(films=films).encode('utf8')
