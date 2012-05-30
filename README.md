@@ -2,6 +2,12 @@
 
 Simple calendar of non-multiplex cinemas in Brno.
 
+## Cinemas
+
+- Kino Art
+- Kino Lucerna
+- Letní kino Na Dobráku
+
 ## Ideas
 
 - design
