@@ -4,8 +4,8 @@
 import re
 import os
 import requests
-from envoy import run as cmd
 from dateutil import rrule
+from envoy import run as cmd
 from datetime import datetime
 from bs4 import BeautifulSoup
 from jinja2 import Environment, FileSystemLoader
