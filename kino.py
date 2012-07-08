@@ -161,6 +161,8 @@ class Deployer(object):
             'https://{0}:{1}@github.com/honzajavorek/blog.git'.format(self.username, self.password),
             self.temp_dir
         ])
+        cmd(['git', 'config', 'user.name', 'Kino'])
+        cmd(['git', 'config', 'user.email', 'jan.javorek+kino@gmail.com'])
 
         path = os.path.join(self.temp_dir, self.release_file)
         print 'Writing file: ' + path
