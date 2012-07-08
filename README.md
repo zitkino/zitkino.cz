@@ -18,3 +18,4 @@ Simple calendar of non-multiplex cinemas in Brno.
 - regular generating (daily is enough)
 - javascript: current day
 - automatic export to my website
+- automatically make a FB event (button)
