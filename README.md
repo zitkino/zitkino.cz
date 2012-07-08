@@ -4,9 +4,9 @@ Simple calendar of non-multiplex cinemas in Brno.
 
 ## Cinemas
 
-- Kino Art
-- Kino Lucerna
-- Letní kino Na Dobráku
+- [Kino Art](http://www.kinoartbrno.cz/)
+- [Kino Lucerna](http://www.kinolucerna.info/)
+- [Letní kino Na Dobráku](http://www.kinonadobraku.cz/)
 
 ## Ideas
 
@@ -15,7 +15,5 @@ Simple calendar of non-multiplex cinemas in Brno.
 - google cal / ical export
 - links to csfd, imdb, synopsitv
 - links to original pages
-- regular generating (daily is enough)
 - javascript: current day
-- automatic export to my website
 - automatically make a FB event (button)
