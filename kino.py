@@ -4,8 +4,8 @@
 import re
 import os
 import requests
+from subprocess import call as cmd
 from dateutil import rrule
-from envoy import run as cmd
 from datetime import datetime
 from bs4 import BeautifulSoup
 from jinja2 import Environment, FileSystemLoader
@@ -144,34 +144,35 @@ class Deployer(object):
     # https://devcenter.heroku.com/articles/read-only-filesystem
     temp_dir = './tmp'
     release_file = 'kino.html'
+    commit_message = 'automatic kino update'
 
     def __init__(self):
         self.username = os.environ.get('GITHUB_USERNAME')
         self.password = os.environ.get('GITHUB_PASSWORD')
 
     def deploy(self, html):
-        cmd('rm -rf ' + self.temp_dir)
-        cmd('mkdir ' + self.temp_dir)
+        cmd(['rm', '-rf', self.temp_dir])
+        cmd(['mkdir', self.temp_dir])
 
         print 'Cloning git repository.'
-        cmd('git clone -b gh-pages https://{0}:{1}@github.com/honzajavorek/blog.git {2}'.format(
-            self.username,
-            self.password,
+        cmd([
+            'git', 'clone', '-b', 'gh-pages',
+            'https://{0}:{1}@github.com/honzajavorek/blog.git'.format(self.username, self.password),
             self.temp_dir
-        ))
+        ])
 
         print 'Writing file.'
         with open(os.path.join(self.temp_dir, self.release_file), 'w') as f:
             f.write(html)
 
         print 'Commiting changes.'
-        cmd('git add ' + self.release_file, cwd=self.temp_dir)
-        cmd('git commit -m "kino update"', cwd=self.temp_dir)
+        cmd(['git', 'add', self.release_file], cwd=self.temp_dir)
+        cmd(['git', 'commit', '-m', '"{0}"'.format(self.commit_message)], cwd=self.temp_dir)
 
         print 'Pushing changes.'
-        cmd('git push origin gh-pages', cwd=self.temp_dir)
+        cmd(['git', 'push', 'origin', 'gh-pages'], cwd=self.temp_dir)
 
-        cmd('rm -rf ' + self.temp_dir)
+        cmd(['rm -rf ' + self.temp_dir])
 
 
 class Kino(object):
