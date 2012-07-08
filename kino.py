@@ -150,30 +150,33 @@ class Deployer(object):
         self.password = os.environ.get('GITHUB_PASSWORD')
 
     def deploy(self, html):
-        cmd('rm -rf ' + self.temp_dir)
-        cmd('mkdir ' + self.temp_dir)
+        try:
+            cmd('rm -rf ' + self.temp_dir)
+            cmd('mkdir ' + self.temp_dir)
 
-        print 'Cloning git repository.'
-        cmd('git clone -b gh-pages https://{0}:{1}@github.com/honzajavorek/blog.git {2}'.format(
-            self.username,
-            self.password,
-            self.temp_dir
-        ))
+            print 'Cloning git repository.'
+            cmd('git clone -b gh-pages https://{0}:{1}@github.com/honzajavorek/blog.git {2}'.format(
+                self.username,
+                self.password,
+                self.temp_dir
+            ))
 
-        print 'Writing file.'
-        with open(os.path.join(self.temp_dir, self.release_file), 'w') as f:
-            f.write(html)
+            print 'Writing file.'
+            with open(os.path.join(self.temp_dir, self.release_file), 'w') as f:
+                f.write(html)
 
-        print 'Commiting changes.'
-        os.chdir(self.temp_dir)
-        cmd('git add ' + self.release_file)
-        cmd('git commit -m "kino update"')
+            print 'Commiting changes.'
+            os.chdir(self.temp_dir)
+            cmd('git add ' + self.release_file)
+            cmd('git commit -m "kino update"')
 
-        print 'Pushing changes.'
-        cmd('git push origin gh-pages')
-        os.chdir('..')
+            print 'Pushing changes.'
+            cmd('git push origin gh-pages')
+            os.chdir('..')
 
-        cmd('rm -rf ' + self.temp_dir)
+            cmd('rm -rf ' + self.temp_dir)
+        except Exception as e:
+            print e
 
 
 class Kino(object):
