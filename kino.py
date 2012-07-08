@@ -145,6 +145,7 @@ class Deployer(object):
     temp_dir = './tmp'
     release_file = 'kino.html'
     commit_message = 'automatic kino update'
+    email = 'jan.javorek+kino@gmail.com'
 
     def __init__(self):
         self.username = os.environ.get('GITHUB_USERNAME')
@@ -162,7 +163,7 @@ class Deployer(object):
             self.temp_dir
         ])
         cmd(['git', 'config', 'user.name', 'Kino'])
-        cmd(['git', 'config', 'user.email', 'jan.javorek+kino@gmail.com'])
+        cmd(['git', 'config', 'user.email', self.email])
 
         path = os.path.join(self.temp_dir, self.release_file)
         print 'Writing file: ' + path
