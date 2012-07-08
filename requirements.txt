@@ -2,4 +2,3 @@ Jinja2
 BeautifulSoup4
 requests
 python-dateutil
-git://github.com/kennethreitz/envoy.git@2a5a45e1713f4907ff3e8495b4dc7598b2e0fbf6#egg=envoy
