@@ -1,3 +1,2 @@
-Flask
+Jinja2
 BeautifulSoup4
-gunicorn
