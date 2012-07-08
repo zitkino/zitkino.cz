@@ -170,10 +170,9 @@ class Kino(object):
             films=films,
         ).encode('utf8')
 
-    def render(self):
+    def run(self):
         return self.render_template(self.scrape_films())
 
 
 if __name__ == '__main__':
-    print Kino().render()
-
+    print Kino().run()
