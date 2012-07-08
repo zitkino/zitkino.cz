@@ -151,6 +151,7 @@ class Deployer(object):
         self.password = os.environ.get('GITHUB_PASSWORD')
 
     def deploy(self, html):
+        print 'Data size: ' + str(len(html))
         cmd(['rm', '-rf', self.temp_dir])
         cmd(['mkdir', self.temp_dir])
 
@@ -161,18 +162,18 @@ class Deployer(object):
             self.temp_dir
         ])
 
-        print 'Writing file.'
-        with open(os.path.join(self.temp_dir, self.release_file), 'w') as f:
+        path = os.path.join(self.temp_dir, self.release_file)
+        print 'Writing file: ' + path
+        with open(path, 'w') as f:
             f.write(html)
 
         print 'Commiting changes.'
-        cmd(['git', 'add', self.release_file], cwd=self.temp_dir)
-        cmd(['git', 'commit', '-m', '"{0}"'.format(self.commit_message)], cwd=self.temp_dir)
+        cmd(['git', 'commit', '-am', '"{0}"'.format(self.commit_message)], cwd=self.temp_dir)
 
         print 'Pushing changes.'
         cmd(['git', 'push', 'origin', 'gh-pages'], cwd=self.temp_dir)
 
-        cmd(['rm -rf ' + self.temp_dir])
+        cmd(['rm', '-rf', self.temp_dir])
 
 
 class Kino(object):
