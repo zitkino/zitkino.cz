@@ -2,7 +2,9 @@
 
 
 import re
+import os
 import requests
+from envoy import run as cmd
 from dateutil import rrule
 from datetime import datetime
 from bs4 import BeautifulSoup
@@ -137,6 +139,43 @@ class LucernaDriver(Driver):
                     yield Film(u'Lucerna', film_date, film_title)
 
 
+class Deployer(object):
+
+    # https://devcenter.heroku.com/articles/read-only-filesystem
+    temp_dir = './tmp'
+    release_file = 'kino.html'
+
+    def __init__(self):
+        self.username = os.environ.get('GITHUB_USERNAME')
+        self.password = os.environ.get('GITHUB_PASSWORD')
+
+    def deploy(self, html):
+        cmd('rm -rf ' + self.temp_dir)
+        cmd('mkdir ' + self.temp_dir)
+
+        print 'Cloning git repository.'
+        cmd('git clone -b gh-pages https://{0}:{1}@github.com/honzajavorek/blog.git {2}'.format(
+            self.username,
+            self.password,
+            self.temp_dir
+        ))
+
+        print 'Writing file.'
+        with open(os.path.join(self.temp_dir, self.release_file), 'w') as f:
+            f.write(html)
+
+        print 'Commiting changes.'
+        os.chdir(self.temp_dir)
+        cmd('git add ' + self.release_file)
+        cmd('git commit -m "kino update"')
+
+        print 'Pushing changes.'
+        cmd('git push origin gh-pages')
+        os.chdir('..')
+
+        cmd('rm -rf ' + self.temp_dir)
+
+
 class Kino(object):
 
     drivers = (
@@ -171,8 +210,9 @@ class Kino(object):
         ).encode('utf8')
 
     def run(self):
-        return self.render_template(self.scrape_films())
+        html = self.render_template(self.scrape_films())
+        Deployer().deploy(html)
 
 
 if __name__ == '__main__':
-    print Kino().run()
+    Kino().run()
