@@ -21,7 +21,7 @@
         {% for film in films %}
             <tr>
                 <th>{{ film.date|format_date }}</th>
-                <td>{{ film.name }}</td>
+                <td>{{ film.title }}</td>
                 <td>{{ film.cinema }}</td>
             </tr>
         {% endfor %}

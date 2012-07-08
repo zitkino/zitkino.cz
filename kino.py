@@ -1,112 +1,179 @@
 # -*- coding: utf-8 -*-
 
 
-import requests
-from bs4 import BeautifulSoup
 import re
-from datetime import datetime, timedelta
+import requests
 from dateutil import rrule
+from datetime import datetime
+from bs4 import BeautifulSoup
 from jinja2 import Environment, FileSystemLoader
 
 
-films = []
+class Film(object):
+
+    def __init__(self, cinema, date, title):
+        self.cinema = cinema
+        self.date = date
+        self.title = title.upper()
 
 
-# art
-response = requests.get('http://www.kinoartbrno.cz/')
-if response.ok:
-    html = BeautifulSoup(re.sub(r'\s+', ' ', response.content))
-    rows = html.select('#program_art tr')
+class Driver(object):
 
-    film_date = None
+    url = ''
 
-    for row in rows:
-        if row.select('.datum'):
-            match = re.search(r'(\d+)\. (\d+)\. (\d+)', row.get_text())
-            film_date = datetime(int(match.group(3)), int(match.group(2)), int(match.group(1)))
-        else:
-            match = re.search(r'^ *(\d+)\.(\d+) *(.+) *$', row.get_text())
-            film_title = match.group(3).strip().upper()
+    def __init__(self):
+        self.films = []
 
-            films.append(
-                {'cinema': u'Art', 'date': film_date, 'name': film_title}
-            )
+    def download(self):
+        if not self.url:
+            classname = self.__class__.__name__
+            raise ValueError('No URL for driver {0}.'.format(classname))
+
+        response = requests.get(self.url)
+        response.raise_for_status()
+        return response.content
+
+    def to_soup(self, html):
+        return BeautifulSoup(re.sub(r'\s+', ' ', html))
+
+    def parse(self, soup):
+        return []
+
+    def scrape(self):
+        if not self.films:
+            self.films = list(self.parse(self.to_soup(self.download())))
+        return self.films
 
 
-# lucerna
-response = requests.get('http://www.kinolucerna.info/index.php?option=com_content&view=article&id=37&Itemid=61')
-if response.ok:
-    html = BeautifulSoup(response.content)
-    rows = html.select('.contentpaneopen strong')
+class DobrakDriver(Driver):
 
-    for row in rows:
-        text = row.get_text().strip()
-        match = re.search(r'\d+:\d+', text)
-        if match:
-            text = re.split(r'[\b\s]+(?=\d)', text, maxsplit=1)
-            film_title = text[0].strip().upper()
+    url = 'http://kinonadobraku.cz/'
 
-            dates_text = text[1]
-            re_range = re.compile(r'(\d+)\.(\d+)\.-(\d+)\.(\d+)\.')
-            dates = []
+    def parse(self, soup):
+        dates = soup.select('#Platno .Datum_cas')
+        names = soup.select('#Platno .Nazev')
 
-            today = datetime.now()
+        for date, name in zip(dates, names):
+            date = re.sub(r'[^\d\-]', '', date['id'])
+            film_date = datetime.strptime(date, '%Y-%m-%d')
+            film_title = name.get_text().strip().upper()
 
-            # ranges
-            for match in re_range.finditer(dates_text):
-                start_day = int(match.group(1))
-                end_day = int(match.group(3))
+            yield Film(u'Dobrák', film_date, film_title)
 
-                start_month = int(match.group(2))
-                end_month = int(match.group(4))
 
-                start_year = today.year if today.month <= start_month else (today.year + 1)
-                end_year = today.year if today.month <= end_month else (today.year + 1)
+class ArtDriver(Driver):
 
-                start = datetime(start_year, start_month, start_day)
-                end = datetime(end_year, end_month, end_day)
+    url = 'http://www.kinoartbrno.cz/'
 
-                for day in rrule.rrule(rrule.DAILY, dtstart=start, until=end):
-                    dates.append(day)
+    def parse(self, soup):
+        film_date = None
 
-            # standalone dates
-            dates_text = re_range.sub('', dates_text) # purge ranges
-            for match in re.finditer(r'(\d+)\.(\d+)\.', dates_text):
-                month = int(match.group(2))
-                year = today.year if today.month <= month else (today.year + 1)
-                dates.append(
-                    datetime(year, month, int(match.group(1)))
+        for row in soup.select('#program_art tr'):
+            if row.select('.datum'):
+                match = re.search(r'(\d+)\. (\d+)\. (\d+)', row.get_text())
+                film_date = datetime(
+                    int(match.group(3)),
+                    int(match.group(2)),
+                    int(match.group(1))
                 )
 
-            for film_date in dates:
-                films.append(
-                    {'cinema': u'Lucerna', 'date': film_date, 'name': film_title}
-                )
+            else:
+                match = re.search(r'^ *(\d+)\.(\d+) *(.+) *$', row.get_text())
+                film_title = match.group(3).strip().upper()
+
+                yield Film('Art', film_date, film_title)
 
 
-# dobrak
-response = requests.get('http://kinonadobraku.cz/')
-if response.ok:
-    html = BeautifulSoup(re.sub(r'\s+', ' ', response.content))
+class LucernaDriver(Driver):
 
-    dates = html.select('#Platno .Datum_cas')
-    names = html.select('#Platno .Nazev')
+    url = 'http://www.kinolucerna.info/index.php?option=com_content&view=article&id=37&Itemid=61'
+    re_range = re.compile(r'(\d+)\.(\d+)\.-(\d+)\.(\d+)\.')
 
-    for date, name in zip(dates, names):
-        date = re.sub(r'[^\d\-]', '', date['id'])
-        film_date = datetime.strptime(date, '%Y-%m-%d')
-        film_title = name.get_text().strip().upper()
+    def __init__(self):
+        self.today = datetime.now()
+        super(LucernaDriver, self).__init__()
 
-        films.append(
-            {'cinema': u'Dobrák', 'date': film_date, 'name': film_title}
-        )
+    def get_date_ranges(self, dates_text):
+        today = self.today
+        for match in self.re_range.finditer(dates_text):
+            start_day = int(match.group(1))
+            end_day = int(match.group(3))
+
+            start_month = int(match.group(2))
+            end_month = int(match.group(4))
+
+            start_year = today.year if today.month <= start_month else (today.year + 1)
+            end_year = today.year if today.month <= end_month else (today.year + 1)
+
+            start = datetime(start_year, start_month, start_day)
+            end = datetime(end_year, end_month, end_day)
+
+            for day in rrule.rrule(rrule.DAILY, dtstart=start, until=end):
+                yield day
+
+    def get_standalone_dates(self, dates_text):
+        today = self.today
+        dates_text = self.re_range.sub('', dates_text)
+        for match in re.finditer(r'(\d+)\.(\d+)\.', dates_text):
+            month = int(match.group(2))
+            year = today.year if today.month <= month else (today.year + 1)
+            yield datetime(year, month, int(match.group(1)))
+
+    def parse(self, soup):
+        for row in soup.select('.contentpaneopen strong'):
+            text = row.get_text().strip()
+            match = re.search(r'\d+:\d+', text)
+            if match:
+                text = re.split(r'[\b\s]+(?=\d)', text, maxsplit=1)
+
+                film_title = text[0].strip().upper()
+                dates_text = text[1]
+
+                date_ranges = self.get_date_ranges(dates_text)
+                standalone_dates = self.get_standalone_dates(dates_text)
+
+                dates = list(date_ranges) + list(standalone_dates)
+                for film_date in dates:
+                    yield Film(u'Lucerna', film_date, film_title)
 
 
-films = sorted(films, key=lambda film: film['date'])
+class Kino(object):
+
+    drivers = (
+        ArtDriver,
+        DobrakDriver,
+        LucernaDriver,
+    )
+
+    template_filters = {
+        'format_date': lambda dt: dt.strftime('%d. %m.'),
+    }
+
+    templates_dir = '.'
+    template_name = 'kino.html'
+
+    def setup_jinja_env(self):
+        jinja_env = Environment(loader=FileSystemLoader(self.templates_dir))
+        jinja_env.filters.update(self.template_filters)
+        return jinja_env
+
+    def scrape_films(self):
+        films = []
+        for driver in self.drivers:
+            films += list(driver().scrape())
+        return sorted(films, key=lambda film: film.date)
+
+    def render_template(self, films):
+        jinja_env = self.setup_jinja_env()
+        template = jinja_env.get_template(self.template_name)
+        return template.render(
+            films=films,
+        ).encode('utf8')
+
+    def render(self):
+        return self.render_template(self.scrape_films())
 
 
-env = Environment(loader=FileSystemLoader('.'))
-env.filters['format_date'] = lambda dt: dt.strftime('%d. %m.')
+if __name__ == '__main__':
+    print Kino().render()
 
-template = env.get_template('kino.html')
-print template.render(films=films).encode('utf8')
