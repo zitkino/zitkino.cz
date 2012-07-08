@@ -168,7 +168,7 @@ class Deployer(object):
             f.write(html)
 
         print 'Commiting changes.'
-        cmd(['git', 'commit', '-am', '"{0}"'.format(self.commit_message)], cwd=self.temp_dir)
+        cmd(['git', 'commit', '-am', self.commit_message], cwd=self.temp_dir)
 
         print 'Pushing changes.'
         cmd(['git', 'push', 'origin', 'gh-pages'], cwd=self.temp_dir)
