@@ -7,8 +7,10 @@ import requests
 from subprocess import call as cmd
 from dateutil import rrule
 from datetime import datetime, date, time
+from hashlib import sha1
+import urllib
 from bs4 import BeautifulSoup
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, Markup
 
 
 class Film(object):
@@ -18,9 +20,18 @@ class Film(object):
         self.date = date
         self.title = title.upper()
 
+    @property
+    def hash(self):
+        return sha1(
+            str(self.cinema) +
+            str(self.date) +
+            self.title.encode('utf8')
+        ).hexdigest()
+
 
 class Driver(object):
 
+    name = ''
     url = ''
 
     def __init__(self):
@@ -46,10 +57,15 @@ class Driver(object):
             self.films = list(self.parse(self.to_soup(self.download())))
         return self.films
 
+    def __unicode__(self):
+        return self.name
+
 
 class DobrakDriver(Driver):
 
-    url = 'http://kinonadobraku.cz/'
+    name = u'Dobrák'
+    url = 'http://kinonadobraku.cz'
+    web = 'http://kinonadobraku.cz'
 
     def parse(self, soup):
         dates = soup.select('#Platno .Datum_cas')
@@ -60,12 +76,14 @@ class DobrakDriver(Driver):
             film_date = datetime.strptime(date, '%Y-%m-%d')
             film_title = name.get_text().strip().upper()
 
-            yield Film(u'Dobrák', film_date, film_title)
+            yield Film(self, film_date, film_title)
 
 
 class StarobrnoDriver(Driver):
 
+    name = u'Starobrno'
     url = 'http://www.kultura-brno.cz/cs/film/starobrno-letni-kino-na-dvore-mestskeho-divadla-brno'
+    web = 'http://www.letnikinobrno.cz'
 
     def parse(self, soup):
         for row in soup.select('.content tr'):
@@ -89,12 +107,14 @@ class StarobrnoDriver(Driver):
                 if not film_title:
                     continue
 
-                yield Film(u'Starobrno', film_date, film_title)
+                yield Film(self, film_date, film_title)
 
 
 class ArtDriver(Driver):
 
-    url = 'http://www.kinoartbrno.cz/'
+    name = u'Art'
+    url = 'http://www.kinoartbrno.cz'
+    web = 'http://www.kinoartbrno.cz'
 
     def parse(self, soup):
         film_date = None
@@ -113,12 +133,15 @@ class ArtDriver(Driver):
                 film_title = match.group(3).strip().upper()
 
                 if film_title.lower() != 'kino nehraje':
-                    yield Film('Art', film_date, film_title)
+                    yield Film(self, film_date, film_title)
 
 
 class LucernaDriver(Driver):
 
+    name = u'Lucerna'
     url = 'http://www.kinolucerna.info/index.php?option=com_content&view=article&id=37&Itemid=61'
+    web = 'http://www.kinolucerna.info'
+
     re_range = re.compile(r'(\d+)\.(\d+)\.-(\d+)\.(\d+)\.')
 
     def __init__(self):
@@ -166,7 +189,7 @@ class LucernaDriver(Driver):
 
                 dates = list(date_ranges) + list(standalone_dates)
                 for film_date in dates:
-                    yield Film(u'Lucerna', film_date, film_title)
+                    yield Film(self, film_date, film_title)
 
 
 class Deployer(object):
@@ -220,6 +243,14 @@ class Debugger(object):
         cmd([self.browser_command, self.debug_file])
 
 
+def urlencode_filter(s):
+    if type(s) == 'Markup':
+        s = s.unescape()
+    s = s.encode('utf8')
+    s = urllib.quote_plus(s)
+    return Markup(s)
+
+
 class Kino(object):
 
     drivers = (
@@ -231,6 +262,7 @@ class Kino(object):
 
     template_filters = {
         'format_date': lambda dt: dt.strftime('%d. %m.'),
+        'urlencode': urlencode_filter,
     }
 
     templates_dir = '.'
@@ -238,7 +270,6 @@ class Kino(object):
 
     def __init__(self):
         self.today = datetime.combine(date.today(), time(0, 0))
-        print self.today
 
     def setup_jinja_env(self):
         jinja_env = Environment(loader=FileSystemLoader(self.templates_dir))
@@ -258,6 +289,7 @@ class Kino(object):
         template = jinja_env.get_template(self.template_name)
         return template.render(
             films=films,
+            today=self.today
         ).encode('utf8')
 
     def run(self, debug=False):
