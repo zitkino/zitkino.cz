@@ -6,7 +6,7 @@ import os
 import requests
 from subprocess import call as cmd
 from dateutil import rrule
-from datetime import datetime
+from datetime import datetime, date, time
 from bs4 import BeautifulSoup
 from jinja2 import Environment, FileSystemLoader
 
@@ -112,7 +112,8 @@ class ArtDriver(Driver):
                 match = re.search(r'^ *(\d+)\.(\d+) *(.+) *$', row.get_text())
                 film_title = match.group(3).strip().upper()
 
-                yield Film('Art', film_date, film_title)
+                if film_title.lower() != 'kino nehraje':
+                    yield Film('Art', film_date, film_title)
 
 
 class LucernaDriver(Driver):
@@ -156,8 +157,6 @@ class LucernaDriver(Driver):
             match = re.search(r'\d+:\d+', text)
             if match:
                 text = re.split(r'[\b\s]+(?=\d+\.)', text, maxsplit=1)
-
-                print text
 
                 film_title = text[0].strip().upper()
                 dates_text = text[1]
@@ -237,6 +236,10 @@ class Kino(object):
     templates_dir = '.'
     template_name = 'kino.html'
 
+    def __init__(self):
+        self.today = datetime.combine(date.today(), time(0, 0))
+        print self.today
+
     def setup_jinja_env(self):
         jinja_env = Environment(loader=FileSystemLoader(self.templates_dir))
         jinja_env.filters.update(self.template_filters)
@@ -246,7 +249,9 @@ class Kino(object):
         films = []
         for driver in self.drivers:
             films += list(driver().scrape())
-        return sorted(films, key=lambda film: film.date)
+        sorted_films = sorted(films, key=lambda film: film.date)
+        filtered_films = [f for f in sorted_films if f.date >= self.today]
+        return filtered_films
 
     def render_template(self, films):
         jinja_env = self.setup_jinja_env()
