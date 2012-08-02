@@ -302,4 +302,4 @@ class Kino(object):
 
 
 if __name__ == '__main__':
-    Kino().run(debug=True)
+    Kino().run()
