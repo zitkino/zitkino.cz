@@ -63,6 +63,35 @@ class DobrakDriver(Driver):
             yield Film(u'Dobrák', film_date, film_title)
 
 
+class StarobrnoDriver(Driver):
+
+    url = 'http://www.kultura-brno.cz/cs/film/starobrno-letni-kino-na-dvore-mestskeho-divadla-brno'
+
+    def parse(self, soup):
+        for row in soup.select('.content tr'):
+            cells = row.select('td')
+
+            if len(cells) == 3:
+                # date
+                date = cells[1].get_text()
+                match = re.search(r'(\d+)\.(\d+)\.', date)
+                if not match:
+                    continue
+
+                film_date = datetime(
+                    int(2012),
+                    int(match.group(2)),
+                    int(match.group(1))
+                )
+
+                # title
+                film_title = cells[2].get_text()
+                if not film_title:
+                    continue
+
+                yield Film(u'Starobrno', film_date, film_title)
+
+
 class ArtDriver(Driver):
 
     url = 'http://www.kinoartbrno.cz/'
@@ -179,12 +208,24 @@ class Deployer(object):
         cmd(['rm', '-rf', self.temp_dir])
 
 
+class Debugger(object):
+
+    debug_file = './debug.html'
+    browser_command = 'firefox'
+
+    def deploy(self, html):
+        with open(self.debug_file, 'w') as f:
+            f.write(html)
+        cmd([self.browser_command, self.debug_file])
+
+
 class Kino(object):
 
     drivers = (
         ArtDriver,
         DobrakDriver,
         LucernaDriver,
+        StarobrnoDriver,
     )
 
     template_filters = {
@@ -212,10 +253,14 @@ class Kino(object):
             films=films,
         ).encode('utf8')
 
-    def run(self):
+    def run(self, debug=False):
         html = self.render_template(self.scrape_films())
-        Deployer().deploy(html)
+
+        if debug:
+            Debugger().deploy(html)
+        else:
+            Deployer().deploy(html)
 
 
 if __name__ == '__main__':
-    Kino().run()
+    Kino().run(debug=True)
