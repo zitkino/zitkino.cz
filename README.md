@@ -11,10 +11,4 @@ Simple calendar of non-multiplex cinemas in Brno.
 
 ## Ideas
 
-- design
-- merge the same days
 - google cal / ical export
-- links to csfd, imdb, synopsitv
-- links to original pages
-- javascript: current day
-- automatically make a FB event (button)
