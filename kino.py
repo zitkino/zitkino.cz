@@ -155,7 +155,9 @@ class LucernaDriver(Driver):
             text = row.get_text().strip()
             match = re.search(r'\d+:\d+', text)
             if match:
-                text = re.split(r'[\b\s]+(?=\d)', text, maxsplit=1)
+                text = re.split(r'[\b\s]+(?=\d+\.)', text, maxsplit=1)
+
+                print text
 
                 film_title = text[0].strip().upper()
                 dates_text = text[1]
