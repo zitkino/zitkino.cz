@@ -6,24 +6,53 @@
 </head>
 <body>
     <style>
-        body { font-family: ubuntu, sans-serif; }
-        table { border-collapse: collapse; }
-        th, td { padding: 0.5em 1em; }
+        body { font-family: Georgia, serif; text-align: center; font-size: 100%; }
+        h1 { font-size: 450%; margin-bottom: 0.5em; }
+        .lead { font-style: italic; }
+        .author { font-size: 90%; margin: 1em 0; margin-bottom: 3em; }
+        table { border-collapse: collapse; width: 100%; max-width: 800px; margin: 5em auto; }
+        th, td { padding: 1em 1em; text-align: left; }
+        a { color: #CB0E21; }
+        .details a, .film_permalink a { font-size: 70%; color: #BBB; }
+        thead th { border-bottom: #000 1px solid; }
+        .day { border-bottom: #DDD 1px solid; }
     </style>
 
-    <table>
-        <tr>
-            <th>Datum</th>
-            <th>Film</th>
-            <th>Kino</th>
-        </tr>
+    <h1>Kino</h1>
+    <p class="lead">Kam v Brně do kina? Zkuste i něco jiného než multiplexy!</p>
 
-        {% for film in films %}
+    {% if films|length %}
+    <table>
+        <thead>
             <tr>
-                <th>{{ film.date|format_date }}</th>
-                <td>{{ film.title }}</td>
-                <td>{{ film.cinema }}</td>
+                <th>Datum</th>
+                <th colspan="3">Film</th>
+                <th>Kino</th>
+                <th>&nbsp;</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% set film_date = films[0].date|format_date %}
+        {% for film in films %}
+            {% set previous_film_date = film_date %}
+            {% set film_date = film.date|format_date %}
+
+            <tr class="film{%- if previous_film_date != film_date %} day{% endif -%}" id="id{{ film.hash }}">
+                <th class="film_date">{{ film_date }}</th>
+                <td class="film_title">{{ film.title }}</td>
+                <td class="details"><a href="http://www.csfd.cz/hledat/?q={{ film.title|lower|urlencode }}">ČSFD</a></td>
+                <td class="details"><a href="http://www.imdb.com/find?s=all&amp;q={{ film.title|lower|urlencode }}">IMDb</a></td>
+                <td class="film_cinema"><a href="{{ film.cinema.web }}">{{ film.cinema.name }}</a></td>
+                <td class="film_permalink"><a href="#id{{ film.hash }}">#</a></td>
             </tr>
         {% endfor %}
+        </tbody>
     </table>
+    {% endif %}
+
+    <p class="author">
+        Vytvořil <a href="http://honzajavorek.cz">Honza Javorek</a>.
+        Pokud umíte programovat, můžete mu s tím <a href="https://github.com/honzajavorek/kino">pomoci</a>.
+        Poslední aktualizace: {{ today|format_date }}
+    </p>
 </body>
