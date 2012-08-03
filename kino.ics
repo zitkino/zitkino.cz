@@ -1,0 +1,25 @@
+BEGIN:VCALENDAR
+PRODID:-//Honza Javorek//Kino//CS
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Kino
+X-WR-TIMEZONE:Europe/Prague
+X-WR-CALDESC:Kam v Brně do kina? Zkuste i něco jiného než multiplexy!
+{% for film in films %}
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:{{ film.date|format_date_ics }}
+DTEND;VALUE=DATE:{{ film.date|format_date_ics }}
+DTSTAMP:{{ now|format_timestamp_ics }}
+UID:{{ film.hash }}
+CREATED:{{ now|format_timestamp_ics }}
+DESCRIPTION:{{ film.title }}\n\nhttp://honzajavorek.cz/kino#id{{ film.hash }}
+LAST-MODIFIED:{{ now|format_timestamp_ics }}
+LOCATION:kino {{ film.cinema.name }}, Brno
+SEQUENCE:0
+STATUS:CONFIRMED
+SUMMARY:{{ film.title }}
+TRANSP:TRANSPARENT
+END:VEVENT
+{% endfor %}
+END:VCALENDAR
