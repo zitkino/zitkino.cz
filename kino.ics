@@ -5,20 +5,20 @@ CALSCALE:GREGORIAN
 METHOD:PUBLISH
 X-WR-CALNAME:Kino
 X-WR-TIMEZONE:Europe/Prague
-X-WR-CALDESC:Kam v Brně do kina? Zkuste i něco jiného než multiplexy!
+X-WR-CALDESC;CHARSET=UTF-8:Kam v Brně do kina? Zkuste i něco jiného než multiplexy!
 {% for film in films %}
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:{{ film.date|format_date_ics }}
 DTEND;VALUE=DATE:{{ film.date|format_date_ics }}
 DTSTAMP:{{ now|format_timestamp_ics }}
-UID:{{ film.hash }}
+UID:{{ film.hash }}@honzajavorek.cz
 CREATED:{{ now|format_timestamp_ics }}
-DESCRIPTION:{{ film.title }}\n\nhttp://honzajavorek.cz/kino#id{{ film.hash }}
+DESCRIPTION;CHARSET=UTF-8:{{ film.title }}\r\n\r\nhttp://honzajavorek.cz/kino#id{{ film.hash }}
 LAST-MODIFIED:{{ now|format_timestamp_ics }}
 LOCATION:kino {{ film.cinema.name }}, Brno
 SEQUENCE:0
 STATUS:CONFIRMED
-SUMMARY:{{ film.title }}
+SUMMARY;CHARSET=UTF-8:{{ film.title }}
 TRANSP:TRANSPARENT
 END:VEVENT
 {% endfor %}
