@@ -11,6 +11,7 @@ from hashlib import sha1
 import urllib
 from bs4 import BeautifulSoup
 from jinja2 import Environment, FileSystemLoader, Markup
+from icalendar import Calendar
 
 
 class Film(object):
@@ -196,16 +197,15 @@ class Deployer(object):
 
     # https://devcenter.heroku.com/articles/read-only-filesystem
     temp_dir = './tmp'
-    release_file = 'kino.html'
     commit_message = 'automatic kino update'
     email = 'jan.javorek+kino@gmail.com'
 
     def __init__(self):
         self.username = os.environ.get('GITHUB_USERNAME')
         self.password = os.environ.get('GITHUB_PASSWORD')
+        self._prepare()
 
-    def deploy(self, html):
-        print 'Data size: ' + str(len(html))
+    def _prepare(self):
         cmd(['rm', '-rf', self.temp_dir])
         cmd(['mkdir', self.temp_dir])
 
@@ -218,11 +218,13 @@ class Deployer(object):
         cmd(['git', 'config', 'user.name', 'Kino'])
         cmd(['git', 'config', 'user.email', self.email])
 
-        path = os.path.join(self.temp_dir, self.release_file)
+    def write(self, filename, contents):
+        path = os.path.join(self.temp_dir, filename)
         print 'Writing file: ' + path
         with open(path, 'w') as f:
-            f.write(html)
+            f.write(contents)
 
+    def deploy(self):
         print 'Commiting changes.'
         cmd(['git', 'commit', '-am', self.commit_message], cwd=self.temp_dir)
 
@@ -234,13 +236,21 @@ class Deployer(object):
 
 class Debugger(object):
 
-    debug_file = './debug.html'
+    debug_dir = './'
     browser_command = 'firefox'
 
-    def deploy(self, html):
-        with open(self.debug_file, 'w') as f:
-            f.write(html)
-        cmd([self.browser_command, self.debug_file])
+    def __init__(self):
+        self.files = []
+
+    def write(self, filename, contents):
+        debug_file = os.path.join(self.debug_dir, filename)
+        with open(debug_file, 'w') as f:
+            f.write(contents)
+        self.files.append(debug_file)
+
+    def show(self):
+        for file in self.files:
+            cmd([self.browser_command, file])
 
 
 def urlencode_filter(s):
@@ -266,7 +276,14 @@ class Kino(object):
     }
 
     templates_dir = '.'
-    template_name = 'kino.html'
+    html_template_name = 'kino.html'
+    ics_template_name = 'kino.ics'
+
+    html_filename = 'kino.html'
+    ics_filename = 'kino.ics'
+
+    html_debug_filename = 'debug.html'
+    ics_debug_filename = 'debug.ics'
 
     def __init__(self):
         self.today = datetime.combine(date.today(), time(0, 0))
@@ -284,21 +301,29 @@ class Kino(object):
         filtered_films = [f for f in sorted_films if f.date >= self.today]
         return filtered_films
 
-    def render_template(self, films):
+    def render_template(self, filename, films):
         jinja_env = self.setup_jinja_env()
-        template = jinja_env.get_template(self.template_name)
+        template = jinja_env.get_template(filename)
         return template.render(
             films=films,
             today=self.today
         ).encode('utf8')
 
     def run(self, debug=False):
-        html = self.render_template(self.scrape_films())
+        films = self.scrape_films()
+
+        html = self.render_template(films, self.html_template_name)
+        ics = self.render_template(films, self.ics_template_name)
 
         if debug:
-            Debugger().deploy(html)
+            debugger = Debugger()
+            debugger.write(self.html_debug_filename, html)
+            debugger.write(self.ics_debug_filename, ics)
         else:
-            Deployer().deploy(html)
+            deployer = Deployer()
+            deployer.write(self.html_filename, html)
+            deployer.write(self.ics_filename, ics)
+            deployer.deploy()
 
 
 if __name__ == '__main__':
