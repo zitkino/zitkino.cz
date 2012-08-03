@@ -2,6 +2,8 @@
 
 Simple calendar of non-multiplex cinemas in Brno.
 
+http://honzajavorek.cz/kino
+
 ## Cinemas
 
 - [Kino Art](http://www.kinoartbrno.cz/)
