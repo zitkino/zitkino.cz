@@ -225,7 +225,8 @@ class Deployer(object):
 
     def deploy(self):
         print 'Commiting changes.'
-        cmd(['git', 'commit', '-am', self.commit_message], cwd=self.temp_dir)
+        cmd(['git', 'add', '-A'], cwd=self.temp_dir)
+        cmd(['git', 'commit', '-m', self.commit_message], cwd=self.temp_dir)
 
         print 'Pushing changes.'
         cmd(['git', 'push', 'origin', 'gh-pages'], cwd=self.temp_dir)
