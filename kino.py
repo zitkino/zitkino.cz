@@ -24,7 +24,7 @@ class Film(object):
     def hash(self):
         return sha1(
             str(self.cinema) +
-            str(self.date) +
+            str(datetime.combine(self.date.date(), time(0, 0))) +
             self.title.encode('utf8')
         ).hexdigest()
 
