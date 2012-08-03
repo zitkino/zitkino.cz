@@ -21,7 +21,8 @@
         body { font-family: Georgia, serif; text-align: center; font-size: 100%; }
         h1 { font-size: 450%; margin-bottom: 0.5em; }
         .lead { font-style: italic; }
-        .author { font-size: 90%; margin: 1em 0; margin-bottom: 3em; }
+        .author, .footer { font-size: 90%; margin: 1em 0; }
+        .footer { margin: 0.5em 0 4em 0; }
         table { border-collapse: collapse; width: 100%; max-width: 800px; margin: 5em auto; }
         th, td { padding: 1em 1em; text-align: left; }
         a { color: #CB0E21; }
@@ -66,5 +67,8 @@
         Vytvořil <a href="http://honzajavorek.cz">Honza Javorek</a>.
         Pokud umíte programovat, můžete mu s tím <a href="https://github.com/honzajavorek/kino">pomoci</a>.
         Poslední aktualizace: {{ today|format_date }}
+    </p>
+    <p class="footer">
+        <small><a href="static/kino.ics">iCalendar</a></small>
     </p>
 </body>

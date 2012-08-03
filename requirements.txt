@@ -2,4 +2,3 @@ Jinja2
 BeautifulSoup4
 requests
 python-dateutil
-icalendar

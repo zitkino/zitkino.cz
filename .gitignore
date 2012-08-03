@@ -1,4 +1,4 @@
 *.pyc
 .env
 env
-debug.html
+debug.*

@@ -11,7 +11,6 @@ from hashlib import sha1
 import urllib
 from bs4 import BeautifulSoup
 from jinja2 import Environment, FileSystemLoader, Markup
-from icalendar import Calendar
 
 
 class Film(object):
@@ -272,6 +271,8 @@ class Kino(object):
 
     template_filters = {
         'format_date': lambda dt: dt.strftime('%d. %m.'),
+        'format_date_ics': lambda dt: dt.strftime('%Y%m%d'),
+        'format_timestamp_ics': lambda dt: dt.strftime('%Y%m%dT%H%M%SZ'),
         'urlencode': urlencode_filter,
     }
 
@@ -280,7 +281,7 @@ class Kino(object):
     ics_template_name = 'kino.ics'
 
     html_filename = 'kino.html'
-    ics_filename = 'kino.ics'
+    ics_filename = 'static/kino.ics'
 
     html_debug_filename = 'debug.html'
     ics_debug_filename = 'debug.ics'
@@ -306,14 +307,15 @@ class Kino(object):
         template = jinja_env.get_template(filename)
         return template.render(
             films=films,
-            today=self.today
+            today=self.today,
+            now=datetime.now()
         ).encode('utf8')
 
     def run(self, debug=False):
         films = self.scrape_films()
 
-        html = self.render_template(films, self.html_template_name)
-        ics = self.render_template(films, self.ics_template_name)
+        html = self.render_template(self.html_template_name, films)
+        ics = self.render_template(self.ics_template_name, films)
 
         if debug:
             debugger = Debugger()
