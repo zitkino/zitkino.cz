@@ -13,12 +13,12 @@ DTEND;VALUE=DATE:{{ film.date|format_date_ics }}
 DTSTAMP:{{ now|format_timestamp_ics }}
 UID:{{ film.hash }}@honzajavorek.cz
 CREATED:{{ now|format_timestamp_ics }}
-DESCRIPTION;CHARSET=UTF-8:{{ film.title }}\r\n\r\nhttp://honzajavorek.cz/kino#id{{ film.hash }}
+DESCRIPTION:http://honzajavorek.cz/kino#id{{ film.hash }}
 LAST-MODIFIED:{{ now|format_timestamp_ics }}
 LOCATION:kino {{ film.cinema.name }}, Brno
 SEQUENCE:0
 STATUS:CONFIRMED
-SUMMARY;CHARSET=UTF-8:{{ film.title }}
+SUMMARY;CHARSET=UTF-8:{{ film.title }} ({{ film.cinema.name }})
 TRANSP:TRANSPARENT
 END:VEVENT
 {% endfor %}
