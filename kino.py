@@ -230,7 +230,6 @@ class Deployer(object):
 
         print 'Pushing changes.'
         cmd(['git', 'push', 'origin', 'gh-pages'], cwd=self.temp_dir)
-
         cmd(['rm', '-rf', self.temp_dir])
 
 
@@ -330,4 +329,4 @@ class Kino(object):
 
 
 if __name__ == '__main__':
-    Kino().run()
+    Kino().run(True)

@@ -18,15 +18,18 @@
 </head>
 <body>
     <style>
-        body { font-family: Georgia, serif; text-align: center; font-size: 100%; }
-        h1 { font-size: 450%; margin-bottom: 0.5em; }
-        .lead { font-style: italic; }
+        body { font-family: Georgia, serif; text-align: center; font-size: 90%; }
+        h1 { font-size: 600%; margin-bottom: 0.3em; }
+        .lead { font-size: 130%; }
         .author, .footer { font-size: 90%; margin: 1em 0; }
         .footer { margin: 0.5em 0 4em 0; }
         table { border-collapse: collapse; width: 100%; max-width: 800px; margin: 5em auto; }
         th, td { padding: 1em 1em; text-align: left; }
+        .film_date, .links, .film_cinema { white-space: nowrap; }
+        .film_cinema { padding: 1em 2em; }
         a { color: #CB0E21; }
-        .details a, .film_permalink a { font-size: 70%; color: #BBB; }
+        table small { font-size: 70%; color: #AAA; }
+        table small a { color: #AAA; }
         thead th { border-bottom: #000 1px solid; }
         .day { border-top: #DDD 1px solid; }
     </style>
@@ -36,15 +39,6 @@
 
     {% if films|length %}
     <table>
-        <thead>
-            <tr>
-                <th>Datum</th>
-                <th colspan="3">Film</th>
-                <th>Kino</th>
-                <th>&nbsp;</th>
-            </tr>
-        </thead>
-        <tbody>
         {% set film_date = films[0].date|format_date %}
         {% for film in films %}
             {% set previous_film_date = film_date %}
@@ -53,13 +47,21 @@
             <tr class="film{%- if previous_film_date != film_date %} day{% endif -%}" id="id{{ film.hash }}">
                 <th class="film_date">{{ film_date }}</th>
                 <td class="film_title">{{ film.title }}</td>
-                <td class="details"><a href="http://www.csfd.cz/hledat/?q={{ film.title|lower|urlencode }}">ČSFD</a></td>
-                <td class="details"><a href="http://www.imdb.com/find?s=all&amp;q={{ film.title|lower|urlencode }}">IMDb</a></td>
+                <td class="links">
+                    <small>
+                        <a href="http://www.csfd.cz/hledat/?q={{ film.title|lower|urlencode }}">ČSFD</a> ·
+                        <a href="http://www.imdb.com/find?s=all&amp;q={{ film.title|lower|urlencode }}">IMDb</a> ·
+                        <a href="http://www.synopsi.tv/movies/#text:{{ film.title|lower|urlencode }}">SynopsiTV</a>
+                    </small>
+                </td>
                 <td class="film_cinema"><a href="{{ film.cinema.web }}">{{ film.cinema.name }}</a></td>
-                <td class="film_permalink"><a href="#id{{ film.hash }}">#</a></td>
+                <td>
+                    <small>
+                        <a href="#id{{ film.hash }}" title="trvalý odkaz">#</a>
+                    </small>
+                </td>
             </tr>
         {% endfor %}
-        </tbody>
     </table>
     {% endif %}
 
