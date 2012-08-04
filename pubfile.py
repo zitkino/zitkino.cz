@@ -4,7 +4,6 @@
 import re
 import os
 import requests
-from subprocess import call as cmd
 from dateutil import rrule
 from datetime import datetime, date, time
 from hashlib import sha1
@@ -23,7 +22,7 @@ class Film(object):
     @property
     def hash(self):
         return sha1(
-            str(self.cinema) +
+            str(self.cinema.name.encode('utf-8')) +
             str(datetime.combine(self.date.date(), time(0, 0))) +
             self.title.encode('utf8')
         ).hexdigest()
