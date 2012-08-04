@@ -192,66 +192,6 @@ class LucernaDriver(Driver):
                     yield Film(self, film_date, film_title)
 
 
-class Deployer(object):
-
-    # https://devcenter.heroku.com/articles/read-only-filesystem
-    temp_dir = './tmp'
-    commit_message = 'automatic kino update'
-    email = 'jan.javorek+kino@gmail.com'
-
-    def __init__(self):
-        self.username = os.environ.get('GITHUB_USERNAME')
-        self.password = os.environ.get('GITHUB_PASSWORD')
-        self._prepare()
-
-    def _prepare(self):
-        cmd(['rm', '-rf', self.temp_dir])
-        cmd(['mkdir', self.temp_dir])
-
-        print 'Cloning git repository.'
-        cmd([
-            'git', 'clone', '-b', 'gh-pages',
-            'https://{0}:{1}@github.com/honzajavorek/blog.git'.format(self.username, self.password),
-            self.temp_dir
-        ])
-        cmd(['git', 'config', 'user.name', 'Kino'], cwd=self.temp_dir)
-        cmd(['git', 'config', 'user.email', self.email], cwd=self.temp_dir)
-
-    def write(self, filename, contents):
-        path = os.path.join(self.temp_dir, filename)
-        print 'Writing file: ' + path
-        with open(path, 'w') as f:
-            f.write(contents)
-
-    def deploy(self):
-        print 'Commiting changes.'
-        cmd(['git', 'add', '-A'], cwd=self.temp_dir)
-        cmd(['git', 'commit', '-m', self.commit_message], cwd=self.temp_dir)
-
-        print 'Pushing changes.'
-        cmd(['git', 'push', 'origin', 'gh-pages'], cwd=self.temp_dir)
-        cmd(['rm', '-rf', self.temp_dir])
-
-
-class Debugger(object):
-
-    debug_dir = './'
-    browser_command = 'firefox'
-
-    def __init__(self):
-        self.files = []
-
-    def write(self, filename, contents):
-        debug_file = os.path.join(self.debug_dir, filename)
-        with open(debug_file, 'w') as f:
-            f.write(contents)
-        self.files.append(debug_file)
-
-    def show(self):
-        for file in self.files:
-            cmd([self.browser_command, file])
-
-
 def urlencode_filter(s):
     if type(s) == 'Markup':
         s = s.unescape()
@@ -276,15 +216,14 @@ class Kino(object):
         'urlencode': urlencode_filter,
     }
 
-    templates_dir = '.'
+    templates_dir = './templates'
     html_template_name = 'kino.html'
     ics_template_name = 'kino.ics'
 
     html_filename = 'kino.html'
     ics_filename = 'static/kino.ics'
 
-    html_debug_filename = 'debug.html'
-    ics_debug_filename = 'debug.ics'
+    output_dir = './output'
 
     def __init__(self):
         self.today = datetime.combine(date.today(), time(0, 0))
@@ -311,22 +250,22 @@ class Kino(object):
             now=datetime.now()
         ).encode('utf8')
 
-    def run(self, debug=False):
+    def write_file(self, filename, contents):
+        path = os.path.join(self.output_dir, filename)
+        dir = os.path.dirname(path)
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+        with open(path, 'w') as f:
+            f.write(contents)
+
+    def run(self):
         films = self.scrape_films()
 
         html = self.render_template(self.html_template_name, films)
         ics = self.render_template(self.ics_template_name, films)
 
-        if debug:
-            debugger = Debugger()
-            debugger.write(self.html_debug_filename, html)
-            debugger.write(self.ics_debug_filename, ics)
-        else:
-            deployer = Deployer()
-            deployer.write(self.html_filename, html)
-            deployer.write(self.ics_filename, ics)
-            deployer.deploy()
-
+        self.write_file(self.html_filename, html)
+        self.write_file(self.ics_filename, ics)
 
 if __name__ == '__main__':
     Kino().run()
