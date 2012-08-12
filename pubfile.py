@@ -11,6 +11,8 @@ import urllib
 from bs4 import BeautifulSoup
 from jinja2 import Environment, FileSystemLoader, Markup
 
+import json
+
 
 class Film(object):
 
@@ -135,6 +137,30 @@ class ArtDriver(Driver):
                     yield Film(self, film_date, film_title)
 
 
+class JsonArtDriver(Driver):
+    """Art driver using JSON API"""
+
+    name = u'Art'
+    url_base = 'http://www.kinoartbrno.cz/export/?start=%(date)s'
+    url = url_base % {'date' : date.today() }
+    web = 'http://www.kinoartbrno.cz'
+
+    def to_soup(self, json_string):
+        """Actually decode from JSON"""
+        return json.loads(json_string)
+
+    def parse(self, movies):
+        movie_date = None
+        movie_title = ''
+        m_date_format = '%Y-%m-%d %H:%M:%S'
+
+        for movie in movies:
+            movie_date = datetime.strptime(movie['datum'], m_date_format)
+            movie_title = movie['nazevCesky'].upper()
+
+            yield Film(self, movie_date, movie_title)
+
+
 class LucernaDriver(Driver):
 
     name = u'Lucerna'
@@ -202,7 +228,8 @@ def urlencode_filter(s):
 class Kino(object):
 
     drivers = (
-        ArtDriver,
+        #ArtDriver,
+        JsonArtDriver,
         DobrakDriver,
         LucernaDriver,
         StarobrnoDriver,
