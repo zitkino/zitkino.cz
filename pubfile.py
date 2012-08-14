@@ -88,7 +88,7 @@ class DobrakDriver(SoupDriver):
         for date, name in zip(dates, names):
             date = re.sub(r'[^\d\-]', '', date['id'])
             film_date = datetime.strptime(date, '%Y-%m-%d')
-            film_title = name.get_text().strip().upper()
+            film_title = name.get_text(separator='\n', strip=True).upper()
 
             yield Film(self, film_date, film_title)
 
