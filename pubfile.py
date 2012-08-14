@@ -47,22 +47,35 @@ class Driver(object):
         response.raise_for_status()
         return response.content
 
-    def to_soup(self, html):
-        return BeautifulSoup(re.sub(r'\s+', ' ', html))
+    def decode(self, response):
+        raise NotImplementedError
 
     def parse(self, soup):
         return []
 
     def scrape(self):
         if not self.films:
-            self.films = list(self.parse(self.to_soup(self.download())))
+            self.films = list(self.parse(self.decode(self.download())))
         return self.films
 
     def __unicode__(self):
         return self.name
 
 
-class DobrakDriver(Driver):
+class SoupDriver(Driver):
+    """Base class for beautiful soup drivers."""
+
+    def decode(self, html):
+        return BeautifulSoup(re.sub(r'\s+', ' ', html))
+
+
+class JsonDriver(Driver):
+    """Base class for JSON drivers."""
+    def decode(self, src):
+        return json.loads(src)
+
+
+class DobrakDriver(SoupDriver):
 
     name = u'Dobrák'
     url = 'http://kinonadobraku.cz'
@@ -80,7 +93,7 @@ class DobrakDriver(Driver):
             yield Film(self, film_date, film_title)
 
 
-class StarobrnoDriver(Driver):
+class StarobrnoDriver(SoupDriver):
 
     name = u'Starobrno'
     url = 'http://www.kultura-brno.cz/cs/film/starobrno-letni-kino-na-dvore-mestskeho-divadla-brno'
@@ -111,33 +124,7 @@ class StarobrnoDriver(Driver):
                 yield Film(self, film_date, film_title)
 
 
-class ArtDriver(Driver):
-
-    name = u'Art'
-    url = 'http://www.kinoartbrno.cz'
-    web = 'http://www.kinoartbrno.cz'
-
-    def parse(self, soup):
-        film_date = None
-
-        for row in soup.select('#program_art tr'):
-            if row.select('.datum'):
-                match = re.search(r'(\d+)\. (\d+)\. (\d+)', row.get_text())
-                film_date = datetime(
-                    int(match.group(3)),
-                    int(match.group(2)),
-                    int(match.group(1))
-                )
-
-            else:
-                match = re.search(r'^ *(\d+)\.(\d+) *(.+) *$', row.get_text())
-                film_title = match.group(3).strip().upper()
-
-                if film_title.lower() != 'kino nehraje':
-                    yield Film(self, film_date, film_title)
-
-
-class JsonArtDriver(Driver):
+class ArtDriver(JsonDriver):
     """Art driver using JSON API"""
 
     name = u'Art'
@@ -161,7 +148,7 @@ class JsonArtDriver(Driver):
             yield Film(self, movie_date, movie_title)
 
 
-class LucernaDriver(Driver):
+class LucernaDriver(SoupDriver):
 
     name = u'Lucerna'
     url = 'http://www.kinolucerna.info/index.php?option=com_content&view=article&id=37&Itemid=61'
@@ -228,8 +215,7 @@ def urlencode_filter(s):
 class Kino(object):
 
     drivers = (
-        #ArtDriver,
-        JsonArtDriver,
+        ArtDriver,
         DobrakDriver,
         LucernaDriver,
         StarobrnoDriver,
