@@ -132,10 +132,6 @@ class ArtDriver(JsonDriver):
     url = url_base % {'date' : date.today() }
     web = 'http://www.kinoartbrno.cz'
 
-    def to_soup(self, json_string):
-        """Actually decode from JSON"""
-        return json.loads(json_string)
-
     def parse(self, movies):
         movie_date = None
         movie_title = ''
