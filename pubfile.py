@@ -3,6 +3,7 @@
 
 import re
 import os
+import json
 import requests
 from dateutil import rrule
 from datetime import datetime, date, time
@@ -10,8 +11,6 @@ from hashlib import sha1
 import urllib
 from bs4 import BeautifulSoup
 from jinja2 import Environment, FileSystemLoader, Markup
-
-import json
 
 
 class Film(object):
