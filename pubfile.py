@@ -129,7 +129,7 @@ class ArtDriver(JsonDriver):
 
     name = u'Art'
     url_base = 'http://www.kinoartbrno.cz/export/?start=%(date)s'
-    url = url_base % {'date' : date.today() }
+    url = url_base % {'date': date.today()}
     web = 'http://www.kinoartbrno.cz'
 
     def parse(self, movies):
