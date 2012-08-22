@@ -224,8 +224,8 @@ class Kino(object):
     }
 
     templates_dir = './templates'
-    html_template_name = 'kino.html'
-    ics_template_name = 'kino.ics'
+    html_template_name = 'zitkino.html'
+    ics_template_name = 'zitkino.ics'
 
     html_filename = 'index.html'
     ics_filename = 'zitkino.ics'
