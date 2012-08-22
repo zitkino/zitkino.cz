@@ -1,11 +1,11 @@
 BEGIN:VCALENDAR
-PRODID:-//Honza Javorek//Kino//CS
+PRODID:-//Honza Javorek//Žít kino//CS
 VERSION:2.0
 CALSCALE:GREGORIAN
 METHOD:PUBLISH
 X-WR-CALNAME:Kino
 X-WR-TIMEZONE:Europe/Prague
-X-WR-CALDESC;CHARSET=UTF-8:Kam v Brně do kina? Zkuste i něco jiného než multiplexy!
+X-WR-CALDESC;CHARSET=UTF-8:Kam v Brně do kina?
 {% for film in films %}
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:{{ film.date|format_date_ics }}

@@ -1,7 +1,11 @@
 
 # Žít kino
 
-Simple calendar of cinemas in Brno.
+Calendar of cinemas in Brno.
+
+- [web](http://honzajavorek.cz/kino)
+- [Facebook page](https://www.facebook.com/zitkino)
+- [Twitter](https://twitter.com/zitkino)
 
 # Status: ACTIVE
 

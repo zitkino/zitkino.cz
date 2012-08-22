@@ -227,8 +227,8 @@ class Kino(object):
     html_template_name = 'kino.html'
     ics_template_name = 'kino.ics'
 
-    html_filename = 'kino.html'
-    ics_filename = 'static/kino.ics'
+    html_filename = 'index.html'
+    ics_filename = 'zitkino.ics'
 
     output_dir = './output'
 
