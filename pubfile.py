@@ -207,6 +207,16 @@ def urlencode_filter(s):
     return Markup(s)
 
 
+# figure out if simplejson escapes slashes. This behavior was changed
+# from one version to another without reason.
+# (stolen from https://github.com/mitsuhiko/flask/blob/master/flask/helpers.py#L66)
+if '\\/' not in json.dumps('/'):
+    def tojson_filter(*args, **kwargs):
+        return json.dumps(*args, **kwargs).replace('/', '\\/')
+else:
+    tojson_filter = json.dumps
+
+
 class Kino(object):
 
     drivers = (
@@ -221,14 +231,17 @@ class Kino(object):
         'format_date_ics': lambda dt: dt.strftime('%Y%m%d'),
         'format_timestamp_ics': lambda dt: dt.strftime('%Y%m%dT%H%M%SZ'),
         'urlencode': urlencode_filter,
+        'tojson': tojson_filter,
     }
 
     templates_dir = './templates'
     html_template_name = 'zitkino.html'
     ics_template_name = 'zitkino.ics'
+    json_template_name = 'zitkino.json'
 
     html_filename = 'index.html'
     ics_filename = 'zitkino.ics'
+    json_filename = 'zitkino.json'
 
     output_dir = './output'
 
@@ -270,9 +283,11 @@ class Kino(object):
 
         html = self.render_template(self.html_template_name, films)
         ics = self.render_template(self.ics_template_name, films)
+        json_ = self.render_template(self.json_template_name, films)
 
         self.write_file(self.html_filename, html)
         self.write_file(self.ics_filename, ics)
+        self.write_file(self.json_filename, json_)
 
 if __name__ == '__main__':
     Kino().run()

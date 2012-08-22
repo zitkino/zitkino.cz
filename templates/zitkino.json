@@ -1,0 +1,13 @@
+{
+    "data": [
+        {% for film in films %}
+            {
+                "title": {{ film.title|tojson|safe }}
+                "hash": {{ film.hash|tojson|safe }}
+                "cinema": {{ film.cinema.name|tojson|safe }}
+                "date": {{ film.date.date()|string|tojson|safe }}
+
+            }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ]
+}

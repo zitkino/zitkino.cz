@@ -13,7 +13,7 @@ DTEND;VALUE=DATE:{{ film.date|format_date_ics }}
 DTSTAMP:{{ now|format_timestamp_ics }}
 UID:{{ film.hash }}@honzajavorek.cz
 CREATED:{{ now|format_timestamp_ics }}
-DESCRIPTION:http://honzajavorek.cz/kino#id{{ film.hash }}
+DESCRIPTION:http://zitkino.cz#id{{ film.hash }}
 LAST-MODIFIED:{{ now|format_timestamp_ics }}
 LOCATION:kino {{ film.cinema.name }}, Brno
 SEQUENCE:0
