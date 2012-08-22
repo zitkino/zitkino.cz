@@ -1,9 +1,9 @@
 
 # Žít kino
 
-Calendar of cinemas in Brno.
+Best calendar of cinemas in Brno.
 
-- [web](http://honzajavorek.cz/kino)
+- [web](http://zitkino.cz)
 - [Facebook page](https://www.facebook.com/zitkino)
 - [Twitter](https://twitter.com/zitkino)
 
@@ -17,8 +17,8 @@ It's just one Python script. It's cloned as a git repository and ran every day b
 
 You can see it in action here:
 
-- http://honzajavorek.cz/kino (site)
-- http://honzajavorek.cz/static/kino.ics (iCalendar export)
+- http://zitkino.cz (site)
+- http://zitkino.cz/zitkino.ics (iCalendar export)
 
 ## Cinemas involved
 
