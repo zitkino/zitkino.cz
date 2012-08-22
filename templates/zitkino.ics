@@ -5,7 +5,7 @@ CALSCALE:GREGORIAN
 METHOD:PUBLISH
 X-WR-CALNAME:Kino
 X-WR-TIMEZONE:Europe/Prague
-X-WR-CALDESC;CHARSET=UTF-8:Nejlepší kalendář kin v Brně.
+X-WR-CALDESC;CHARSET=UTF-8:Nejlepší program kin v Brně.
 {% for film in films %}
 BEGIN:VEVENT
 DTSTART;VALUE=DATE:{{ film.date|format_date_ics }}
