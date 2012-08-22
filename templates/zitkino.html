@@ -32,6 +32,8 @@
         table small a { color: #AAA; }
         thead th { border-bottom: #000 1px solid; }
         .day { border-top: #DDD 1px solid; }
+        .film_date span { display: none; }
+        .day .film_date span { display: inline; }
     </style>
 
     <h1>Žít kino</h1>
@@ -39,13 +41,13 @@
 
     {% if films|length %}
     <table>
-        {% set film_date = films[0].date|format_date %}
+        {% set film_date = None %}
         {% for film in films %}
             {% set previous_film_date = film_date %}
             {% set film_date = film.date|format_date %}
 
             <tr class="film{%- if previous_film_date != film_date %} day{% endif -%}" id="id{{ film.hash }}">
-                <th class="film_date">{{ film_date }}</th>
+                <th class="film_date"><span>{{ film_date }}</span></th>
                 <td class="film_title">{{ film.title }}</td>
                 <td class="links">
                     <small>
