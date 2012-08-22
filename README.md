@@ -1,7 +1,7 @@
 
-# Kino
+# Žít kino
 
-Simple calendar of non-multiplex cinemas in Brno.
+Simple calendar of cinemas in Brno.
 
 # Status: ACTIVE
 
@@ -22,10 +22,6 @@ You can see it in action here:
 - [Kino Lucerna](http://www.kinolucerna.info/)
 - [Letní kino Na Dobráku](http://www.kinonadobraku.cz/)
 - [Starobrno Letní kino](http://www.letnikinobrno.cz/)
-
-## Credits
-
-- [Milan Kubík](https://github.com/apophys)
 
 ## License: ISC
 

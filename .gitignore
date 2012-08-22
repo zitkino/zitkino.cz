@@ -28,3 +28,6 @@ pip-log.txt
 
 # Pub
 output
+
+# Environment
+.env
