@@ -1,4 +1,4 @@
-Jinja2
+Flask
 BeautifulSoup4
 requests
 python-dateutil
