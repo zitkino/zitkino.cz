@@ -1,4 +1,3 @@
-
 # Žít kino
 
 Best calendar of cinemas in Brno.
@@ -26,6 +25,10 @@ You can see it in action here:
 - [Kino Lucerna](http://www.kinolucerna.info/)
 - [Letní kino Na Dobráku](http://www.kinonadobraku.cz/)
 - [Starobrno Letní kino](http://www.letnikinobrno.cz/)
+
+## Credits
+
+Zuzana Válková, Milan Kubík, Ondřej Beneš, Petr Nohejl
 
 ## License: ISC
 
