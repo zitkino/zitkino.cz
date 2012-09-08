@@ -1,4 +1,6 @@
-Jinja2
-BeautifulSoup4
+Flask
+gunicorn
+gevent
+beautifulsoup4
 requests
 python-dateutil
