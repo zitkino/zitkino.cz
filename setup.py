@@ -5,8 +5,15 @@
 from setuptools import setup, find_packages
 
 
-with open('requirements.txt') as f:
-    requirements = filter(None, f.readlines())
+requirements = [
+    'Flask',
+    'gunicorn',
+    'gevent',
+    'beautifulsoup4',
+    'requests',
+    'python-dateutil',
+    'flask-heroku',
+]
 
 
 setup(
