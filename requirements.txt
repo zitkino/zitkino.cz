@@ -1,4 +1,6 @@
 Flask
-BeautifulSoup4
+gunicorn
+gevent
+beautifulsoup4
 requests
 python-dateutil
