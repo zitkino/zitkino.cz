@@ -8,8 +8,8 @@ from os import environ
 mongolab_uri = environ.get('MONGOLAB_URI')
 url = urlparse.urlparse(mongolab_uri)
 
-MONGOALCHEMY_USER = url.username
-MONGOALCHEMY_PASSWORD = url.password
-MONGOALCHEMY_SERVER = url.hostname
-MONGOALCHEMY_PORT = url.port
-MONGOALCHEMY_DATABASE = url.path[1:]
+MONGO_USERNAME = url.username
+MONGO_PASSWORD = url.password
+MONGO_HOST = url.hostname or 'localhost'
+MONGO_PORT = url.port or 27017
+MONGO_DBNAME = url.path[1:]

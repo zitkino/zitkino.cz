@@ -12,6 +12,7 @@ from zitkino import __version__
 #@clize
 def sync():
     print 'sync'
+    # http://packages.python.org/Flask-MongoKit/#request-and-app-context
 
 
 #@clize
