@@ -2,6 +2,8 @@
 
 
 import re
+import time
+import datetime
 from fabric.api import *
 
 
@@ -42,11 +44,53 @@ def _processes():
     return proc
 
 
+def bump_dev_version():
+    """Bump version development suffix."""
+    filename = 'zitkino/__init__.py'
+
+    version = '0.0.dev'
+    with open(filename, 'r') as f:
+        code = f.read()
+
+    match = re.search(r'__version__ = \'([^\'"]*)\'', code)
+    if match:
+        version = match.group(1)
+    new_suffix = '.dev' + str(int(time.time()))
+
+    if '.dev' in version:
+        version = re.sub(r'\.dev\d*', new_suffix, version)
+    else:
+        version += new_suffix
+
+    puts('Bumping version to {ver}.'.format(ver=version))
+    version_code = '__version__ = \'{}\''.format(version)
+    code = re.sub(r'__version__ = .+', version_code, code)
+
+    with open(filename, 'w') as f:
+        f.write(code)
+    return version
+
+
 def deploy():
     """Deploy application to Heroku."""
+    now = datetime.datetime.now()
+    user = local('git config --get user.name', capture=True)
+
     branch = _git_branch()
     heroku_remotes = [r for r in _git_remotes()
                       if r.startswith('heroku')]
+
+    version = bump_dev_version()
+    local('git add zitkino/__init__.py')
+    local('git commit -m "version bump"')
+
+    tag = 'release-' + version
+    msg = now.strftime('release by {name} on %a, %d %b, %H:%M'.format(
+        name=user))
+    local('git tag -a "{tag}" -m "{msg}"'.format(tag=tag, msg=msg))
+
+    local('git push --tags origin {branch}:{branch}').format(
+        branch=branch)
     for remote in heroku_remotes:
         local('git push {remote} {branch}:master'.format(
             branch=branch, remote=remote))

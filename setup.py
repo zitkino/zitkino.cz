@@ -15,6 +15,7 @@ requirements = [
     'requests',
     'python-dateutil',
     'flask-heroku',
+    'flask-sqlalchemy',
 ]
 
 

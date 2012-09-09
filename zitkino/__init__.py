@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 
 
+__version__ = '0.1.dev1347188129'
+
+
 from flask import Flask
 from flask_heroku import Heroku
-
-
-__version__ = '1.0.0'
+from flask.ext.sqlalchemy import SQLAlchemy
 
 
 app = Flask(__name__)
 heroku = Heroku(app)
+db = SQLAlchemy(app)
 
 
 @app.route('/')
