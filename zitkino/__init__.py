@@ -5,14 +5,14 @@ __version__ = '0.1.dev1347189047'
 
 
 from flask import Flask
-from flask.ext.mongokit import MongoKit
+from flask.ext.mongoengine import MongoEngine
 
 
 app = Flask(__name__)
 app.config.from_object('zitkino.config')
 
 
-db = MongoKit(app)
+db = MongoEngine(app)
 
 
-import views
+from zitkino import models, views

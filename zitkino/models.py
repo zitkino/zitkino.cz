@@ -2,66 +2,52 @@
 
 
 from __future__ import division
-from datetime import datetime
-from flask.ext import mongokit
 
 from zitkino import db
 
 
-class Document(mongokit.Document):
-    use_dot_notation = True
-    dot_notation_warning = True
-    use_autorefs = True
+class Cinema(db.Document):
+
+    name = db.StringField(required=True)
+    url = db.StringField()
+    slug = db.StringField(required=True, unique=True)
+
+    street = db.StringField()
+    town = db.StringField()
+    coords = db.GeoPointField()
 
 
-class Cinema(Document):
-    __collection__ = 'cinemas'
+class Showtime(db.EmbeddedDocument):
 
-    structure = {
-        'name': unicode,
-        'url': str,
-        'slug': str,
-        'street': unicode,
-        'town': unicode,
-        'coords': (float, float),
+    cinema = db.ReferenceField(Cinema, dbref=False)
+    starts_at = db.DateTimeField()
+
+    meta = {
+        'ordering': ['-starts_at']
     }
-    required_fields = ['name', 'slug']
-    indexes = [
-        {'fields': ['slug'], 'unique': True},
-        {'fields': [('coords', '2d')]},
-    ]
 
 
-class Film(Document):
-    __collection__ = 'films'
+class Film(db.Document):
 
-    structure = {
-        'id_csfd': int,
-        'id_imdb': int,
-        'id_synopsitv': int,
-        'title': unicode,
-        'slug': str,
-        'year': int,
-        'length': int,
-        'rating_csfd': float,
-        'rating_imdb': float,
-        'rating_fffilm': float,
-        'url_csfd': str,
-        'url_imdb': str,
-        'url_fffilm': str,
-        'url_synopsitv': str,
-        'showtimes': [{
-            'cinema': Cinema,
-            'starts_at': datetime,
-        }],
-    }
-    i18n = ['title']
-    required_fields = ['title', 'slug']
-    indexes = [
-        {'fields': ['title', 'year'], 'unique': True},
-        {'fields': ['slug'], 'unique': True},
-        {'fields': [('showtimes.starts_at', -1)]},
-    ]
+    id_csfd = db.IntField()
+    id_imdb = db.IntField()
+    id_synopsitv = db.IntField()
+
+    title = db.StringField(required=True)
+    slug = db.StringField(required=True, unique=True)
+    year = db.IntField()
+    length = db.IntField()
+
+    rating_csfd = db.FloatField()
+    rating_imdb = db.FloatField()
+    rating_fffilm = db.FloatField()
+
+    url_csfd = db.StringField()
+    url_imdb = db.StringField()
+    url_fffilm = db.StringField()
+    url_synopsitv = db.StringField()
+
+    showtimes = db.ListField(db.EmbeddedDocumentField(Showtime))
 
     @property
     def length_hours(self):
@@ -79,4 +65,37 @@ class Film(Document):
         return round(sum(ratings) / len(ratings), 0)
 
 
-db.register([Cinema, Film])
+data = [
+    Cinema(
+        name=u'Letní kino Na Dobráku',
+        url='http://kinonadobraku.cz',
+        slug='brno-letni-kino-na-dobraku',
+        street=u'Dobrovského 29',
+        town=u'Brno',
+        coords=(49.2181389, 16.5888692)
+    ),
+    Cinema(
+        name=u'Starobrno letní kino',
+        url='http://www.letnikinobrno.cz',
+        slug='brno-starobrno-letni-kino',
+        street=u'Lidická 12',
+        town=u'Brno',
+        coords=(49.2013969, 16.6077600)
+    ),
+    Cinema(
+        name=u'Kino Art',
+        url='http://www.kinoartbrno.cz',
+        slug='brno-kino-art',
+        street=u'Cihlářská 19',
+        town=u'Brno',
+        coords=(49.2043861, 16.6034708)
+    ),
+    Cinema(
+        name=u'Kino Lucerna',
+        url='http://www.kinolucerna.info',
+        slug='brno-kino-lucerna',
+        street=u'Minská 19',
+        town=u'Brno',
+        coords=(49.2104939, 16.5855358)
+    ),
+]
