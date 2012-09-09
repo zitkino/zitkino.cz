@@ -5,6 +5,9 @@ from flask import Flask
 from flask_heroku import Heroku
 
 
+__version__ = '1.0.0'
+
+
 app = Flask(__name__)
 heroku = Heroku(app)
 
@@ -12,7 +15,3 @@ heroku = Heroku(app)
 @app.route('/')
 def hello():
     return 'Hello!'
-
-
-def main():
-    pass

@@ -4,6 +4,8 @@
 
 from setuptools import setup, find_packages
 
+import zitkino
+
 
 requirements = [
     'Flask',
@@ -18,7 +20,7 @@ requirements = [
 
 setup(
     name='zitkino',
-    version='1.0.0',
+    version=zitkino.__version__,
     author='Honza Javorek',
     author_email='jan.javorek@gmail.com',
     url='http://zitkino.cz',
@@ -29,7 +31,7 @@ setup(
     install_requires=requirements,
     entry_points={
         'console_scripts': [
-            'zitkino = zitkino:main',
+            'zitkino = zitkino.tasks:main',
         ],
     }
 )
