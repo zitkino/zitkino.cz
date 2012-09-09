@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-__version__ = '0.1.dev1347188678'
+__version__ = '0.1.dev1347188810'
 
 
 from flask import Flask
