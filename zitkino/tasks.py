@@ -4,8 +4,9 @@
 
 import sys
 #from clize import clize, run
+# see https://github.com/epsy/clize/issues/2
 
-import zitkino
+from zitkino import __version__
 
 
 #@clize
@@ -15,7 +16,7 @@ def sync():
 
 #@clize
 def version():
-    print zitkino.__version__
+    print __version__
 
 
 def main():
