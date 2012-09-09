@@ -84,16 +84,16 @@ def deploy():
     local('git add zitkino/__init__.py')
     local('git commit -m "version bump"')
 
+    for remote in heroku_remotes:
+        local('git push {remote} {branch}:master'.format(
+            branch=branch, remote=remote))
+
     tag = 'release-' + version
     msg = now.strftime('release by {name} on %a, %d %b, %H:%M'.format(
         name=user))
     local('git tag -a "{tag}" -m "{msg}"'.format(tag=tag, msg=msg))
-
-    local('git push --tags origin {branch}:{branch}').format(
-        branch=branch)
-    for remote in heroku_remotes:
-        local('git push {remote} {branch}:master'.format(
-            branch=branch, remote=remote))
+    local('git push --tags origin {branch}:{branch}'.format(
+        branch=branch))
 
 
 def cron():

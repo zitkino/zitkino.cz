@@ -2,13 +2,21 @@
 # -*- coding: utf-8 -*-
 
 
+import re
 from setuptools import setup, find_packages
 
-import zitkino
+
+package_init = 'zitkino/__init__.py'
+with open(package_init, 'r') as f:
+    match = re.search(r'__version__ = \'([^\'"]*)\'', f.read())
+    if match:
+        version = match.group(1)
+    else:
+        raise RuntimeError('Missing version number.')
 
 
 requirements = [
-    'Flask',
+    'flask',
     'gunicorn',
     'gevent',
     'beautifulsoup4',
@@ -21,7 +29,7 @@ requirements = [
 
 setup(
     name='zitkino',
-    version=zitkino.__version__,
+    version=version,
     author='Honza Javorek',
     author_email='jan.javorek@gmail.com',
     url='http://zitkino.cz',
