@@ -15,7 +15,7 @@ while true; do
 done
 heroku apps:info
 
-echo "Connecting this app to PostgreSQL database of your master app."
+echo "Connecting this app to MongoDB database of your master app."
 read -p "Is your master app called 'zitkino'? [yN] " YN
 APP_NAME=""
 while true; do
@@ -24,7 +24,7 @@ while true; do
         * ) echo "Please, enter a name of your master app: "; read APP_NAME; break;;
     esac
 done
-DATABASE_URL=$(heroku config --app "$APP_NAME" | grep DATABASE_URL | sed 's/DATABASE_URL: \+//') && heroku config:add DATABASE_URL="$DATABASE_URL"
+DATABASE_URL=$(heroku config --app "$APP_NAME" | grep MONGOLAB_URI | sed 's/MONGOLAB_URI: \+//') && heroku config:add MONGOLAB_URI="$DATABASE_URL"
 heroku config
 
 echo "Setting up scheduler."

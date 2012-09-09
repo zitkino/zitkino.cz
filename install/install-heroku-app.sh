@@ -15,11 +15,8 @@ while true; do
 done
 heroku apps:info
 
-echo "Creating PostgreSQL database."
-heroku addons:add heroku-postgresql:dev
-DATABASE_URL=$(echo "`heroku pg:info`" | head -1 | sed 's/=== \+//' | sed 's/ .\+//')
-heroku pg:promote "$DATABASE_URL"
-heroku pg:info
+echo "Creating MongoDB database."
+heroku addons:add mongolab:starter
 
 echo "Sending the code to Heroku."
 git push heroku master
