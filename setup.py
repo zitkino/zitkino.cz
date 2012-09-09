@@ -22,7 +22,7 @@ requirements = [
     'beautifulsoup4',
     'requests',
     'python-dateutil',
-    'flask-sqlalchemy',
+    'flask-mongoalchemy',
 ]
 
 
