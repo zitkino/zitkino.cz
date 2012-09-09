@@ -22,7 +22,6 @@ requirements = [
     'beautifulsoup4',
     'requests',
     'python-dateutil',
-    'flask-heroku',
     'flask-sqlalchemy',
 ]
 
