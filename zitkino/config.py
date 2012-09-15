@@ -13,3 +13,5 @@ MONGODB_PASSWORD = url.password
 MONGODB_HOST = url.hostname or 'localhost'
 MONGODB_PORT = url.port or 27017
 MONGODB_DB = url.path[1:]
+
+USER_AGENT = 'zitkino/0.1.dev1347729578 (+http://zitkino.cz/)'

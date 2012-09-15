@@ -7,6 +7,18 @@ import datetime
 from fabric.api import *
 
 
+version_files = (
+    {
+        'name': 'zitkino/__init__.py',
+        're': re.compile(r"__version__ = '([^']+)'"),
+    },
+    {
+        'name': 'zitkino/config.py',
+        're': re.compile(r"USER_AGENT = 'zitkino/([^ ]+)"),
+    },
+)
+
+
 def _git_remotes():
     git_cmd = "git remote 2> /dev/null"
     return local(git_cmd, capture=True).split()
@@ -46,28 +58,31 @@ def _processes():
 
 def bump_dev_version():
     """Bump version development suffix."""
-    filename = 'zitkino/__init__.py'
-
     version = '0.0.dev'
-    with open(filename, 'r') as f:
-        code = f.read()
-
-    match = re.search(r'__version__ = \'([^\'"]*)\'', code)
-    if match:
-        version = match.group(1)
     new_suffix = '.dev' + str(int(time.time()))
+    replace_re = re.compile(r'\([^\)]+\)')
 
-    if '.dev' in version:
-        version = re.sub(r'\.dev\d*', new_suffix, version)
-    else:
-        version += new_suffix
+    for file in version_files:
+        with open(file['name'], 'r') as f:
+            code = f.read()
 
-    puts('Bumping version to {ver}.'.format(ver=version))
-    version_code = '__version__ = \'{}\''.format(version)
-    code = re.sub(r'__version__ = .+', version_code, code)
+        match = file['re'].search(code)
+        if match:
+            version = match.group(1)
 
-    with open(filename, 'w') as f:
-        f.write(code)
+        if '.dev' in version:
+            version = re.sub(r'\.dev\d*', new_suffix, version)
+        else:
+            version += new_suffix
+
+        puts('Bumping version in {file} to {ver}.'.format(
+            file=file['name'], ver=version))
+        version_code = replace_re.sub(version, file['re'].pattern)
+        code = file['re'].sub(version_code, code)
+
+        with open(file['name'], 'w') as f:
+            f.write(code)
+
     return version
 
 
