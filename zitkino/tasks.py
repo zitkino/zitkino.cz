@@ -11,36 +11,45 @@ from zitkino.models import data
 
 
 #@clize
-def sync():
-    print 'sync'
+def version():
+    """Print version."""
+    print __version__
 
 
 #@clize
-def update_data():
+def sync():
+    """Synchronize dynamic data (showtimes)."""
+    print 'sync'
+    # def scrape_films(self):
+    #     films = []
+    #     for driver in self.drivers:
+    #         films += list(driver().scrape())
+    #     sorted_films = sorted(films, key=lambda film: film.date)
+    #     filtered_films = [f for f in sorted_films if f.date >= self.today]
+    #     return filtered_films
+
+
+#@clize
+def update():
+    """Insert or update static data defined in models."""
     for document in data:
         found = document.__class__.objects(slug=document.slug).first()
         if found:
-            # update
             document.id = found.id
             document.save()
         else:
-            # insert
             document.save()
-
-
-#@clize
-def version():
-    print __version__
 
 
 def main():
     #run((sync, version))
-    if sys.argv[1] == 'sync':
-        sync()
-    elif sys.argv[1] == 'update_data':
-        update_data()
-    elif sys.argv[1] == 'version':
-        version()
+    try:
+        task_name = sys.argv[1]
+        task = globals()[task_name]
+        task()
+    except (IndexError, KeyError):
+        print >> sys.stderr, 'Bad arguments.'
+        sys.exit(1)
 
 
 if __name__ == '__main__':
