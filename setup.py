@@ -26,6 +26,7 @@ requirements = (
     'times>=0.5',
     'python-dateutil>=2.1',
     'flask-mongoengine>=0.6',
+    'fuzzywuzzy>=0.1',
 )
 
 
