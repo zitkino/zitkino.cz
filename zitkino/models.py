@@ -83,19 +83,19 @@ data = [
         coords=(49.2013969, 16.6077600)
     ),
     Cinema(
-        name=u'Kino Art',
-        url='http://www.kinoartbrno.cz',
-        slug='brno-kino-art',
-        street=u'Cihlářská 19',
-        town=u'Brno',
-        coords=(49.2043861, 16.6034708)
-    ),
-    Cinema(
         name=u'Kino Lucerna',
         url='http://www.kinolucerna.info',
         slug='brno-kino-lucerna',
         street=u'Minská 19',
         town=u'Brno',
         coords=(49.2104939, 16.5855358)
+    ),
+    Cinema(
+        name=u'Kino Art',
+        url='http://www.kinoartbrno.cz',
+        slug='brno-kino-art',
+        street=u'Cihlářská 19',
+        town=u'Brno',
+        coords=(49.2043861, 16.6034708)
     ),
 ]

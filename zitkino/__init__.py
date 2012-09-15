@@ -15,4 +15,4 @@ app.config.from_object('zitkino.config')
 db = MongoEngine(app)
 
 
-from zitkino import models, views
+from zitkino import models, views, templating
