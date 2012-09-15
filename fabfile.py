@@ -88,7 +88,7 @@ def deploy():
     for remote in heroku_remotes:
         local('git push {remote} {branch}:master'.format(
             branch=branch, remote=remote))
-    local('heroku run zitkino update --app ' + app)
+    local('heroku run zitkino sync-static --app ' + app)
 
     tag = 'release-' + version
     msg = now.strftime('release by {name} on %a, %d %b, %H:%M'.format(

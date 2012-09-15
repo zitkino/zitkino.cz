@@ -17,7 +17,7 @@ with open(package_init, 'r') as f:
 
 
 # required python packages
-requirements = [
+requirements = (
     'flask>=0.9',
     'gunicorn>=0.14.6',
     'gevent>=0.13.8',
@@ -26,7 +26,7 @@ requirements = [
     'times>=0.5',
     'python-dateutil>=2.1',
     'flask-mongoengine>=0.6',
-]
+)
 
 
 # setup configuration
