@@ -36,11 +36,11 @@ class Scraper(object):
         """Convert current datetime to scraper's timezone."""
         return times.to_local(self._now, self.timezone)
 
-    def to_utc(self, dt):
+    def _to_utc(self, dt):
         """Convert given datetime from scraper's timezone to UTC."""
         return times.to_universal(dt, self.timezone)
 
-    def download(self):
+    def _download(self):
         """Download data document (HTML, JSON, whatever)."""
         if not self.url:
             classname = self.__class__.__name__
@@ -50,32 +50,36 @@ class Scraper(object):
         response.raise_for_status()
         return response.content
 
-    def decode(self, content):
+    def _decode(self, content):
         """Decode document's contents, return data structure."""
         raise NotImplementedError
 
-    def parse(self, decoded_content):
+    def _parse(self, decoded_content):
         """Parse decoded content and return showtimes."""
         return []
 
     def scrape(self):
         """Download data, parse it, return showtimes."""
         if not self.films:
-            content = self.decode(self.download())
-            self.films = list(self.parse(content))
+            content = self._decode(self._download())
+            self.films = list(self._parse(content))
         return self.films
 
 
 class SoupScraper(Scraper):
     """Base scraper class for processing HTML documents."""
-    def decode(self, content):
+
+    _whitespace_re = re.compile(r'\s+')
+
+    def _decode(self, content):
         """Turn content into HTML soup."""
-        return BeautifulSoup(re.sub(r'\s+', ' ', content))
+        return BeautifulSoup(self._whitespace_re.sub(' ', content))
 
 
 class JsonScraper(Scraper):
     """Base scraper class for processing JSON documents."""
-    def decode(self, content):
+
+    def _decode(self, content):
         """Turn JSON content into Python dict."""
         return json.loads(content)
 
@@ -90,7 +94,9 @@ class LetniKinoNaDobrakuScraper(SoupScraper):
     cinema_slug = 'brno-letni-kino-na-dobraku'
     timezone = 'Europe/Prague'
 
-    def parse(self, decoded_content):
+    _date_id_re = re.compile(r'[^\d\-]')
+
+    def _parse(self, decoded_content):
         soup = decoded_content
 
         dates = soup.select('#Platno .Datum_cas')
@@ -99,12 +105,12 @@ class LetniKinoNaDobrakuScraper(SoupScraper):
         film_date_format = '%Y-%m-%d'
 
         for date, name in zip(dates, names):
-            date = re.sub(r'[^\d\-]', '', date['id'])
+            date = self._date_id_re.sub('', date['id'])
             film_date = datetime.strptime(date, film_date_format)
             film_title = name.get_text(separator='\n', strip=True).upper()
 
             yield ScrapedShowtime(self.cinema_slug,
-                                  self.to_utc(film_date),
+                                  self._to_utc(film_date),
                                   film_title)
 
 
@@ -116,7 +122,9 @@ class StarobrnoLetniKinoScraper(SoupScraper):
     cinema_slug = 'brno-starobrno-letni-kino'
     timezone = 'Europe/Prague'
 
-    def parse(self, decoded_content):
+    _date_re = re.compile(r'(\d+)\.(\d+)\.')
+
+    def _parse(self, decoded_content):
         soup = decoded_content
 
         for row in soup.select('.content tr'):
@@ -125,7 +133,7 @@ class StarobrnoLetniKinoScraper(SoupScraper):
             if len(cells) == 3:
                 # date
                 date = cells[1].get_text()
-                match = re.search(r'(\d+)\.(\d+)\.', date)
+                match = self._date_re.search(date)
                 if not match:
                     continue
 
@@ -142,7 +150,7 @@ class StarobrnoLetniKinoScraper(SoupScraper):
 
                 yield ScrapedShowtime(
                     self.cinema_slug,
-                    self.to_utc(film_date),
+                    self._to_utc(film_date),
                     film_title)
 
 
@@ -154,9 +162,12 @@ class KinoLucernaScraper(SoupScraper):
     cinema_slug = 'brno-kino-lucerna'
     timezone = 'Europe/Prague'
 
+    _entry_re = re.compile(r'\d+:\d+')
+    _entry_split_re = re.compile(r'[\b\s]+(?=\d+\.)')
     _range_re = re.compile(r'(\d+)\.(\d+)\.-(\d+)\.(\d+)\.')
+    _standalone_re = re.compile(r'(\d+)\.(\d+)\.')
 
-    def get_date_ranges(self, dates_text):
+    def _get_date_ranges(self, dates_text):
         today = self.now
         next_year = today.year + 1
 
@@ -178,34 +189,34 @@ class KinoLucernaScraper(SoupScraper):
             for day in rrule.rrule(rrule.DAILY, dtstart=start, until=end):
                 yield day
 
-    def get_standalone_dates(self, dates_text):
+    def _get_standalone_dates(self, dates_text):
         today = self.today
         dates_text = self._range_re.sub('', dates_text)
-        for match in re.finditer(r'(\d+)\.(\d+)\.', dates_text):
+        for match in self._standalone_re.finditer(dates_text):
             month = int(match.group(2))
             year = today.year if today.month <= month else (today.year + 1)
             yield datetime(year, month, int(match.group(1)))
 
-    def parse(self, decoded_content):
+    def _parse(self, decoded_content):
         soup = decoded_content
 
         for row in soup.select('.contentpaneopen strong'):
             text = row.get_text().strip()
-            match = re.search(r'\d+:\d+', text)
+            match = self._entry_re.search(text)
             if match:
-                text = re.split(r'[\b\s]+(?=\d+\.)', text, maxsplit=1)
+                text = self._entry_split_re.split(text, maxsplit=1)
 
                 film_title = text[0].strip().upper()
                 dates_text = text[1]
 
-                date_ranges = self.get_date_ranges(dates_text)
-                standalone_dates = self.get_standalone_dates(dates_text)
+                date_ranges = self._get_date_ranges(dates_text)
+                standalone_dates = self._get_standalone_dates(dates_text)
 
                 dates = list(date_ranges) + list(standalone_dates)
                 for film_date in dates:
                     yield ScrapedShowtime(
                         self.cinema_slug,
-                        self.to_utc(film_date),
+                        self._to_utc(film_date),
                         film_title)
 
 
@@ -218,7 +229,7 @@ class KinoArtScraper(JsonScraper):
     cinema_slug = 'brno-kino-art'
     timezone = 'Europe/Prague'
 
-    def parse(self, decoded_content):
+    def _parse(self, decoded_content):
         films = decoded_content
 
         film_title = ''
@@ -229,5 +240,5 @@ class KinoArtScraper(JsonScraper):
             film_title = film['nazevCesky']
 
             yield ScrapedShowtime(self.cinema_slug,
-                                  self.to_utc(film_date),
+                                  self._to_utc(film_date),
                                   film_title)
