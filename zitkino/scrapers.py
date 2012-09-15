@@ -10,6 +10,9 @@ from bs4 import BeautifulSoup
 from datetime import datetime, date
 
 
+### Data structure for results ###
+
+
 class ScrapedShowtime(object):
 
     def __init__(self, cinema_slug, starts_at, film_title):
@@ -27,9 +30,10 @@ class Scraper(object):
     url = ''
     timezone = 'UTC'
 
-    def __init__(self, now):
+    def __init__(self, now, user_agent=None):
         self.films = []
         self._now = now
+        self.user_agent = user_agent
 
     @property
     def now(self):
@@ -46,7 +50,8 @@ class Scraper(object):
             classname = self.__class__.__name__
             raise ValueError('No URL for driver {0}.'.format(classname))
 
-        response = requests.get(self.url)
+        headers = {'User-Agent': self.user_agent}
+        response = requests.get(self.url, headers=headers)
         response.raise_for_status()
         return response.content
 
