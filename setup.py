@@ -6,6 +6,7 @@ import re
 from setuptools import setup, find_packages
 
 
+# determine version
 package_init = 'zitkino/__init__.py'
 with open(package_init, 'r') as f:
     match = re.search(r'__version__ = \'([^\'"]*)\'', f.read())
@@ -15,17 +16,20 @@ with open(package_init, 'r') as f:
         raise RuntimeError('Missing version number.')
 
 
+# required python packages
 requirements = [
-    'flask',
-    'gunicorn',
-    'gevent',
-    'beautifulsoup4',
-    'requests',
-    'python-dateutil',
-    'flask-mongoengine',
+    'flask>=0.9',
+    'gunicorn>=0.14.6',
+    'gevent>=0.13.8',
+    'beautifulsoup4>=4.1.3',
+    'requests>=0.13.8',
+    'times>=0.5',
+    'python-dateutil>=2.1',
+    'flask-mongoengine>=0.6',
 ]
 
 
+# setup configuration
 setup(
     name='zitkino',
     version=version,
