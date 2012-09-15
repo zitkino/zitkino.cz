@@ -4,7 +4,7 @@
 
 import sys
 
-from zitkino import __version__
+from zitkino import __version__, app
 from zitkino.sync import StaticDataSynchronizer, ShowtimesSynchronizer
 
 
@@ -49,10 +49,12 @@ def main(args=None):
             raise LookupError('Too much arguments.')
         task_name = args[0]
         task = dict(tasks)[task_name]  # task lookup
-        task()  # calling the task
 
     except LookupError:
         help()  # in case of any failure, print usage
+        sys.exit(1)
+
+    sys.exit(task())  # call the task and exit
 
 
 ### Tasks ###
@@ -74,7 +76,7 @@ def sync_static():
 @task
 def sync():
     """Synchronize showtimes."""
-    s = ShowtimesSynchronizer()
+    s = ShowtimesSynchronizer(app.config['USER_AGENT'])
     s.sync()
 
 

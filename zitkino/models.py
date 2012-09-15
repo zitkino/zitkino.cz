@@ -20,7 +20,8 @@ class Cinema(db.Document):
 class Showtime(db.EmbeddedDocument):
 
     cinema = db.ReferenceField(Cinema, dbref=False)
-    starts_at = db.DateTimeField()
+    starts_at = db.DateTimeField(unique_with=cinema)
+    tags = db.ListField(db.StringField())  # dubbing, 3D, etc.
 
     meta = {
         'ordering': ['-starts_at']
@@ -29,9 +30,9 @@ class Showtime(db.EmbeddedDocument):
 
 class Film(db.Document):
 
-    id_csfd = db.IntField()
-    id_imdb = db.IntField()
-    id_synopsitv = db.IntField()
+    id_csfd = db.IntField(unique=True)
+    id_imdb = db.IntField(unique=True)
+    id_synopsitv = db.IntField(unique=True)
 
     title = db.StringField(required=True)
     slug = db.StringField(required=True, unique=True)
@@ -42,10 +43,10 @@ class Film(db.Document):
     rating_imdb = db.FloatField()
     rating_fffilm = db.FloatField()
 
-    url_csfd = db.StringField()
-    url_imdb = db.StringField()
-    url_fffilm = db.StringField()
-    url_synopsitv = db.StringField()
+    url_csfd = db.StringField(unique=True)
+    url_imdb = db.StringField(unique=True)
+    url_fffilm = db.StringField(unique=True)
+    url_synopsitv = db.StringField(unique=True)
 
     showtimes = db.ListField(db.EmbeddedDocumentField(Showtime))
 

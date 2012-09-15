@@ -2,12 +2,24 @@
 
 
 import re
-import json
-import requests
 import times
 from dateutil import rrule
-from bs4 import BeautifulSoup
 from datetime import datetime, date
+
+from zitkino.scrapers.common import Scraper as BaseScraper, \
+    SoupDecoder, JsonDecoder
+
+
+### Utils ###
+
+
+active_scrapers = []
+
+
+def active_scraper(cls):
+    """Decorate class to register it as an active scraper."""
+    active_scrapers.append(cls)
+    return cls
 
 
 ### Data structure for results ###
@@ -20,20 +32,25 @@ class ScrapedShowtime(object):
         self.starts_at = starts_at
         self.film_title = film_title
 
+    def __repr__(self):
+        name = '.'.join((self.__class__.__module__, self.__class__.__name__))
+        return '<{name} '\
+            '{film_title!r}@{cinema_slug}, '\
+            '{starts_at}>'.format(name=name, **vars(self))
 
-### Abstract scrapers ###
+
+### Abstract scraper ###
 
 
-class Scraper(object):
+class Scraper(BaseScraper):
     """Base scraper class."""
 
     url = ''
     timezone = 'UTC'
 
     def __init__(self, now, user_agent=None):
-        self.films = []
         self._now = now
-        self.user_agent = user_agent
+        super(Scraper, self).__init__(user_agent=user_agent)
 
     @property
     def now(self):
@@ -44,55 +61,12 @@ class Scraper(object):
         """Convert given datetime from scraper's timezone to UTC."""
         return times.to_universal(dt, self.timezone)
 
-    def _download(self):
-        """Download data document (HTML, JSON, whatever)."""
-        if not self.url:
-            classname = self.__class__.__name__
-            raise ValueError('No URL for driver {0}.'.format(classname))
-
-        headers = {'User-Agent': self.user_agent}
-        response = requests.get(self.url, headers=headers)
-        response.raise_for_status()
-        return response.content
-
-    def _decode(self, content):
-        """Decode document's contents, return data structure."""
-        raise NotImplementedError
-
-    def _parse(self, decoded_content):
-        """Parse decoded content and return showtimes."""
-        return []
-
-    def scrape(self):
-        """Download data, parse it, return showtimes."""
-        if not self.films:
-            content = self._decode(self._download())
-            self.films = list(self._parse(content))
-        return self.films
-
-
-class SoupScraper(Scraper):
-    """Base scraper class for processing HTML documents."""
-
-    _whitespace_re = re.compile(r'\s+')
-
-    def _decode(self, content):
-        """Turn content into HTML soup."""
-        return BeautifulSoup(self._whitespace_re.sub(' ', content))
-
-
-class JsonScraper(Scraper):
-    """Base scraper class for processing JSON documents."""
-
-    def _decode(self, content):
-        """Turn JSON content into Python dict."""
-        return json.loads(content)
-
 
 ### Cinema-specific scrapers ###
 
 
-class LetniKinoNaDobrakuScraper(SoupScraper):
+@active_scraper
+class LetniKinoNaDobrakuScraper(SoupDecoder, Scraper):
     """Scraper for Letní kino Na Dobráku."""
 
     url = 'http://kinonadobraku.cz'
@@ -119,7 +93,8 @@ class LetniKinoNaDobrakuScraper(SoupScraper):
                                   film_title)
 
 
-class StarobrnoLetniKinoScraper(SoupScraper):
+@active_scraper
+class StarobrnoLetniKinoScraper(SoupDecoder, Scraper):
     """Scraper for Starobrno letní kino."""
 
     url = 'http://www.kultura-brno.cz/cs/film/starobrno-letni-kino-na-dvore-'\
@@ -159,7 +134,8 @@ class StarobrnoLetniKinoScraper(SoupScraper):
                     film_title)
 
 
-class KinoLucernaScraper(SoupScraper):
+@active_scraper
+class KinoLucernaScraper(SoupDecoder, Scraper):
     """Scraper for Kino Lucerna."""
 
     url = 'http://www.kinolucerna.info/index.php?option=com_content'\
@@ -195,7 +171,7 @@ class KinoLucernaScraper(SoupScraper):
                 yield day
 
     def _get_standalone_dates(self, dates_text):
-        today = self.today
+        today = self.now
         dates_text = self._range_re.sub('', dates_text)
         for match in self._standalone_re.finditer(dates_text):
             month = int(match.group(2))
@@ -211,7 +187,7 @@ class KinoLucernaScraper(SoupScraper):
             if match:
                 text = self._entry_split_re.split(text, maxsplit=1)
 
-                film_title = text[0].strip().upper()
+                film_title = text[0].strip()
                 dates_text = text[1]
 
                 date_ranges = self._get_date_ranges(dates_text)
@@ -225,7 +201,8 @@ class KinoLucernaScraper(SoupScraper):
                         film_title)
 
 
-class KinoArtScraper(JsonScraper):
+@active_scraper
+class KinoArtScraper(JsonDecoder, Scraper):
     """Scraper for Kino Art."""
 
     _url_base = 'http://www.kinoartbrno.cz/export/?start={date}'
