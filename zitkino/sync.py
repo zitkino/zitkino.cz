@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 
-import itertools
 import times
+import itertools
 
 from zitkino.scrapers.cinemas import active_scrapers
-from zitkino.scrapers.films import FilmRecognizer
+from zitkino.scrapers.films import CSFDFilmRecognizer
 from zitkino.models import data
 
 
@@ -42,17 +42,35 @@ class ShowtimesSynchronizer(object):
 
     def sync(self):
         """Perform synchronization."""
-        r = FilmRecognizer(self.user_agent)
+        r = CSFDFilmRecognizer(self.user_agent)
 
         for showtime in self._scrape_showtimes():
-            print r.scrape(showtime.film_title)
+            film = r.scrape(showtime)
+            print repr(film)
+            if film:
+                print vars(film)
+
+        # pokud najdu film podle nejakeho znaku (csfd id, title a rok, ...),
+        # tak ho vratim z databaze
+
+        # pokud ten film ma nejaka pole jako None, zkusim jej aktualizovat
+
+        # pokud ho v databazi nenajdu, hledam ho na csfd a to mi vrati film
+        # nebo None
+
+        # pokud vrati film, ulozim ho do db a udelam test jestli ma nejaka pole
+        # None, pripadne aktualizuji
+
+        # pokud mi hledani v csfd nic nevrati, musim si film ulozit do db nejak
+        # sam z informaci, ktere jsem nascrapoval v kine
+
+        # ulozim k nemu patricna showtimes (ulozim nebo updatnu, ...)
+
 
         # sorted_films = sorted(films, key=lambda film: film.date)
         # filtered_films = [f for f in sorted_films if f.date >= self.today]
         # return filtered_films
 
         # TODO
-        # - vyresit requiem za sen / rekviem za sen
-        # - vyresit cachovani vysledku z csfd, normalizace musi vyuzit maximalne
-        #   to, co se uz drive zjistovalo
-        pass
+        # - vyresit "čas probuzení" = "čas" ... stahovat z kin vic informaci
+        #   o filmech!

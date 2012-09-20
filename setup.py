@@ -27,6 +27,7 @@ requirements = (
     'python-dateutil>=2.1',
     'flask-mongoengine>=0.6',
     'fuzzywuzzy>=0.1',
+    'unidecode>=0.04.9',
 )
 
 

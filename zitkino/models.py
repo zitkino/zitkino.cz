@@ -3,7 +3,11 @@
 
 from __future__ import division
 
+import logging
+from fuzzywuzzy import fuzz
+
 from zitkino import db
+from zitkino.utils import slugify, repr_name
 
 
 class Cinema(db.Document):
@@ -16,6 +20,14 @@ class Cinema(db.Document):
     town = db.StringField()
     coords = db.GeoPointField()
 
+    def create_slug(self):
+        self.slug = '{0}-{1}'.format(
+            slugify(self.town), slugify(self.name))
+
+    def __repr__(self):
+        return '<{name} {cinema_slug}>'.format(
+            name=repr_name(self.__class__), cinema_slug=self.cinema_slug)
+
 
 class Showtime(db.EmbeddedDocument):
 
@@ -27,14 +39,24 @@ class Showtime(db.EmbeddedDocument):
         'ordering': ['-starts_at']
     }
 
+    def __repr__(self):
+        return '<{name} {cinema!r}, {starts_at}>'.format(
+            name=repr_name(self.__class__), cinema=self.cinema,
+            starts_at=self.starts_at)
+
 
 class Film(db.Document):
+
+    _similarity_accept_ratio = 80
 
     id_csfd = db.IntField(unique=True)
     id_imdb = db.IntField(unique=True)
     id_synopsitv = db.IntField(unique=True)
 
-    title = db.StringField(required=True)
+    title_main = db.StringField(required=True)
+    title_orig = db.StringField()
+    titles = db.ListField(db.StringField())
+
     slug = db.StringField(required=True, unique=True)
     year = db.IntField()
     length = db.IntField()
@@ -50,6 +72,10 @@ class Film(db.Document):
 
     showtimes = db.ListField(db.EmbeddedDocumentField(Showtime))
 
+    def __init__(self, *args, **kwargs):
+        self._log = logging.getLogger(__name__)
+        super(Film, self).__init__(*args, **kwargs)
+
     @property
     def length_hours(self):
         return round(self.length / 60, 1)
@@ -64,6 +90,33 @@ class Film(db.Document):
         if self.rating_fffilm:
             ratings.append(self.rating_fffilm)
         return round(sum(ratings) / len(ratings), 0)
+
+    def is_similar(self, title):
+        """Compare two film titles by their fuzzy similarity ratio."""
+        title1 = title.lower()
+        result = False
+
+        for title2 in [t.lower() for t in self.titles]:
+            ratio = fuzz.partial_ratio(title1, title2)
+            result = ratio >= self._similarity_accept_ratio
+
+            op = '=' if result else '!='
+            self._log.debug(
+                u'Title "{title1}" {op} "{title2}" ({ratio}%).'.format(
+                    op=op, ratio=ratio, title1=title1, title2=title2))
+
+            if result:
+                break
+        return result
+
+    def create_slug(self):
+        self.slug = '{0}-{1}'.format(
+            slugify(self.title_main), self.year)
+
+    def __repr__(self):
+        return '<{name} {slug} ({title!r}, {year})>'.format(
+            name=repr_name(self.__class__), slug=self.slug,
+            title=self.title_main, year=self.year)
 
 
 data = [

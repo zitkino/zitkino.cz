@@ -17,29 +17,30 @@ class Scraper(object):
     def __init__(self, user_agent=None):
         self.user_agent = user_agent
 
-    def _download(self, **params):
+    def _download(self, url, **params):
         """Download data document (HTML, JSON, whatever)."""
-        if not self.url:
+        if not url:
             classname = self.__class__.__name__
             raise ValueError('No URL for scraper {0}.'.format(classname))
 
         headers = {'User-Agent': self.user_agent}
-        response = requests.get(self.url, params=params, headers=headers)
+        response = requests.get(url, params=params, headers=headers)
         response.raise_for_status()
-        return response.content
+        return response
 
     def _decode(self, content):
         """Decode document's contents, return data structure."""
         raise NotImplementedError
 
-    def _parse(self, decoded_content):
+    def _parse(self, decoded_content, response=None):
         """Parse decoded content and return results."""
         raise NotImplementedError
 
     def scrape(self):
         """Download data, parse it, return results."""
-        content = self._decode(self._download())
-        return self._parse(content)
+        response = self._download(self.url)
+        content = self._decode(response.content)
+        return self._parse(content, response)
 
 
 ### Decoding mixins ###

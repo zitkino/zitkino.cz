@@ -3,11 +3,13 @@
 
 import re
 import times
+import logging
 from dateutil import rrule
 from datetime import datetime, date
 
 from zitkino.scrapers.common import Scraper as BaseScraper, \
     SoupDecoder, JsonDecoder
+from zitkino.utils import repr_name
 
 
 ### Utils ###
@@ -33,10 +35,8 @@ class ScrapedShowtime(object):
         self.film_title = film_title
 
     def __repr__(self):
-        name = '.'.join((self.__class__.__module__, self.__class__.__name__))
-        return '<{name} '\
-            '{film_title!r}@{cinema_slug}, '\
-            '{starts_at}>'.format(name=name, **vars(self))
+        return '<{name} {film_title!r}@{cinema_slug}, {starts_at}>'.format(
+            name=repr_name(self.__class__), **vars(self))
 
 
 ### Abstract scraper ###
@@ -50,6 +50,7 @@ class Scraper(BaseScraper):
 
     def __init__(self, now, user_agent=None):
         self._now = now
+        self._log = logging.getLogger(__name__)
         super(Scraper, self).__init__(user_agent=user_agent)
 
     @property
@@ -75,7 +76,7 @@ class LetniKinoNaDobrakuScraper(SoupDecoder, Scraper):
 
     _date_id_re = re.compile(r'[^\d\-]')
 
-    def _parse(self, decoded_content):
+    def _parse(self, decoded_content, response=None):
         soup = decoded_content
 
         dates = soup.select('#Platno .Datum_cas')
@@ -86,8 +87,10 @@ class LetniKinoNaDobrakuScraper(SoupDecoder, Scraper):
         for date, name in zip(dates, names):
             date = self._date_id_re.sub('', date['id'])
             film_date = datetime.strptime(date, film_date_format)
-            film_title = name.get_text(separator='\n', strip=True).upper()
+            film_title = name.get_text(separator='\n', strip=True)
 
+            self._log.debug(u'Scraped "{title}" from {cinema}.'.format(
+                title=film_title, cinema=self.cinema_slug))
             yield ScrapedShowtime(self.cinema_slug,
                                   self._to_utc(film_date),
                                   film_title)
@@ -104,7 +107,7 @@ class StarobrnoLetniKinoScraper(SoupDecoder, Scraper):
 
     _date_re = re.compile(r'(\d+)\.(\d+)\.')
 
-    def _parse(self, decoded_content):
+    def _parse(self, decoded_content, response=None):
         soup = decoded_content
 
         for row in soup.select('.content tr'):
@@ -128,10 +131,11 @@ class StarobrnoLetniKinoScraper(SoupDecoder, Scraper):
                 if not film_title:
                     continue
 
-                yield ScrapedShowtime(
-                    self.cinema_slug,
-                    self._to_utc(film_date),
-                    film_title)
+                self._log.debug(u'Scraped "{title}" from {cinema}.'.format(
+                    title=film_title, cinema=self.cinema_slug))
+                yield ScrapedShowtime(self.cinema_slug,
+                                      self._to_utc(film_date),
+                                      film_title)
 
 
 @active_scraper
@@ -178,7 +182,7 @@ class KinoLucernaScraper(SoupDecoder, Scraper):
             year = today.year if today.month <= month else (today.year + 1)
             yield datetime(year, month, int(match.group(1)))
 
-    def _parse(self, decoded_content):
+    def _parse(self, decoded_content, response=None):
         soup = decoded_content
 
         for row in soup.select('.contentpaneopen strong'):
@@ -195,10 +199,11 @@ class KinoLucernaScraper(SoupDecoder, Scraper):
 
                 dates = list(date_ranges) + list(standalone_dates)
                 for film_date in dates:
-                    yield ScrapedShowtime(
-                        self.cinema_slug,
-                        self._to_utc(film_date),
-                        film_title)
+                    self._log.debug(u'Scraped "{title}" from {cinema}.'.format(
+                        title=film_title, cinema=self.cinema_slug))
+                    yield ScrapedShowtime(self.cinema_slug,
+                                          self._to_utc(film_date),
+                                          film_title)
 
 
 @active_scraper
@@ -211,7 +216,7 @@ class KinoArtScraper(JsonDecoder, Scraper):
     cinema_slug = 'brno-kino-art'
     timezone = 'Europe/Prague'
 
-    def _parse(self, decoded_content):
+    def _parse(self, decoded_content, response=None):
         films = decoded_content
 
         film_title = ''
@@ -221,6 +226,8 @@ class KinoArtScraper(JsonDecoder, Scraper):
             film_date = datetime.strptime(film['datum'], film_date_format)
             film_title = film['nazevCesky']
 
+            self._log.debug(u'Scraped "{title}" from {cinema}.'.format(
+                title=film_title, cinema=self.cinema_slug))
             yield ScrapedShowtime(self.cinema_slug,
                                   self._to_utc(film_date),
                                   film_title)

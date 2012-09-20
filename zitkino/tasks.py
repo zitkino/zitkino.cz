@@ -45,7 +45,7 @@ def main(args=None):
     """Simple main controller."""
     args = args or sys.argv[1:]  # can accept arguments also from code
     try:
-        if len(args) > 1:  # no extra arguments supported
+        if len(args) > 1:  # no other extra arguments supported
             raise LookupError('Too much arguments.')
         task_name = args[0]
         task = dict(tasks)[task_name]  # task lookup
