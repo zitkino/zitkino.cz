@@ -49,9 +49,9 @@ class Film(db.Document):
 
     _similarity_accept_ratio = 80
 
-    id_csfd = db.IntField(unique=True)
-    id_imdb = db.IntField(unique=True)
-    id_synopsitv = db.IntField(unique=True)
+    id_csfd = db.IntField()
+    id_imdb = db.IntField()
+    id_synopsitv = db.IntField()
 
     title_main = db.StringField(required=True)
     title_orig = db.StringField()
@@ -65,10 +65,10 @@ class Film(db.Document):
     rating_imdb = db.FloatField()
     rating_fffilm = db.FloatField()
 
-    url_csfd = db.StringField(unique=True)
-    url_imdb = db.StringField(unique=True)
-    url_fffilm = db.StringField(unique=True)
-    url_synopsitv = db.StringField(unique=True)
+    url_csfd = db.StringField()
+    url_imdb = db.StringField()
+    url_fffilm = db.StringField()
+    url_synopsitv = db.StringField()
 
     showtimes = db.ListField(db.EmbeddedDocumentField(Showtime))
 
@@ -91,7 +91,7 @@ class Film(db.Document):
             ratings.append(self.rating_fffilm)
         return round(sum(ratings) / len(ratings), 0)
 
-    def is_similar(self, title):
+    def has_similar_title(self, title):
         """Compare two film titles by their fuzzy similarity ratio."""
         title1 = title.lower()
         result = False
@@ -108,6 +108,29 @@ class Film(db.Document):
             if result:
                 break
         return result
+
+    def sync(self, film):
+        self.id_csfd = self.id_csfd or film.id_csfd
+        self.id_imdb = self.id_imdb or film.id_imdb
+        self.id_synopsitv = self.id_synopsitv or film.id_synopsitv
+
+        self.title_main = film.title_main or self.title_main
+        self.title_orig = film.title_orig or self.title_orig
+        self.titles = list(set(self.titles + film.titles))
+
+        self.year = self.year or film.year
+        self.length = self.length or film.length
+
+        self.rating_csfd = film.rating_csfd or self.rating_csfd
+        self.rating_imdb = film.rating_imdb or self.rating_imdb
+        self.rating_fffilm = film.rating_fffilm or self.rating_fffilm
+
+        self.url_csfd = self.url_csfd or film.url_csfd
+        self.url_imdb = self.url_imdb or film.url_imdb
+        self.url_fffilm = self.url_fffilm or film.url_fffilm
+        self.url_synopsitv = self.url_synopsitv or film.url_synopsitv
+
+        self.create_slug()
 
     def create_slug(self):
         self.slug = '{0}-{1}'.format(

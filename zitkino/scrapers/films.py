@@ -34,7 +34,11 @@ class CSFDFilmRecognizer(SoupDecoder, Scraper):
     def _extract_title_main(self, soup):
         title_html_main = soup.select('#profile h1')
         try:
-            return title_html_main[0].get_text().strip()
+            h1 = title_html_main[0]
+            spans = h1.span
+            if spans:
+                spans.extract()
+            return h1.get_text().strip()
         except IndexError:
             return None
 
@@ -67,7 +71,7 @@ class CSFDFilmRecognizer(SoupDecoder, Scraper):
     def _extract_rating_csfd(self, soup):
         try:
             text = soup.select('#rating .average')[0].get_text().strip()
-            return int(text.strip('%'))
+            return float(text.strip('%')) / 100
         except (IndexError, ValueError):
             return None
 
@@ -114,6 +118,6 @@ class CSFDFilmRecognizer(SoupDecoder, Scraper):
         content = self._decode(response.content)
         film = self._parse(content, response)
 
-        if film.is_similar(title):
+        if film.has_similar_title(title):
             return film
         return None

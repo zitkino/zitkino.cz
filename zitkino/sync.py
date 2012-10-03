@@ -6,7 +6,7 @@ import itertools
 
 from zitkino.scrapers.cinemas import active_scrapers
 from zitkino.scrapers.films import CSFDFilmRecognizer
-from zitkino.models import data
+from zitkino.models import data, Film
 
 
 class StaticDataSynchronizer(object):
@@ -30,6 +30,7 @@ class ShowtimesSynchronizer(object):
 
     def __init__(self, user_agent=None):
         self.user_agent = user_agent
+        self.csfd_recognizer = CSFDFilmRecognizer(user_agent)
 
     def _scrape_showtimes(self):
         now = times.now()
@@ -40,23 +41,38 @@ class ShowtimesSynchronizer(object):
             showtime_lists.append(s.scrape())
         return itertools.chain(*showtime_lists)
 
+    def _sync_film(self, film):
+        film_db = Film.objects(slug=film.slug).first()
+        if film_db:
+            film_db.sync(film)
+            film_db.save()
+            return film_db
+        film.save()
+        return film
+
+    def _find_film_db(self, showtime):
+        params = {'titles__iexact': showtime.film_title}
+        return Film.objects(**params).first()
+
+    def _find_film_csfd(self, showtime):
+        return self.csfd_recognizer.scrape(showtime)
+
     def sync(self):
         """Perform synchronization."""
-        r = CSFDFilmRecognizer(self.user_agent)
-
         for showtime in self._scrape_showtimes():
-            film = r.scrape(showtime)
-            print repr(film)
+            film = self._find_film_db(showtime)
             if film:
-                print vars(film)
-
-        # pokud najdu film podle nejakeho znaku (csfd id, title a rok, ...),
-        # tak ho vratim z databaze
+                print 'found'
+            else:
+                film = self._find_film_csfd(showtime)
+                if film:
+                    film.titles.append(showtime.film_title)
+                    film = self._sync_film(film)
+                    print 'synced to ', film.slug
+                else:
+                    print 'unknown'
 
         # pokud ten film ma nejaka pole jako None, zkusim jej aktualizovat
-
-        # pokud ho v databazi nenajdu, hledam ho na csfd a to mi vrati film
-        # nebo None
 
         # pokud vrati film, ulozim ho do db a udelam test jestli ma nejaka pole
         # None, pripadne aktualizuji
