@@ -2,6 +2,7 @@
 
 
 import times
+import logging
 import itertools
 
 from zitkino.scrapers.cinemas import active_scrapers
@@ -29,6 +30,7 @@ class ShowtimesSynchronizer(object):
     scrapers = active_scrapers
 
     def __init__(self, user_agent=None):
+        self._log = logging.getLogger(__name__)
         self.user_agent = user_agent
         self.csfd_recognizer = CSFDFilmRecognizer(user_agent)
 
@@ -60,22 +62,24 @@ class ShowtimesSynchronizer(object):
     def sync(self):
         """Perform synchronization."""
         for showtime in self._scrape_showtimes():
+            self._log.debug('Syncing showtime {0!r}.'.format(showtime))
             film = self._find_film_db(showtime)
-            if film:
-                print 'found'
-            else:
+            if not film:
+                self._log.debug('Film not found in db.')
                 film = self._find_film_csfd(showtime)
                 if film:
+                    self._log.debug('Film found on CSFD.cz as {0}.'.format(
+                        film.main_title))
                     film.titles.append(showtime.film_title)
                     film = self._sync_film(film)
-                    print 'synced to ', film.slug
+                    self._log.debug('Film {0} updated.'.format(film.slug))
                 else:
-                    print 'unknown'
+                    self._log.debug('Film unknown.')
+            else:
+                self._log.debug('Film found in db.')
 
         # pokud ten film ma nejaka pole jako None, zkusim jej aktualizovat
-
-        # pokud vrati film, ulozim ho do db a udelam test jestli ma nejaka pole
-        # None, pripadne aktualizuji
+        # podle toho co mam z kina
 
         # pokud mi hledani v csfd nic nevrati, musim si film ulozit do db nejak
         # sam z informaci, ktere jsem nascrapoval v kine
