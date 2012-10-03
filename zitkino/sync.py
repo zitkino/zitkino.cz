@@ -62,21 +62,26 @@ class ShowtimesSynchronizer(object):
     def sync(self):
         """Perform synchronization."""
         for showtime in self._scrape_showtimes():
+            showtime_title = showtime.film_title
             self._log.debug('Syncing showtime {0!r}.'.format(showtime))
+
             film = self._find_film_db(showtime)
             if not film:
-                self._log.debug('Film not found in db.')
+                self._log.info('Film {0!r} not found in db.'.format(
+                    showtime_title))
                 film = self._find_film_csfd(showtime)
                 if film:
-                    self._log.debug('Film found on CSFD.cz as {0}.'.format(
-                        film.main_title))
+                    self._log.info('Film {0!r} found on CSFD as {1!r}.'.format(
+                        showtime_title, film.title_main))
                     film.titles.append(showtime.film_title)
                     film = self._sync_film(film)
-                    self._log.debug('Film {0} updated.'.format(film.slug))
+                    self._log.info('Film {0!r} updated.'.format(film.slug))
                 else:
-                    self._log.debug('Film unknown.')
+                    self._log.info('Film {0!r} unknown.'.format(
+                        showtime_title))
             else:
-                self._log.debug('Film found in db.')
+                self._log.info('Film {0!r} found in db.'.format(
+                    showtime_title))
 
         # pokud ten film ma nejaka pole jako None, zkusim jej aktualizovat
         # podle toho co mam z kina
