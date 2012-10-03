@@ -26,23 +26,7 @@ class Cinema(db.Document):
 
     def __repr__(self):
         return '<{name} {cinema_slug}>'.format(
-            name=repr_name(self.__class__), cinema_slug=self.cinema_slug)
-
-
-class Showtime(db.EmbeddedDocument):
-
-    cinema = db.ReferenceField(Cinema, dbref=False)
-    starts_at = db.DateTimeField(unique_with=cinema)
-    tags = db.ListField(db.StringField())  # dubbing, 3D, etc.
-
-    meta = {
-        'ordering': ['-starts_at']
-    }
-
-    def __repr__(self):
-        return '<{name} {cinema!r}, {starts_at}>'.format(
-            name=repr_name(self.__class__), cinema=self.cinema,
-            starts_at=self.starts_at)
+            name=repr_name(self.__class__), cinema_slug=self.slug)
 
 
 class Film(db.Document):
@@ -69,8 +53,6 @@ class Film(db.Document):
     url_imdb = db.StringField()
     url_fffilm = db.StringField()
     url_synopsitv = db.StringField()
-
-    showtimes = db.ListField(db.EmbeddedDocumentField(Showtime))
 
     def __init__(self, *args, **kwargs):
         self._log = logging.getLogger(__name__)
@@ -133,13 +115,33 @@ class Film(db.Document):
         self.create_slug()
 
     def create_slug(self):
-        self.slug = '{0}-{1}'.format(
-            slugify(self.title_main), self.year)
+        if self.year:
+            self.slug = '{0}-{1}'.format(
+                slugify(self.title_main), self.year)
+        else:
+            self.slug = slugify(self.title_main)
 
     def __repr__(self):
         return '<{name} {slug} ({title!r}, {year})>'.format(
             name=repr_name(self.__class__), slug=self.slug,
             title=self.title_main, year=self.year)
+
+
+class Showtime(db.Document):
+
+    cinema = db.ReferenceField(Cinema, dbref=False)
+    film = db.ReferenceField(Film, dbref=False)
+    starts_at = db.DateTimeField(unique_with=('cinema', 'film'))
+    tags = db.ListField(db.StringField())  # dubbing, 3D, etc.
+
+    meta = {
+        'ordering': ['-starts_at']
+    }
+
+    def __repr__(self):
+        return '<{name} {film!r}@{cinema!r}, {starts_at}>'.format(
+            name=repr_name(self.__class__), cinema=self.cinema,
+            starts_at=self.starts_at, film=self.film)
 
 
 data = [

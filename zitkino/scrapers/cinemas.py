@@ -29,10 +29,11 @@ def active_scraper(cls):
 
 class ScrapedShowtime(object):
 
-    def __init__(self, cinema_slug, starts_at, film_title):
+    def __init__(self, cinema_slug, starts_at, film_title, tags=None):
         self.cinema_slug = cinema_slug
         self.starts_at = starts_at
         self.film_title = film_title
+        self.tags = tags or []
 
     def __repr__(self):
         return '<{name} {film_title!r}@{cinema_slug}, {starts_at}>'.format(
