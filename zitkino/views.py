@@ -15,7 +15,7 @@ def index(ext):
     now = times.now()
     today = datetime.combine(now.date(), time(0, 0))
 
-    showtimes = Showtime.objects.find(
+    showtimes = Showtime.objects(
         starts_at__gte=now).order_by('-starts_at')
 
     tpl_name = 'index.' + ext
