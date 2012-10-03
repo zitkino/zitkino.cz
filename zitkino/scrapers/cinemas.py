@@ -89,7 +89,7 @@ class LetniKinoNaDobrakuScraper(SoupDecoder, Scraper):
             film_date = datetime.strptime(date, film_date_format)
             film_title = name.get_text(separator='\n', strip=True)
 
-            self._log.debug(u'Scraped "{title}" from {cinema}.'.format(
+            self._log.info(u'Scraped "{title}" from {cinema}.'.format(
                 title=film_title, cinema=self.cinema_slug))
             yield ScrapedShowtime(self.cinema_slug,
                                   self._to_utc(film_date),
@@ -131,7 +131,7 @@ class StarobrnoLetniKinoScraper(SoupDecoder, Scraper):
                 if not film_title:
                     continue
 
-                self._log.debug(u'Scraped "{title}" from {cinema}.'.format(
+                self._log.info(u'Scraped "{title}" from {cinema}.'.format(
                     title=film_title, cinema=self.cinema_slug))
                 yield ScrapedShowtime(self.cinema_slug,
                                       self._to_utc(film_date),
@@ -199,7 +199,7 @@ class KinoLucernaScraper(SoupDecoder, Scraper):
 
                 dates = list(date_ranges) + list(standalone_dates)
                 for film_date in dates:
-                    self._log.debug(u'Scraped "{title}" from {cinema}.'.format(
+                    self._log.info(u'Scraped "{title}" from {cinema}.'.format(
                         title=film_title, cinema=self.cinema_slug))
                     yield ScrapedShowtime(self.cinema_slug,
                                           self._to_utc(film_date),
@@ -226,7 +226,7 @@ class KinoArtScraper(JsonDecoder, Scraper):
             film_date = datetime.strptime(film['datum'], film_date_format)
             film_title = film['nazevCesky']
 
-            self._log.debug(u'Scraped "{title}" from {cinema}.'.format(
+            self._log.info(u'Scraped "{title}" from {cinema}.'.format(
                 title=film_title, cinema=self.cinema_slug))
             yield ScrapedShowtime(self.cinema_slug,
                                   self._to_utc(film_date),
