@@ -9,7 +9,7 @@ from zitkino import app
 from zitkino.models import Showtime
 
 
-@app.route('/zitkino.<any(json, ics):ext>')
+@app.route('/zitkino.<any(json):ext>')
 @app.route('/', defaults={'ext': 'html'})
 def index(ext):
     now = times.now()
