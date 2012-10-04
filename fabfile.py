@@ -97,7 +97,8 @@ def deploy():
                       if r.startswith('heroku')]
 
     version = bump_dev_version()
-    local('git add zitkino/__init__.py')
+    for f in version_files:
+        local('git add ' + f['name'])
     local('git commit -m "version bump"')
 
     for remote in heroku_remotes:
