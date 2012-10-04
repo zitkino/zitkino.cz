@@ -19,4 +19,4 @@ MONGODB_PORT = url.port or 27017
 MONGODB_DB = url.path[1:]
 
 
-USER_AGENT = 'zitkino/0.1.dev1347729578 (+http://zitkino.cz/)'
+USER_AGENT = 'zitkino/0.1.dev1349338548 (+http://zitkino.cz/)'
