@@ -6,19 +6,19 @@ METHOD:PUBLISH
 X-WR-CALNAME:Kino
 X-WR-TIMEZONE:Europe/Prague
 X-WR-CALDESC;CHARSET=UTF-8:Nejlepší program kin v Brně.
-{% for film in films %}
+{% for showtime in showtimes %}
 BEGIN:VEVENT
-DTSTART;VALUE=DATE:{{ film.date|format_date_ics }}
-DTEND;VALUE=DATE:{{ film.date|format_date_ics }}
+DTSTART;VALUE=DATE:{{ showtime.starts_at_day|format_date_ics }}
+DTEND;VALUE=DATE:{{ showtime.starts_at_day|format_date_ics }}
 DTSTAMP:{{ now|format_timestamp_ics }}
-UID:{{ film.hash }}@honzajavorek.cz
+UID:{{ showtime.id }}@honzajavorek.cz
 CREATED:{{ now|format_timestamp_ics }}
-DESCRIPTION:http://zitkino.cz#id{{ film.hash }}
+DESCRIPTION:http://zitkino.cz#id{{ showtime.id }}
 LAST-MODIFIED:{{ now|format_timestamp_ics }}
-LOCATION:kino {{ film.cinema.name }}, Brno
+LOCATION:kino {{ showtime.cinema.name }}, Brno
 SEQUENCE:0
 STATUS:CONFIRMED
-SUMMARY;CHARSET=UTF-8:{{ film.title }} ({{ film.cinema.name }})
+SUMMARY;CHARSET=UTF-8:{{ showtime.film.title_main }} ({{ showtime.cinema.name }})
 TRANSP:TRANSPARENT
 END:VEVENT
 {% endfor %}

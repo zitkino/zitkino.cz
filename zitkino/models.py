@@ -138,6 +138,10 @@ class Showtime(db.Document):
         'ordering': ['-starts_at']
     }
 
+    @property
+    def starts_at_day(self):
+        return self.starts_at.date()
+
     def __repr__(self):
         return '<{name} {film!r}@{cinema!r}, {starts_at}>'.format(
             name=repr_name(self.__class__), cinema=self.cinema,
