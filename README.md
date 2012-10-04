@@ -12,12 +12,7 @@ Under active development and maintenance.
 
 # Installation
 
-It's just one Python script. It's cloned as a git repository and ran every day by [Pub](https://github.com/honzajavorek/pub). Results are released to [GitHub Pages on honzajavorek.cz](https://github.com/honzajavorek/honzajavorek.cz/tree/gh-pages).
-
-You can see it in action here:
-
-- http://zitkino.cz (site)
-- http://zitkino.cz/zitkino.ics (iCalendar export)
+It's a simple Flask Heroku app with daily scheduled bot scraping data from cinemas' websites. Install it as a normal Python package: `python setup.py install`. You can run Flask development server by typing `python runserver.py`. To see how to setup corresponding Heroku apps, follow the `install` directory.
 
 ## Cinemas involved
 
@@ -28,7 +23,7 @@ You can see it in action here:
 
 ## Credits
 
-Zuzana Válková, Milan Kubík, Ondřej Beneš, Petr Nohejl
+Zuzana Válková, Milan Kubík, Ondřej Beneš, Petr Nohejl, Martin Bakeš
 
 ## License: ISC
 
