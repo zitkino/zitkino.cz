@@ -86,8 +86,15 @@ def bump_dev_version():
     return version
 
 
+def test():
+    """Run testsuite."""
+    local('python setup.py test')
+
+
 def deploy():
     """Deploy application to Heroku."""
+    execute(test)
+
     now = datetime.datetime.now()
     user = local('git config --get user.name', capture=True)
 

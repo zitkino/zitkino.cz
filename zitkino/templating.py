@@ -18,7 +18,9 @@ def urlencode_filter(s):
 
 @app.template_filter('format_date')
 def format_date_filter(dt):
-    return dt.strftime('%d. %m.')
+    day = dt.strftime('%d').lstrip('0')
+    month = dt.strftime('%m').lstrip('0')
+    return '{d}. {m}.'.format(d=day, m=month)
 
 
 @app.template_filter('format_date_ics')

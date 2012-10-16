@@ -6,6 +6,15 @@ import re
 from setuptools import setup, find_packages
 
 
+# Hack to prevent stupid "TypeError: 'NoneType' object is not callable"
+# error in multiprocessing/util.py _exit_function when running `python
+# setup.py test`
+try:
+    import multiprocessing
+except ImportError:
+    pass
+
+
 # determine version
 package_init = 'zitkino/__init__.py'
 with open(package_init, 'r') as f:
@@ -43,6 +52,8 @@ setup(
     packages=find_packages(exclude=['tests']),
     include_package_data=True,
     install_requires=requirements,
+    tests_require=['nose>=1.2.1'],
+    test_suite='nose.collector',
     entry_points={
         'console_scripts': [
             'zitkino = zitkino.tasks:main',
