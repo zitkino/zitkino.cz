@@ -106,8 +106,6 @@ class CSFDFilmRecognizer(SoupDecoder, Scraper):
         film.length = self._extract_length(soup)
         film.rating_csfd = self._extract_rating_csfd(soup)
 
-        film.create_slug()
-
         return film
 
     def scrape(self, scraped_showtime):

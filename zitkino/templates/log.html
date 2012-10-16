@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="utf-8">
+    <title>Žít kino - aktualizace</title>
+</head>
+<body>
+
+{% for group in records|groupby('action') %}
+    <h2>{{ group.grouper.name }} {{ group.grouper.id }}</h2>
+    <table>
+    {% for record in group.list %}
+        <tr>
+            <th><code>{{ record.message }}</code></th>
+            <td>
+                <code>
+                {% for key, value in record.context.items() %}
+                    {{ key }}: <small>{{ value }}</small>
+                {% endfor %}
+                </code>
+            </td>
+            <td>{{ record.happened_at }}</td>
+        </tr>
+    {% endfor %}
+    </table>
+{% endfor %}
+</body>
+</html>

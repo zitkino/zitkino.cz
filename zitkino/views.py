@@ -3,10 +3,10 @@
 
 import times
 from flask import render_template
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 
 from zitkino import app
-from zitkino.models import Showtime
+from zitkino.models import Showtime, LogRecord
 
 
 @app.route('/zitkino.<any(json):ext>')
@@ -20,3 +20,15 @@ def index(ext):
 
     tpl_name = 'index.' + ext
     return render_template(tpl_name, showtimes=showtimes, now=now, today=today)
+
+
+@app.route('/aktualizace')
+def log():
+    now = times.now()
+    two_days_ago = datetime.combine(now - timedelta(2), time(0, 0))
+
+    records = LogRecord.objects(
+        action__exists=True,
+        happened_at__gte=two_days_ago).order_by('-happened_at')
+
+    return render_template('log.html', records=records)

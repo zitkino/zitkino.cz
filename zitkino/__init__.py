@@ -4,8 +4,6 @@
 __version__ = '0.1.dev1349339677'
 
 
-import logging
-
 from flask import Flask
 from flask.ext.mongoengine import MongoEngine
 
@@ -17,8 +15,7 @@ app.config.from_object('zitkino.config')
 db = MongoEngine(app)
 
 
-logging_level = logging.DEBUG if app.debug else logging.INFO
-logging.basicConfig(level=logging_level, filename=app.config['LOG_FILE'])
+from zitkino import logging_utils, models, views, templating
 
 
-from zitkino import models, views, templating
+logging_utils.init_app(app)

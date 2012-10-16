@@ -29,8 +29,12 @@ class ShowtimesSynchronizer(object):
 
     scrapers = active_scrapers
 
-    def __init__(self, user_agent=None):
-        self._log = logging.getLogger(__name__)
+    def __init__(self, user_agent=None, logging_context=None):
+        if logging_context:
+            self._log = logging_context.logger(__name__)
+        else:
+            self._log = logging.getLogger(__name__)
+
         self.user_agent = user_agent
         self.csfd_recognizer = CSFDFilmRecognizer(user_agent)
 
@@ -67,30 +71,27 @@ class ShowtimesSynchronizer(object):
         film = Film()
         film.title_main = scraped_showtime.film_title
         film.titles = [scraped_showtime.film_title]
-        film.create_slug()
         film.save()
         return film
 
     def _get_film(self, scraped_showtime):
-        showtime_title = scraped_showtime.film_title
+        film_title = scraped_showtime.film_title
         film = self._find_film_db(scraped_showtime)
         if not film:
-            self._log.info(u'"{0}" not found in db.'.format(
-                showtime_title))
+            self._log.info('Film "%s" not found in db.', film_title)
             film = self._find_film_csfd(scraped_showtime)
             if film:
-                self._log.info(u'"{0}" found on CSFD as "{1}".'.format(
-                    showtime_title, film.title_main))
+                self._log.info('Film "%s" found on CSFD.cz', film_title)
                 film.titles.append(scraped_showtime.film_title)
                 film = self._sync_film(film)
-                self._log.info(u'"{0}" updated.'.format(film.slug))
+                self._log.info('Film "%s" synchronized.', film.title_main,
+                               extra={'film_id': film.id})
             else:
-                self._log.info(u'"{0}" unknown.'.format(
-                    showtime_title))
+                self._log.info('Film "%s" cannot be identified.', film_title)
                 film = self._create_unknown_film(scraped_showtime)
         else:
-            self._log.info(u'"{0}" found in db.'.format(
-                showtime_title))
+            self._log.info('Film "%s" found in db.', film_title,
+                           extra={'film_id': film.id})
         return film
 
     def _get_cinema(self, scraped_showtime):
@@ -108,7 +109,9 @@ class ShowtimesSynchronizer(object):
             #  update tags
             tags = list(set(st.tags + scraped_showtime.tags))
             st.tags = tags
-            self._log.info(u'Showtime found in db, updated.')
+            self._log.info('Updated showtime %s / "%s" scraped from %s.',
+                           starts_at, film.title_main, cinema.slug,
+                           extra={'showtime_id': st.id})
         else:
             # create a new one
             st = Showtime()
@@ -116,7 +119,8 @@ class ShowtimesSynchronizer(object):
             st.film = film
             st.starts_at = scraped_showtime.starts_at
             st.tags = scraped_showtime.tags
-            self._log.info(u'Showtime created.')
+            self._log.info('Created showtime %s / "%s" scraped from %s.',
+                           starts_at, film.title_main, cinema.slug)
         return st
 
     def sync(self):
@@ -125,8 +129,6 @@ class ShowtimesSynchronizer(object):
         # o filmech!
 
         for scraped_showtime in self._scrape_showtimes():
-            self._log.debug(u'Syncing showtime {0!r}.'.format(
-                scraped_showtime))
             film = self._get_film(scraped_showtime)
             film.save()
             showtime = self._get_showtime(scraped_showtime, film)

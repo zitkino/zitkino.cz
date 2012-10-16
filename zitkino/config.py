@@ -6,7 +6,6 @@ from os import environ
 
 
 DEBUG = environ.get('ZITKINO_DEBUG', False)
-LOG_FILE = environ.get('ZITKINO_LOG_FILE', None)
 
 
 mongolab_uri = environ.get('MONGOLAB_URI')

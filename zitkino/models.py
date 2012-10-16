@@ -3,6 +3,7 @@
 
 from __future__ import division
 
+import times
 import logging
 from fuzzywuzzy import fuzz
 
@@ -37,12 +38,12 @@ class Film(db.Document):
     id_imdb = db.IntField()
     id_synopsitv = db.IntField()
 
-    title_main = db.StringField(required=True)
+    _title_main = db.StringField(db_field='title_main', required=True)
     title_orig = db.StringField()
     titles = db.ListField(db.StringField())
 
     slug = db.StringField(required=True, unique=True)
-    year = db.IntField()
+    _year = db.IntField(db_field='year')
     length = db.IntField()
 
     rating_csfd = db.FloatField()
@@ -57,6 +58,24 @@ class Film(db.Document):
     def __init__(self, *args, **kwargs):
         self._log = logging.getLogger(__name__)
         super(Film, self).__init__(*args, **kwargs)
+
+    @property
+    def title_main(self):
+        return self._title_main
+
+    @title_main.setter
+    def title_main(self, title):
+        self._title_main = title
+        self._create_slug()
+
+    @property
+    def year(self):
+        return self._year
+
+    @year.setter
+    def year(self, year):
+        self._year = year
+        self._create_slug()
 
     @property
     def length_hours(self):
@@ -83,9 +102,8 @@ class Film(db.Document):
             result = ratio >= self._similarity_accept_ratio
 
             op = '=' if result else '!='
-            self._log.debug(
-                u'Title "{title1}" {op} "{title2}" ({ratio}%).'.format(
-                    op=op, ratio=ratio, title1=title1, title2=title2))
+            self._log.info(u'Title "%s" %s "%s" (%d%%).',
+                           title1, op, title2, ratio)
 
             if result:
                 break
@@ -112,9 +130,7 @@ class Film(db.Document):
         self.url_fffilm = self.url_fffilm or film.url_fffilm
         self.url_synopsitv = self.url_synopsitv or film.url_synopsitv
 
-        self.create_slug()
-
-    def create_slug(self):
+    def _create_slug(self):
         if self.year:
             self.slug = '{0}-{1}'.format(
                 slugify(self.title_main), self.year)
@@ -122,9 +138,8 @@ class Film(db.Document):
             self.slug = slugify(self.title_main)
 
     def __repr__(self):
-        return '<{name} {slug} ({title!r}, {year})>'.format(
-            name=repr_name(self.__class__), slug=self.slug,
-            title=self.title_main, year=self.year)
+        return '<{name} {slug}>'.format(
+            name=repr_name(self.__class__), slug=self.slug)
 
 
 class Showtime(db.Document):
@@ -146,6 +161,52 @@ class Showtime(db.Document):
         return '<{name} {film!r}@{cinema!r}, {starts_at}>'.format(
             name=repr_name(self.__class__), cinema=self.cinema,
             starts_at=self.starts_at, film=self.film)
+
+
+class Action(db.Document):
+
+    name = db.StringField()
+    _started_at = db.DateTimeField(db_field='started_at')
+    _finished_at = db.DateTimeField(db_field='finished_at')
+
+    @property
+    def started_at_day(self):
+        return self.started_at.date()
+
+    @property
+    def started_at(self):
+        return self._started_at
+
+    def start(self):
+        self._started_at = times.now()
+
+    @property
+    def finished_at(self):
+        return self._started_at
+
+    def finish(self):
+        self._finished_at = times.now()
+
+    meta = {
+        'ordering': ['-started_at']
+    }
+
+
+class LogRecord(db.Document):
+
+    action = db.ReferenceField(Action, dbref=False)
+    level = db.StringField()
+    happened_at = db.DateTimeField()
+    message = db.StringField()
+    context = db.DictField()
+
+    @property
+    def happened_at_day(self):
+        return self.happened_at.date()
+
+    meta = {
+        'ordering': ['-happened_at']
+    }
 
 
 data = [
