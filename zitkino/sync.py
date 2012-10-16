@@ -10,31 +10,41 @@ from zitkino.scrapers.films import CSFDFilmRecognizer
 from zitkino.models import data, Film, Cinema, Showtime
 
 
-class StaticDataSynchronizer(object):
+class StaticDataSyncer(object):
     """Inserts or updates static data defined in models."""
 
+    def __init__(self, user_agent=None):
+        self._log = logging.getLogger(__name__)
+
     def sync(self):
-        """Perform synchronization."""
+        """Perform sync."""
+        self._log.info('Sync of static data starts.')
+
         for document in data:
+            self._log.info('Sync of "%s" / "%s" object.',
+                           document.__class__.__name__,
+                           document.slug)
+
             found = document.__class__.objects(slug=document.slug).first()
             if found:
+                self._log.info('Object found in db.')
                 document.id = found.id
                 document.save()  # update
+                self._log.info('Object updated.')
             else:
                 document.save()  # insert
+                self._log.info('Object inserted.')
+
+        self._log.info('Sync of static data has just finished.')
 
 
-class ShowtimesSynchronizer(object):
-    """Synchronizes showtimes."""
+class ShowtimesSyncer(object):
+    """Synces showtimes."""
 
     scrapers = active_scrapers
 
-    def __init__(self, user_agent=None, logging_context=None):
-        if logging_context:
-            self._log = logging_context.logger(__name__)
-        else:
-            self._log = logging.getLogger(__name__)
-
+    def __init__(self, user_agent=None):
+        self._log = logging.getLogger(__name__)
         self.user_agent = user_agent
         self.csfd_recognizer = CSFDFilmRecognizer(user_agent)
 
@@ -84,7 +94,7 @@ class ShowtimesSynchronizer(object):
                 self._log.info('Film "%s" found on CSFD.cz', film_title)
                 film.titles.append(scraped_showtime.film_title)
                 film = self._sync_film(film)
-                self._log.info('Film "%s" synchronized.', film.title_main,
+                self._log.info('Film "%s" synced.', film.title_main,
                                extra={'film_id': film.id})
             else:
                 self._log.info('Film "%s" cannot be identified.', film_title)
@@ -124,7 +134,9 @@ class ShowtimesSynchronizer(object):
         return st
 
     def sync(self):
-        """Perform synchronization."""
+        """Perform sync."""
+        self._log.info('Sync of showtimes starts.')
+
         # TODO vyresit "čas probuzení" = "čas" ... stahovat z kin vic informaci
         # o filmech!
 
@@ -133,3 +145,5 @@ class ShowtimesSynchronizer(object):
             film.save()
             showtime = self._get_showtime(scraped_showtime, film)
             showtime.save()
+
+        self._log.info('Sync of showtimes has just finished.')

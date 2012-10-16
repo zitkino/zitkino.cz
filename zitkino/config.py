@@ -5,9 +5,11 @@ import urlparse
 from os import environ
 
 
+# debugging mode
 DEBUG = environ.get('ZITKINO_DEBUG', False)
 
 
+# mongodb
 mongolab_uri = environ.get('MONGOLAB_URI')
 url = urlparse.urlparse(mongolab_uri)
 
@@ -18,5 +20,6 @@ MONGODB_PORT = url.port or 27017
 MONGODB_DB = url.path[1:]
 
 
+# some network settings
 USER_AGENT = 'zitkino/0.1.dev1349339677 (+http://zitkino.cz/)'
 SEND_FILE_MAX_AGE_DEFAULT = 60 * 60 * 24 * 365 * 5  # 5 years

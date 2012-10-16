@@ -5,8 +5,7 @@
 import sys
 
 from zitkino import __version__, app
-from zitkino.sync import StaticDataSynchronizer, ShowtimesSynchronizer
-from zitkino.logging_utils import ActionContext
+from zitkino.sync import StaticDataSyncer, ShowtimesSyncer
 
 
 ### Utilities ###
@@ -69,20 +68,15 @@ def version():
 
 @task
 def sync_static():
-    """Synchronize static data."""
-    s = StaticDataSynchronizer()
-    s.sync()
+    """Sync static data."""
+    StaticDataSyncer().sync()
 
 
 @task
 def sync():
-    """Synchronize showtimes."""
+    """Sync showtimes."""
     user_agent = app.config['USER_AGENT']
-
-    with ActionContext('sync') as context:
-        s = ShowtimesSynchronizer(user_agent=user_agent,
-                                  logging_context=context)
-        s.sync()
+    ShowtimesSyncer(user_agent=user_agent).sync()
 
 
 ### Invocation directly from CLI ###

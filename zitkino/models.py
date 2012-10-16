@@ -102,8 +102,8 @@ class Film(db.Document):
             result = ratio >= self._similarity_accept_ratio
 
             op = '=' if result else '!='
-            self._log.info(u'Title "%s" %s "%s" (%d%%).',
-                           title1, op, title2, ratio)
+            self._log.debug(u'Title "%s" %s "%s" (%d%%).',
+                            title1, op, title2, ratio)
 
             if result:
                 break
@@ -161,52 +161,6 @@ class Showtime(db.Document):
         return '<{name} {film!r}@{cinema!r}, {starts_at}>'.format(
             name=repr_name(self.__class__), cinema=self.cinema,
             starts_at=self.starts_at, film=self.film)
-
-
-class Action(db.Document):
-
-    name = db.StringField()
-    _started_at = db.DateTimeField(db_field='started_at')
-    _finished_at = db.DateTimeField(db_field='finished_at')
-
-    @property
-    def started_at_day(self):
-        return self.started_at.date()
-
-    @property
-    def started_at(self):
-        return self._started_at
-
-    def start(self):
-        self._started_at = times.now()
-
-    @property
-    def finished_at(self):
-        return self._started_at
-
-    def finish(self):
-        self._finished_at = times.now()
-
-    meta = {
-        'ordering': ['-started_at']
-    }
-
-
-class LogRecord(db.Document):
-
-    action = db.ReferenceField(Action, dbref=False)
-    level = db.StringField()
-    happened_at = db.DateTimeField()
-    message = db.StringField()
-    context = db.DictField()
-
-    @property
-    def happened_at_day(self):
-        return self.happened_at.date()
-
-    meta = {
-        'ordering': ['-happened_at']
-    }
 
 
 data = [
