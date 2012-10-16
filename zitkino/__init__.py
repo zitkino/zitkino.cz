@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-__version__ = '0.1.dev1349339677'
+__version__ = '0.1.dev1350420207'
 
 
 import logging

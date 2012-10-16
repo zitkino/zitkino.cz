@@ -21,5 +21,5 @@ MONGODB_DB = url.path[1:]
 
 
 # some network settings
-USER_AGENT = 'zitkino/0.1.dev1349339677 (+http://zitkino.cz/)'
+USER_AGENT = 'zitkino/0.1.dev1350420207 (+http://zitkino.cz/)'
 SEND_FILE_MAX_AGE_DEFAULT = 60 * 60 * 24 * 365 * 5  # 5 years
