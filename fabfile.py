@@ -106,7 +106,7 @@ def deploy():
     version = bump_dev_version()
     for f in version_files:
         local('git add ' + f['name'])
-    local('git commit -m "version bump"')
+    local('git commit -m "Version bump."')
 
     for remote in heroku_remotes:
         local('git push {remote} {branch}:master'.format(
@@ -114,7 +114,7 @@ def deploy():
     local('heroku run zitkino sync-static --app ' + app)
 
     tag = 'release-' + version
-    msg = now.strftime('release by {name} on %a, %d %b, %H:%M'.format(
+    msg = now.strftime('Release by {name} on %a, %d %b, %H:%M.'.format(
         name=user))
     local('git tag -a "{tag}" -m "{msg}"'.format(tag=tag, msg=msg))
     local('git push --tags origin {branch}:{branch}'.format(
