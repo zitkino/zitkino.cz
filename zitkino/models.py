@@ -3,7 +3,6 @@
 
 from __future__ import division
 
-import times
 import logging
 from fuzzywuzzy import fuzz
 
