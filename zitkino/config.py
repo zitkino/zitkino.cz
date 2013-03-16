@@ -17,7 +17,7 @@ mongodb_uri = urlparse(os.getenv('MONGOLAB_URI', 'mongodb://localhost:27017'))
 MONGODB_SETTINGS = {
     'username': mongodb_uri.username,
     'password': mongodb_uri.password,
-    'host': mongodb_uri.netloc,
+    'host': mongodb_uri.hostname,
     'port': mongodb_uri.port,
     'db': mongodb_uri.path.replace('/', '') or 'zitkino',
 }
