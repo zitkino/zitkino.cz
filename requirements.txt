@@ -1,5 +1,5 @@
 cython==0.17.4                  # just to be able to compile gevent from tarball
-gevent==1.0dev                  # parallelism
+gevent>=1.0dev                  # parallelism
 gunicorn==0.17.2                # web server
 flask==0.9                      # web framework
 flask-mongoengine==0.6          # MongoDB
