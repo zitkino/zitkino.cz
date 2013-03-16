@@ -6,8 +6,13 @@ from setuptools import setup, find_packages
 
 
 # determine version
-version = re.search(r'__version__ = \'([^\'"]*)\'',
-                    open('zitkino/__init__.py').read()).group(1)
+code = open('zitkino/__init__.py', 'r').read(500)
+version = re.search(r'__version__ = \'([^\']*)\'', code).group(1)
+
+
+# requirements
+lines = open('requirements.txt').read().splitlines()
+install_requires = filter(None, [line.split('#')[0].strip() for line in lines])
 
 
 # setup configuration
@@ -19,17 +24,11 @@ setup(
     url='http://zitkino.cz',
     packages=find_packages(exclude=['tests']),
     include_package_data=True,
-    install_requires=(
-        'flask>=0.9',
-        'gunicorn>=0.14.6',
-        'gevent>=0.13.8',
-        'requests>=0.13.8',
-        'times>=0.5',
-        'unidecode>=0.04.9',
-        'flask-gzip==0.1',
-        'flask-mongoengine>=0.6',
-        'fuzzywuzzy>=0.1',
-    ),
+    install_requires=install_requires,
+    dependency_links=[
+        ('https://github.com/sitesupport/gevent/tarball/1.0rc2#'
+         'egg=gevent-1.0dev'),
+    ],
     tests_require=['nose>=1.2.1'],
     test_suite='nose.collector',
     entry_points={

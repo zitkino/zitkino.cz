@@ -49,7 +49,8 @@ def bump_version():
 
 def check_repo():
     """Check if repository is ready for deployment."""
-    if not capture('git status | grep -e "branch is ahead"'):
+    if not capture('git diff origin/$(git name-rev '
+                   '--name-only HEAD)..HEAD --name-status'):
         abort('Nothing to deploy.')
 
     if capture('git status -s | grep -e "^M"'):
@@ -77,7 +78,7 @@ def deploy():
     local('git add ' + version_file)
     local('git commit --amend --no-edit')
     local('git tag {0}'.format(tag))
-    local('git push --tags origin {0}:master'.format(branch))
+    local('git push --tags origin {0}:{0}'.format(branch))
 
     # mongodb
     if 'MONGOLAB_URI' not in capture('heroku config | grep MONGOLAB_URI'):
