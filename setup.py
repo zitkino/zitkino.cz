@@ -11,8 +11,17 @@ version = re.search(r'__version__ = \'([^\']*)\'', code).group(1)
 
 
 # requirements
-lines = open('requirements.txt').read().splitlines()
-install_requires = filter(None, [line.split('#')[0].strip() for line in lines])
+install_requires = []
+dependency_links = []
+
+for line in open('requirements.txt').read().splitlines():
+    dependency = line.split(' #')[0].strip()
+    if not dependency:
+        continue
+    if dependency.startswith('http'):
+        dependency_links.append(dependency)
+        dependency = dependency.split('#egg=')[1].replace('-', '==')
+    install_requires.append(dependency)
 
 
 # setup configuration
