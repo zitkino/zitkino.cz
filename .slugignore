@@ -1,5 +1,4 @@
 tests
-install
 fabfile.py
 runserver.py
 README.md
