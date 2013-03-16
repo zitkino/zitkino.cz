@@ -13,8 +13,14 @@ LOGGING = {
     'level': logging.DEBUG,
 }
 
-MONGO_URL = os.getenv('MONGOLAB_URI', 'mongodb://localhost:27017')
-MONGO_DB = urlparse(MONGO_URL).path.replace('/', '') or 'zitkino'
+mongodb_uri = urlparse(os.getenv('MONGOLAB_URI', 'mongodb://localhost:27017'))
+MONGODB_SETTINGS = {
+    'username': mongodb_uri.username,
+    'password': mongodb_uri.password,
+    'host': mongodb_uri.netloc,
+    'port': mongodb_uri.port,
+    'db': mongodb_uri.path.replace('/', '') or 'zitkino',
+}
 
 SEND_FILE_MAX_AGE_DEFAULT = 157680000  # 5 years in seconds
 

@@ -1,0 +1,11 @@
+cython==0.17.4                  # just to be able to compile gevent from tarball
+gevent==1.0dev                  # parallelism
+gunicorn==0.17.2                # web server
+flask==0.9                      # web framework
+flask-mongoengine==0.6          # MongoDB
+lxml==3.0.2                     # fastest XML/HTML parser, scraping
+requests==1.0.3                 # HTTP requests
+times==0.4                      # from/to UTC datetime conversion
+unidecode>=0.04.9               # unicode strings to ASCII
+flask-gzip==0.1                 # gzipped responses
+fuzzywuzzy>=0.1                 # fuzzy string comparation
