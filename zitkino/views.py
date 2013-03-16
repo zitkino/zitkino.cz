@@ -2,7 +2,7 @@
 
 
 import os
-from flask import render_template, send_from_directory
+from flask import request, render_template, send_from_directory
 
 from zitkino import app
 
@@ -23,3 +23,13 @@ def favicon():
     static_dir = os.path.join(app.root_path, 'static')
     return send_from_directory(static_dir, 'favicon.ico',
                                mimetype='image/vnd.microsoft.icon')
+
+
+@app.route('/favicon.ico')
+@app.route('/apple-touch-icon.png')
+@app.route('/crossdomain.xml')
+@app.route('/robots.txt')
+@app.route('/humans.txt')
+def static_files():
+    static_dir = os.path.join(app.root_path, 'static')
+    return send_from_directory(static_dir, request.path.lstrip('/'))
