@@ -2,12 +2,12 @@
 
 
 import re
-import unidecode
 from jinja2 import Markup
 from flask.ext.gzip import Gzip
 from flask import url_for as original_url_for
 
 from zitkino import app, __version__ as version
+from zitkino.utils import slugify
 
 
 Gzip(app)
@@ -30,10 +30,7 @@ def date(dt):
     return re.sub(r'0+(\d+)', r'\1', d)
 
 
-@app.template_filter()
-def slugify(string, sep='_'):
-    string = unidecode.unidecode(string).lower()
-    return re.sub(r'\W+', sep, string)
+app.template_filter()(slugify)
 
 
 @app.template_filter()

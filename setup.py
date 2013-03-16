@@ -27,6 +27,8 @@ setup(
         'times>=0.5',
         'unidecode>=0.04.9',
         'flask-gzip==0.1',
+        'flask-mongoengine>=0.6',
+        'fuzzywuzzy>=0.1',
     ),
     tests_require=['nose>=1.2.1'],
     test_suite='nose.collector',
