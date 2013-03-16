@@ -27,7 +27,6 @@ def favicon():
 
 @app.route('/favicon.ico')
 @app.route('/apple-touch-icon.png')
-@app.route('/crossdomain.xml')
 @app.route('/robots.txt')
 @app.route('/humans.txt')
 def static_files():
