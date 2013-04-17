@@ -5,7 +5,7 @@ import os
 import logging
 from urlparse import urlparse
 
-from zitkino import __version__ as version
+from . import __version__ as version
 
 
 LOGGING = {

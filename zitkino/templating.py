@@ -3,14 +3,11 @@
 
 import re
 from jinja2 import Markup
-from flask.ext.gzip import Gzip
+
 from flask import url_for as original_url_for
 
-from zitkino import app, __version__ as version
-from zitkino.utils import slugify
-
-
-Gzip(app)
+from .utils import slugify
+from . import app, __version__ as version
 
 
 @app.context_processor

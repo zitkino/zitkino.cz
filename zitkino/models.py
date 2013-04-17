@@ -3,11 +3,10 @@
 
 from __future__ import division
 
-import logging
 from fuzzywuzzy import fuzz
 
-from zitkino import db
-from zitkino.utils import slugify, repr_name
+from . import db
+from .utils import slugify, repr_name
 
 
 class Cinema(db.Document):
@@ -20,6 +19,10 @@ class Cinema(db.Document):
     _town = db.StringField(db_field='town')
     coords = db.GeoPointField()
 
+    def __init__(self, *args, **kwargs):
+        super(Cinema, self).__init__(*args, **kwargs)
+        self.slug = self._create_slug()
+
     @property
     def name(self):
         return self._name
@@ -27,19 +30,19 @@ class Cinema(db.Document):
     @name.setter
     def name(self, name):
         self._name = name
-        self._create_slug()
+        self.slug = self._create_slug()
 
     @property
     def town(self):
-        return self._name
+        return self._town
 
     @name.setter
     def town(self, town):
         self._town = town
-        self._create_slug()
+        self.slug = self._create_slug()
 
     def _create_slug(self):
-        parts = filter(None, [self.town, self.name])
+        parts = filter(None, [self._town, self._name])
         return slugify(u'-'.join(parts))
 
     def __repr__(self):
@@ -74,8 +77,8 @@ class Film(db.Document):
     url_synopsitv = db.StringField()
 
     def __init__(self, *args, **kwargs):
-        self._log = logging.getLogger(__name__)
         super(Film, self).__init__(*args, **kwargs)
+        self.slug = self._create_slug()
 
     @property
     def title_main(self):
@@ -84,7 +87,7 @@ class Film(db.Document):
     @title_main.setter
     def title_main(self, title):
         self._title_main = title
-        self._create_slug()
+        self.slug = self._create_slug()
 
     @property
     def year(self):
@@ -93,7 +96,7 @@ class Film(db.Document):
     @year.setter
     def year(self, year):
         self._year = year
-        self._create_slug()
+        self.slug = self._create_slug()
 
     @property
     def length_hours(self):
@@ -149,7 +152,7 @@ class Film(db.Document):
         self.url_synopsitv = self.url_synopsitv or film.url_synopsitv
 
     def _create_slug(self):
-        parts = filter(None, [self.title_main, str(self.year)])
+        parts = filter(None, [self._title_main, str(self._year)])
         return slugify(u'-'.join(parts))
 
     def __repr__(self):

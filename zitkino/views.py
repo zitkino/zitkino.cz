@@ -2,9 +2,10 @@
 
 
 import os
+
 from flask import request, render_template, send_from_directory
 
-from zitkino import app
+from . import app
 
 
 @app.context_processor

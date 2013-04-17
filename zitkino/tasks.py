@@ -3,8 +3,11 @@
 
 
 import sys
+import logging
 
-from zitkino import __version__
+from .sync import sync
+from .models import data
+from . import __version__
 
 
 ### Utilities ###
@@ -65,17 +68,26 @@ def version():
     print __version__
 
 
-# @task
-# def sync_static():
-#     """Sync static data."""
-#     StaticDataSyncer().sync()
+@task
+def sync_static():
+    """Sync static data."""
+    for document in data:
+        logging.info('Sync of "%s" / "%s" object.',
+                     document.__class__.__name__,
+                     document.slug)
+
+        found = document.__class__.objects(slug=document.slug).first()
+        if found:
+            logging.info('Object found in db.')
+            document.id = found.id
+            document.save()  # update
+            logging.info('Object updated.')
+        else:
+            document.save()  # insert
+            logging.info('Object inserted.')
 
 
-# @task
-# def sync():
-#     """Sync showtimes."""
-#     user_agent = app.config['USER_AGENT']
-#     ShowtimesSyncer(user_agent=user_agent).sync()
+task(sync)
 
 
 ### Invocation directly from CLI ###
