@@ -35,12 +35,12 @@ def help():
     help = ''
     for name, func in tasks:
         adjusted_name = name.ljust(len(longest_name) + 1)
-        command_help = '\t{name}\t{func.__doc__}\n'.format(
+        command_help = "\t{name}\t{func.__doc__}\n".format(
             name=adjusted_name,
             func=func)
         help += command_help
 
-    print >> sys.stderr, 'usage: zitkino task\ntasks:\n' + help
+    print >> sys.stderr, "usage: zitkino task\ntasks:\n" + help
 
 
 def main(args=None):
@@ -48,7 +48,7 @@ def main(args=None):
     args = args or sys.argv[1:]
     try:
         if len(args) > 1:  # no other extra arguments supported
-            raise LookupError('Too much arguments.')
+            raise LookupError("Too much arguments.")
         task_name = args[0]
         task = dict(tasks)[task_name]  # task lookup
 
@@ -72,19 +72,19 @@ def version():
 def sync_static():
     """Sync static data."""
     for document in data:
-        logging.info('Sync of "%s" / "%s" object.',
+        logging.info("Sync of '%s' / '%s' object.",
                      document.__class__.__name__,
                      document.slug)
 
         found = document.__class__.objects(slug=document.slug).first()
         if found:
-            logging.info('Object found in db.')
+            logging.info("Object found in db.")
             document.id = found.id
             document.save()  # update
-            logging.info('Object updated.')
+            logging.info("Object updated.")
         else:
             document.save()  # insert
-            logging.info('Object inserted.')
+            logging.info("Object inserted.")
 
 
 task(sync)
