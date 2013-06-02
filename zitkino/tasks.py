@@ -3,10 +3,9 @@
 
 
 import sys
-import logging
 
-from .sync import sync
-from .models import data
+from .sync import sync, sync_static
+
 from . import __version__
 
 
@@ -23,7 +22,7 @@ def task(func):
     command = func_name.replace('_', '-')
 
     tasks.append((command, func))
-    __all__.append(func_name)  # only main and tasks should be imported
+    __all__.append(func_name)  # only main and tasks should be importable
 
     return func
 
@@ -68,26 +67,8 @@ def version():
     print __version__
 
 
-@task
-def sync_static():
-    """Sync static data."""
-    for document in data:
-        logging.info("Sync of '%s' / '%s' object.",
-                     document.__class__.__name__,
-                     document.slug)
-
-        found = document.__class__.objects(slug=document.slug).first()
-        if found:
-            logging.info("Object found in db.")
-            document.id = found.id
-            document.save()  # update
-            logging.info("Object updated.")
-        else:
-            document.save()  # insert
-            logging.info("Object inserted.")
-
-
 task(sync)
+task(sync_static)
 
 
 ### Invocation directly from CLI ###
