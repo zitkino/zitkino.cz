@@ -3,14 +3,26 @@
 
 import os
 
-from flask import request, render_template, send_from_directory
+from flask import request, render_template, send_from_directory, url_for
 
-from . import app
+from . import app, __version__ as version
 
 
 @app.context_processor
 def inject_config():
     return {'config': app.config['GA_CODE'], 'debug': app.debug}
+
+
+@app.context_processor
+def redefine_url_for():
+    """Enhancing original :func:`url_for` so it adds version to static
+    files.
+    """
+    def url_for_static(endpoint, **values):
+        if endpoint in ['static', 'static_files']:
+            values['v'] = version
+        return url_for(endpoint, **values)
+    return {'url_for': url_for_static}
 
 
 @app.route('/')
