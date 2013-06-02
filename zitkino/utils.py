@@ -12,10 +12,6 @@ def slugify(string, sep='_'):
     return re.sub(r'\W+', sep, string)
 
 
-def repr_name(cls):
-    return '.'.join((cls.__module__, cls.__name__))
-
-
 def deflate_exceptions(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
