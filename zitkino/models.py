@@ -6,7 +6,7 @@ from __future__ import division
 from fuzzywuzzy import fuzz
 
 from . import db
-from .utils import slugify, repr_name
+from .utils import slugify
 
 
 class Cinema(db.Document):
@@ -47,7 +47,7 @@ class Cinema(db.Document):
 
     def __repr__(self):
         return '<{name} {cinema_slug}>'.format(
-            name=repr_name(self.__class__), cinema_slug=self.slug)
+            name=self._repr_name(), cinema_slug=self.slug)
 
 
 class Film(db.Document):
@@ -157,7 +157,7 @@ class Film(db.Document):
 
     def __repr__(self):
         return '<{name} {slug}>'.format(
-            name=repr_name(self.__class__), slug=self.slug)
+            name=self._repr_name(), slug=self.slug)
 
 
 class ScrapedFilm(db.EmbeddedDocument):
@@ -187,11 +187,14 @@ class Showtime(db.Document):
 
     def __repr__(self):
         return '<{name} {film!r}@{cinema!r}, {starts_at}>'.format(
-            name=repr_name(self.__class__), cinema=self.cinema,
+            name=self._repr_name(), cinema=self.cinema,
             starts_at=self.starts_at, film=self.film)
 
 
-data = [
+### Static data
+
+
+static_data = [
     Cinema(
         name=u'Letní kino Na Dobráku',
         url='http://kinonadobraku.cz',

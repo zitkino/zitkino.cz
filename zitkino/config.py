@@ -14,13 +14,11 @@ LOGGING = {
 }
 
 mongodb_uri = urlparse(os.getenv('MONGOLAB_URI', 'mongodb://localhost:27017'))
-MONGODB_SETTINGS = {
-    'username': mongodb_uri.username,
-    'password': mongodb_uri.password,
-    'host': mongodb_uri.hostname,
-    'port': mongodb_uri.port,
-    'db': mongodb_uri.path.replace('/', '') or 'zitkino',
-}
+MONGODB_USERNAME = mongodb_uri.username
+MONGODB_PASSWORD = mongodb_uri.password
+MONGODB_HOST = mongodb_uri.hostname
+MONGODB_PORT = mongodb_uri.port
+MONGODB_DB = mongodb_uri.path.replace('/', '') or 'zitkino'
 
 SEND_FILE_MAX_AGE_DEFAULT = 157680000  # 5 years in seconds
 

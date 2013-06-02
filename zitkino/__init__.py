@@ -8,7 +8,8 @@ import logging
 
 from flask import Flask
 from flask.ext.gzip import Gzip
-from flask.ext.mongoengine import MongoEngine
+
+from .mongo import MongoEngine
 
 
 app = Flask(__name__)
@@ -22,4 +23,4 @@ Gzip(app)
 db = MongoEngine(app)
 
 
-from zitkino import views, templating
+from zitkino import views, templating  # NOQA
