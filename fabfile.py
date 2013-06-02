@@ -3,15 +3,15 @@
 
 import re
 import os
-from fabric.api import *
+from fabric.api import *  # NOQA
 
 
-base_path = os.path.dirname(__file__)
+project_dir = os.path.dirname(__file__)
 version_file = 'zitkino/__init__.py'
 
 
-if os.getcwd() != base_path:
-    abort('Not in project root. Please, cd to {0}.'.format(base_path))
+if os.getcwd() != project_dir:
+    abort('Not in project root. Please, cd to {0}.'.format(project_dir))
 
 
 __all__ = ('deploy', 'ps', 'logs')
