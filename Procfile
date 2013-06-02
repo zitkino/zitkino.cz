@@ -1,2 +1,2 @@
-web: gunicorn zitkino:app -b 0.0.0.0:$PORT -w 9 -k gevent
+web: uwsgi --http 0.0.0.0:$PORT -w zitkino:app --gevent 1024 -l 100 -p 1 -L
 cron: zitkino sync

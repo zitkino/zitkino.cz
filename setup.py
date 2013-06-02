@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 
 
 # determine version
-code = open('zitkino/__init__.py', 'r').read(500)
+code = open('zitkino/__init__.py', 'r').read()
 version = re.search(r'__version__ = \'([^\']*)\'', code).group(1)
 
 
@@ -15,13 +15,13 @@ install_requires = []
 dependency_links = []
 
 for line in open('requirements.txt').read().splitlines():
-    dependency = line.split(' #')[0].strip()
-    if not dependency:
+    dep = line.split(' #')[0].strip()
+    if not dep:
         continue
-    if dependency.startswith('http'):
-        dependency_links.append(dependency)
-        dependency = dependency.split('#egg=')[1].replace('-', '==')
-    install_requires.append(dependency)
+    if dep.startswith('http'):
+        dependency_links.append(dep)
+        dep = dep.split('#egg=')[1].replace('-', '==')
+    install_requires.append(dep)
 
 
 # setup configuration
@@ -34,10 +34,7 @@ setup(
     packages=find_packages(exclude=['tests']),
     include_package_data=True,
     install_requires=install_requires,
-    dependency_links=[
-        ('https://github.com/sitesupport/gevent/tarball/1.0rc2#'
-         'egg=gevent-1.0dev'),
-    ],
+    dependency_links=dependency_links,
     tests_require=['nose>=1.2.1'],
     test_suite='nose.collector',
     entry_points={
