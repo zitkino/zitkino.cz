@@ -1,5 +1,8 @@
 <!DOCTYPE html>
-<html lang="cs" class="no-js">
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
     <head>
         <meta charset="utf-8">
         <meta property="og:type" content="website">
@@ -56,8 +59,8 @@
             </div>
         </div>
 
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
-        <script>window.jQuery || document.write('<script src="{{ url_for('static', filename='js/jquery-1.9.0.min.js') }}"><\/script>')</script>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+        <script>window.jQuery || document.write('<script src="{{ url_for('static', filename='js/jquery-1.10.1.min.js') }}"><\/script>')</script>
         <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
         {% if not debug %}
         <script>
