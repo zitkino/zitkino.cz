@@ -11,24 +11,24 @@ from .utils import deflate_exceptions
 def sync():
     """Sync dynamic data (showtimes)."""
     for scraper in scrapers:
-        logging.info("Scraping: %s", scraper.__module__.split('.')[-1])
+        logging.info("Scraping: %s", scraper.__module__)
         scraper = deflate_exceptions(scraper)
+
         for showtime in scraper():
-            logging.info("Saving showtime: %r", showtime)
+            logging.info("Showtime: %r", showtime)
             showtime.save()
 
 
 def sync_static():
     """Sync static data (cinemas)."""
-    for document in static_data:
-        logging.info("Sync: %s %s",
-                     document.__class__.__name__, document.slug)
+    for doc in static_data:
+        cls = doc.__class__
 
-        found = document.__class__.objects(slug=document.slug).first()
+        found = cls.objects(slug=doc.slug).first()
         if found:
-            document.id = found.id
-            document.save()  # update
-            logging.info("Updated.")
+            doc.id = found.id
+            action = "Update"
         else:
-            document.save()  # insert
-            logging.info("Inserted.")
+            action = "Insert"
+        doc.save()
+        logging.info("%s: %r", action, doc)
