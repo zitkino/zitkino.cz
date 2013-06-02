@@ -3,8 +3,9 @@
 
 import re
 import logging
-import unidecode
 from functools import wraps
+
+import unidecode
 
 
 def slugify(string, sep='_'):

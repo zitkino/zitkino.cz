@@ -2,8 +2,8 @@
 
 
 import re
-from jinja2 import Markup
 
+from jinja2 import Markup
 from flask import url_for as original_url_for
 
 from .utils import slugify

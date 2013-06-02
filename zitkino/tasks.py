@@ -4,9 +4,8 @@
 
 import sys
 
-from .sync import sync, sync_static
-
 from . import __version__
+from .sync import sync, sync_static
 
 
 ### Utilities ###
