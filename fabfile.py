@@ -14,7 +14,7 @@ if os.getcwd() != project_dir:
     abort('Not in project root. Please, cd to {0}.'.format(project_dir))
 
 
-__all__ = ('deploy', 'ps', 'logs')
+__all__ = ('deploy', 'ps', 'logs', 'css')
 
 
 def capture(cmd):
@@ -47,22 +47,10 @@ def bump_version():
     return version
 
 
-def check_repo():
-    """Check if repository is ready for deployment."""
-    if not capture('git diff origin/$(git name-rev '
-                   '--name-only HEAD)..HEAD --name-status'):
-        abort('Nothing to deploy.')
-
-    if capture('git status -s | grep -e "^M"'):
-        abort('Staged modified files present in repository.')
-
-    if capture('git status -s | grep "M {0}"'.format(version_file)):
-        abort('File with version {0} is modified, '
-              'but not commited.'.format(version_file))
-
-
 def deploy():
-    """Deploy site to Heroku."""
+    """Push site to GitHub and deploy it to Heroku."""
+    static_dir = os.path.join(project_dir, 'zitkino/static')
+
     # parse active branch
     branches = capture('git branch --no-color 2> /dev/null')
     match = re.search(r'\* ([\w\-_]*)', branches)
@@ -71,23 +59,46 @@ def deploy():
     branch = match.group(1)
 
     # check repository status
-    check_repo()
+    if capture('git status -s | grep -e "^[M ]M"'):
+        abort('Modified files present in repository.')
 
-    # push to Github
-    tag = 'v' + bump_version()
-    local('git add ' + version_file)
-    local('git commit --amend --no-edit')
-    local('git tag {0}'.format(tag))
+    if capture('git status -s | grep "M {0}"'.format(version_file)):
+        abort('File with version {0} is modified, '
+              'but not commited.'.format(version_file))
+
+    # if there is something to push & deploy, bump version
+    if capture('git diff origin/$(git name-rev '
+               '--name-only HEAD)..HEAD --name-status'):
+        tag = 'v' + bump_version()
+        local('git add ' + version_file)
+        local('git commit --amend --no-edit')
+        local('git tag {0}'.format(tag))
+
+    # push to GitHub
     local('git push --tags origin {0}:{0}'.format(branch))
 
     # mongodb
     if 'MONGOLAB_URI' not in capture('heroku config | grep MONGOLAB_URI'):
         local('heroku addons:add mongolab:starter')
 
-    # push to Heroku
-    local('git push heroku {0}:master'.format(branch))
+    # generate static files to throwaway branch 'deploy'
+    with settings(hide('warnings', 'stdout', 'stderr'), warn_only=True):
+        local('git branch -D deploy')
+    local('git branch deploy && git checkout deploy')
+
+    # generate CSS
+    css()
+    local('rm -f ' + os.path.join(static_dir, 'css/.gitignore'))
+    local('rm -rf ' + os.path.join(static_dir, 'sass'))
+    local('git add -A && git commit -m "Static files."')
+
+    # push branch to Heroku
+    local('git push heroku deploy:master --force')
     if 'web.1: up' not in capture('heroku ps'):
         local('heroku ps:scale web=1')
+
+    # cleanup
+    local('git checkout {0} && git branch -D deploy'.format(branch))
 
 
 def ps():
@@ -98,3 +109,22 @@ def ps():
 def logs():
     """Show remote logs."""
     local('heroku logs')
+
+
+def css(watch=False):
+    """Compile CSS."""
+    command = 'watch' if watch else 'compile'
+
+    static_dir = os.path.join(project_dir, 'zitkino/static')
+    args = {
+        '-r': 'zurb-foundation',
+        '--sass-dir': os.path.join(static_dir, 'sass'),
+        '--css-dir': os.path.join(static_dir, 'css'),
+        '--images-dir': os.path.join(static_dir, 'img'),
+        '--javascripts-dir': os.path.join(static_dir, 'js'),
+        '--fonts-dir': os.path.join(static_dir, 'fonts'),
+        '-e': 'development' if watch else 'production',
+    }
+    argstring = ' '.join([arg + ' ' + value for (arg, value) in args.items()])
+
+    local('compass {cmd} {args}'.format(cmd=command, args=argstring))
