@@ -1,5 +1,5 @@
 # humanstxt.org/
-# The humans responsible & technology colophon
+# The humans responsible
 
 # TEAM
 
@@ -7,5 +7,5 @@
 
 # THANKS
 
-    Zuzana Válková, Milan Kubík, Ondřej Beneš, Petr Nohejl
-
+    Zuzana Válková, Milan Kubík, Ondřej Beneš, Petr Nohejl, Martin Bakeš,
+    Marián Čepa

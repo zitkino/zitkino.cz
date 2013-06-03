@@ -6,9 +6,18 @@ Uncluttered cinema program for Brno.
 - [Facebook page](https://www.facebook.com/zitkino)
 - [Twitter](https://twitter.com/zitkino)
 
-# Status: ACTIVE
+## Status: ACTIVE
 
 Under active development and maintenance.
+
+## Development
+
+Installation:
+
+```bash
+$ gem install zurb-foundation compass
+$ pip install -e .
+```
 
 ## License: ISC
 

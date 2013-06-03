@@ -24,13 +24,12 @@
         {% if self.image() %}<meta property="og:image" content="{% block image %}{% endblock %}">{% endif %}
 
         <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Domine&amp;subset=latin,latin-ext">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-responsive.min.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
 
         <script src="{{ url_for('static', filename='js/modernizr-2.6.2.min.js') }}"></script>
     </head>
     <body>
-        <div class="container" id="{{ request.endpoint }}">
+        <div class="row" id="{{ request.endpoint }}">
             <p class="header">
                 <a href="{{ url_for('index') }}"><strong>{{ self.site_name() }}</strong></a>
                  ·
@@ -61,7 +60,7 @@
 
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
         <script>window.jQuery || document.write('<script src="{{ url_for('static', filename='js/jquery-1.10.1.min.js') }}"><\/script>')</script>
-        <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/foundation/foundation.js') }}"></script>
         {% if not debug %}
         <script>
             var _gaq = _gaq || [];
