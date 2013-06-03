@@ -22,9 +22,7 @@ def sync():
 def sync_static():
     """Sync static data (cinemas)."""
     for doc in static_data:
-        cls = doc.__class__
-
-        found = cls.objects(slug=doc.slug).first()
+        found = doc.__class__.objects.with_slug(doc.slug)
         if found:
             doc.id = found.id
             action = "Update"
