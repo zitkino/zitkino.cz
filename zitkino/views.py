@@ -5,7 +5,7 @@ import os
 
 from flask import request, render_template, send_from_directory, url_for
 
-from . import app, __version__ as version
+from . import app, __version__
 
 
 @app.context_processor
@@ -20,7 +20,7 @@ def redefine_url_for():
     """
     def url_for_static(endpoint, **values):
         if endpoint in ['static', 'static_files']:
-            values['v'] = version
+            values['v'] = __version__
         return url_for(endpoint, **values)
     return {'url_for': url_for_static}
 
