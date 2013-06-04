@@ -59,12 +59,8 @@ def deploy():
     branch = match.group(1)
 
     # check repository status
-    if capture('git status -s | grep -e "^[M ]M"'):
+    if capture('git status -s'):
         abort('Modified files present in repository.')
-
-    if capture('git status -s | grep "M {0}"'.format(version_file)):
-        abort('File with version {0} is modified, '
-              'but not commited.'.format(version_file))
 
     # if there is something to push & deploy, bump version
     if capture('git diff origin/$(git name-rev '

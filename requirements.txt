@@ -1,5 +1,5 @@
 cython==0.17.4                                                         # Just to be able to compile gevent from tarball
-https://github.com/surfly/gevent/tarball/1.0rc2#egg=gevent-1.0dev      # Parallelism
+https://github.com/surfly/gevent/tarball/1.0rc2#egg=gevent             # Parallelism
 uwsgi==1.9.8                                                           # Web server
 flask==0.9                                                             # Web framework
 mongoengine==0.8.1                                                     # MongoDB
