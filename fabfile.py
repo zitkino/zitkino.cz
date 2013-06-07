@@ -82,12 +82,6 @@ def deploy():
         local('git branch -D deploy')
     local('git branch deploy && git checkout deploy')
 
-    # generate CSS
-    css()
-    local('rm -f ' + os.path.join(static_dir, 'css/.gitignore'))
-    local('rm -rf ' + os.path.join(static_dir, 'sass'))
-    local('git add -A && git commit -m "Static files."')
-
     # push branch to Heroku
     local('git push heroku deploy:master --force')
     if 'web.1: up' not in capture('heroku ps'):
@@ -105,22 +99,3 @@ def ps():
 def logs():
     """Show remote logs."""
     local('heroku logs')
-
-
-def css(watch=False):
-    """Compile CSS."""
-    command = 'watch' if watch else 'compile'
-
-    static_dir = os.path.join(project_dir, 'zitkino/static')
-    args = {
-        '-r': 'zurb-foundation',
-        '--sass-dir': os.path.join(static_dir, 'sass'),
-        '--css-dir': os.path.join(static_dir, 'css'),
-        '--images-dir': os.path.join(static_dir, 'img'),
-        '--javascripts-dir': os.path.join(static_dir, 'js'),
-        '--fonts-dir': os.path.join(static_dir, 'fonts'),
-        '-e': 'development' if watch else 'production',
-    }
-    argstring = ' '.join([arg + ' ' + value for (arg, value) in args.items()])
-
-    local('compass {cmd} {args}'.format(cmd=command, args=argstring))
