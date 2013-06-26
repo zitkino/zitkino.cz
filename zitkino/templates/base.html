@@ -10,10 +10,10 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <meta name="description" content="{% block description %}{{ self.claim() }}{% endblock %}">
+        <meta name="description" content="{% block description %}{{ self.claim()|uppercase_first }}{% endblock %}">
         <meta property="og:description" content="{{ self.description() }}">
 
-        <meta property="og:site_name" content="{% block site_name %}Žít&nbsp;kino{% endblock %} &middot; {% block claim %}Nejpřehlednější program brněnských kin{% endblock %}">
+        <meta property="og:site_name" content="{% block site_name %}Žít&nbsp;kino{% endblock %} &middot; {% block claim %}program brněnských&nbsp;kin{% endblock %}">
         {% if request.path == url_for('index') -%}
             <title>{{ self.site_name() }} &middot; {{ self.claim() }}</title>
         {%- else -%}
@@ -24,38 +24,46 @@
         {% endif %}
         <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Domine&amp;subset=latin,latin-ext">
         <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.1.0/pure-min.css">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+        {% assets filter="scss,cssmin", output="packed.css", "scss/main.scss" %}
+            <link rel="stylesheet" href="{{ ASSET_URL }}">
+        {% endassets %}
 
         <script src="{{ url_for('static', filename='js/modernizr-2.6.2.min.js') }}"></script>
     </head>
     <body>
-        <div class="row" id="{{ request.endpoint }}">
+        <div class="document" id="{{ request.endpoint }}">
             <header>
                 <h1><a href="{{ url_for('index') }}">{{ self.site_name() }}</a></h1>
-                <p>{{ self.claim() }}</p>
+                <p class="claim">je&nbsp;{{ self.claim() }}</p>
             </header>
 
             <div class="content">
                 {% block content %}{% endblock %}
             </div>
 
-            <p class="footer">
-                ...
-            </p>
+            <div class="footer">
+                <p><a href="http://honzajavorek.cz">kontakt</a></p>
 
-            <div class="fb_like">
-                <div class="fb-like"
-                    data-layout="button_count"
-                    data-href="http://www.facebook.com/zitkino"
-                    data-send="false"
-                    data-width="150">
+                <div class="button-container">
+                    <div class="fb-like"
+                        data-layout="button_count"
+                        data-href="http://www.facebook.com/zitkino"
+                        data-send="false"
+                        data-width="150">
+                    </div>
+                </div>
+                <div class="button-container">
+                    <a href="https://twitter.com/zitkino" class="twitter-follow-button" data-show-count="false" data-lang="cs" data-show-screen-name="false">Sledovat @zitkino</a>
                 </div>
             </div>
         </div>
 
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
         <script>window.jQuery || document.write('<script src="{{ url_for('static', filename='js/jquery-1.10.1.min.js') }}"><\/script>')</script>
-        <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+        {% assets filter="rjsmin", output="packed.js", "js/main.js" %}
+            <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+        {% endassets %}
+
         {% if not debug %}
         <script>
             var _gaq = _gaq || [];
@@ -77,5 +85,6 @@
             fjs.parentNode.insertBefore(js, fjs);
         }(document, 'script', 'facebook-jssdk'));</script>
         <div id="fb-root"></div>
+        <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
     </body>
 </html>

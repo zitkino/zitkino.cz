@@ -26,4 +26,9 @@ def email(address):
     return Markup(markup)
 
 
+@app.template_filter()
+def uppercase_first(text):
+    return text[0].upper() + text[1:]
+
+
 app.template_filter()(slugify)
