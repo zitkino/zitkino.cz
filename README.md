@@ -10,15 +10,6 @@ Uncluttered cinema program for Brno.
 
 Under active development and maintenance.
 
-## Development
-
-Installation:
-
-```bash
-$ gem install zurb-foundation compass
-$ pip install -e .
-```
-
 ## License: ISC
 
 © 2012 Jan Javorek &lt;<a
