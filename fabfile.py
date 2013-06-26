@@ -8,6 +8,7 @@ from fabric.api import *  # NOQA
 
 
 project_dir = os.path.dirname(__file__)
+static_dir = os.path.join(project_dir, 'zitkino/static')
 version_file = os.path.join(project_dir, 'zitkino/__init__.py')
 
 
@@ -58,21 +59,24 @@ def deploy():
     if 'MONGOLAB_URI' not in capture('heroku config | grep MONGOLAB_URI'):
         local('heroku addons:add mongolab:starter')
 
-    # generate static files to throwaway branch 'deploy'
-    with settings(hide('warnings', 'stdout', 'stderr'), warn_only=True):
+    try:
+        # generate static files to throwaway branch 'deploy'
+        with settings(hide('warnings', 'stdout', 'stderr'), warn_only=True):
+            local('git branch -D deploy')
+        local('git branch deploy && git checkout deploy')
+
+        local('git add --force ' + os.path.join(static_dir, 'packed.css'))
+        local('git add --force ' + os.path.join(static_dir, 'packed.js'))
+
+        # push to Heroku
+        local('git push heroku deploy:master --force')
+        if 'web.1: up' not in capture('heroku ps'):
+            local('heroku ps:scale web=1')
+
+    finally:
+        local('git reset HEAD')
+        local('git checkout {0}'.format(branch))
         local('git branch -D deploy')
-    local('git branch deploy && git checkout deploy')
-
-    local('git add --force ' + os.path.join(static_dir, 'packed.css'))
-    local('git add --force ' + os.path.join(static_dir, 'packed.js'))
-
-    # push to Heroku
-    local('git push heroku deploy:master --force')
-    if 'web.1: up' not in capture('heroku ps'):
-        local('heroku ps:scale web=1')
-
-    # cleanup
-    local('git checkout {0} && git branch -D deploy'.format(branch))
 
 
 def ps():
