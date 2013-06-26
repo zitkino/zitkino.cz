@@ -28,3 +28,8 @@ pip-log.txt
 .env
 *.sublime-*
 .sass-cache
+.webassets-cache
+
+# Assets
+packed.js
+packed.css

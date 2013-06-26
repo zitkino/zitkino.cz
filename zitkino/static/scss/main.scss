@@ -1,0 +1,227 @@
+
+
+/* Variables *********************************/
+
+$width-maximum: 940px;
+$width-medium: 500px;
+$width-small: 350px;
+
+$red: #EB2D09;
+$grey-dark: #999;
+$grey-medium: #CCC;
+$grey-light: #EEE;
+
+$border-radius: 3px;
+
+
+/* Mixins ************************************/
+
+@mixin no-select {
+    -moz-user-select: -moz-none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+@mixin border-radius {
+    -webkit-border-radius: $border-radius;
+    -moz-border-radius: $border-radius;
+    border-radius: $border-radius;
+}
+
+@mixin border-radius-right-half {
+    -webkit-border-radius: 0;
+    -webkit-border-top-right-radius: $border-radius;
+    -webkit-border-bottom-right-radius: $border-radius;
+    -moz-border-radius: 0;
+    -moz-border-radius-topright: $border-radius;
+    -moz-border-radius-bottomright: $border-radius;
+    border-radius: 0;
+    border-top-right-radius: $border-radius;
+    border-bottom-right-radius: $border-radius;
+}
+
+
+/* Base **************************************/
+
+.pure-g, .pure-g-r {
+    font-family: Arial, sans-serif;
+}
+
+body {
+    width: 98%;
+    margin: 0 auto;
+
+    @media (min-width: $width-maximum + 20px) {
+        & {
+            width: $width-maximum;
+        }
+    }
+}
+
+h1, h2, h3, h4, h5, h6, .claim {
+    font-family: 'Domine', serif;
+
+    a {
+        text-decoration: none;
+    }
+}
+
+a {
+    color: $red;
+}
+
+h3 small {
+    font-weight: normal;
+}
+
+.button-container {
+    display: inline;
+}
+
+
+/* Header ************************************/
+
+header {
+    margin: 1em 0 2em 0;
+
+    h1 {
+        color: $red;
+    }
+
+    h1, .claim {
+        display: inline;
+        font-size: 1.5em;
+    }
+
+    .claim {
+        color: $grey-dark;
+        margin-left: 0.2em;
+
+        @media (max-width: $width-medium) {
+            & {
+                font-size: 1em;
+            }
+        }
+
+        @media (max-width: $width-small) {
+            & {
+                display: block;
+                margin: 0.3em 0;
+                font-size: 1em;
+            }
+        }
+    }
+}
+
+
+/* Footer ************************************/
+
+.footer {
+    color: #000;
+    text-align: center;
+    margin-top: 5em;
+
+    a {
+        color: #000;
+    }
+}
+
+
+/* Showtimes *********************************/
+
+.showtimes {
+    padding-top: 1em;
+}
+
+.showtimes-schedule {
+    padding-bottom: 1em;
+    overflow: auto;
+    @include no-select;
+
+    th, td {
+        min-width: 4.5em;
+        max-width: 4.5em;
+        width: 4.5em;
+    }
+
+    table {
+        table-layout: fixed;
+    }
+
+    th {
+        vertical-align: middle;
+        text-align: left;
+    }
+
+    th span {
+        font-size: 0.7em;
+        font-weight: normal;
+        color: $grey-dark;
+    }
+
+    td {
+        text-align: center;
+        white-space: nowrap;
+        word-spacing: -0.1em;
+        border-left: 1px dotted $grey-light;
+    }
+
+    td span {
+        padding: 0 0.2em;
+        color: #000;
+        border: 1px solid $grey-medium;
+        @include border-radius;
+    }
+
+    td .minutes {
+        @include border-radius-right-half;
+        border-left: none;
+    }
+}
+
+.showtimes-schedule-wrapper {
+    @media (max-width: $width-medium) {
+        & {
+            width: auto;
+        }
+    }
+}
+
+.showtimes-cinemas {
+    padding-top: 1.4em;
+
+    @media (max-width: $width-medium) {
+        & {
+            width: 10em;
+        }
+    }
+
+    ul, li {
+        margin: 0; padding: 0;
+        list-style-type: none;
+    }
+
+    ul {
+        display: table;
+        width: 100%;
+    }
+
+    li {
+        display: table-row;
+    }
+
+    li strong {
+        font-weight: normal;
+        display: table-cell;
+        height: 3.1em;
+        padding-right: 1em;
+    }
+}
+
+.showtimes-schedule td, .showtimes-cinemas li strong {
+    font-size: 0.8em;
+    height: 3em;
+    vertical-align: middle;
+}
