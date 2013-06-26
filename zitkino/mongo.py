@@ -10,7 +10,7 @@ from mongoengine.queryset import (MultipleObjectsReturned, DoesNotExist)
 from .utils import slugify
 
 
-### Base MongoEngine adapter ###
+### Base MongoEngine adapter
 
 def _include_mongoengine(obj):
     for module in mongoengine, mongoengine.fields:
@@ -42,7 +42,7 @@ class MongoEngine(object):
         self.connection = mongoengine.connect(**conn_settings)
 
 
-### Custom QuerySet ###
+### Custom QuerySet
 
 class QuerySet(mongoengine.queryset.QuerySet):
     """A base queryset with handy extras."""
@@ -63,7 +63,7 @@ class QuerySet(mongoengine.queryset.QuerySet):
         return self.filter(_slug=slug).first()
 
 
-### Model mixins ###
+### Model mixins
 
 class ReprMixin(object):
 
@@ -114,7 +114,7 @@ class SlugMixin(object):
             return super(SlugMixin, self).__repr__()
 
 
-### Custom model base classes ###
+### Custom model base classes
 
 class Document(ReprMixin, mongoengine.Document):
 

@@ -8,7 +8,7 @@ from . import __version__
 from .sync import sync, sync_static
 
 
-### Utilities ###
+### Utilities
 
 
 tasks = []
@@ -57,7 +57,7 @@ def main(args=None):
     sys.exit(task())  # call the task and exit
 
 
-### Tasks ###
+### Tasks
 
 
 @task
@@ -70,7 +70,7 @@ task(sync)
 task(sync_static)
 
 
-### Invocation directly from CLI ###
+### Invocation directly from CLI
 
 
 if __name__ == '__main__':
