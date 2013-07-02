@@ -10,7 +10,7 @@ from . import app
 
 @app.context_processor
 def inject_config():
-    return {'config': app.config['GA_CODE'], 'debug': app.debug}
+    return {'ga_code': app.config['GA_CODE'], 'debug': app.debug}
 
 
 @app.route('/')
