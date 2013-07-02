@@ -67,6 +67,7 @@ def deploy():
 
         local('git add --force ' + os.path.join(static_dir, 'packed.css'))
         local('git add --force ' + os.path.join(static_dir, 'packed.js'))
+        local('git commit -m "Static files."')
 
         # push to Heroku
         local('git push heroku deploy:master --force')
