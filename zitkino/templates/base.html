@@ -24,7 +24,7 @@
         {% endif %}
         <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Domine&amp;subset=latin,latin-ext">
         <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.1.0/pure-min.css">
-        {% assets filter="scss,cssmin", output="packed.css", "scss/main.scss" %}
+        {% assets filters="scss,cssmin", output="packed.css", "scss/main.scss" %}
             <link rel="stylesheet" href="{{ ASSET_URL }}">
         {% endassets %}
 
@@ -60,7 +60,7 @@
 
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
         <script>window.jQuery || document.write('<script src="{{ url_for('static', filename='js/jquery-1.10.1.min.js') }}"><\/script>')</script>
-        {% assets filter="rjsmin", output="packed.js", "js/main.js" %}
+        {% assets filters="rjsmin", output="packed.js", "js/main.js" %}
             <script type="text/javascript" src="{{ ASSET_URL }}"></script>
         {% endassets %}
 

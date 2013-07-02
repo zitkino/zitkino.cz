@@ -31,6 +31,7 @@ setup(
     author='Honza Javorek',
     author_email='jan.javorek@gmail.com',
     url='http://zitkino.cz',
+    py_modules=['manage'],
     packages=find_packages(exclude=['tests']),
     include_package_data=True,
     install_requires=install_requires,
@@ -39,7 +40,7 @@ setup(
     test_suite='nose.collector',
     entry_points={
         'console_scripts': [
-            'zitkino = zitkino.tasks:main',
+            'zitkino = manage:manager.run',
         ],
-    }
+    },
 )

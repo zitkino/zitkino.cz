@@ -11,3 +11,4 @@ flask-gzip==0.1                                                        # Gzipped
 fuzzywuzzy>=0.1                                                        # Fuzzy string comparation
 flask-assets==0.8                                                      # Managing assets
 cssmin==0.1.4                                                          # CSS minifier
+flask-script==0.5.3                                                    # Command line scripts
