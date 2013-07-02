@@ -7,7 +7,6 @@ lxml==3.0.2                                                            # Fastest
 requests==1.0.3                                                        # HTTP requests
 times==0.4                                                             # From/to UTC datetime conversion
 unidecode==0.04.9                                                      # Unicode strings to ASCII
-flask-gzip==0.1                                                        # Gzipped responses
 fuzzywuzzy>=0.1                                                        # Fuzzy string comparation
 flask-assets==0.8                                                      # Managing assets
 cssmin==0.1.4                                                          # CSS minifier
