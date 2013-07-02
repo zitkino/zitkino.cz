@@ -60,11 +60,14 @@ def deploy():
         local('heroku addons:add mongolab:starter')
 
     try:
-        # generate static files to throwaway branch 'deploy'
+        # prepare throwaway branch 'deploy'
         with settings(hide('warnings', 'stdout', 'stderr'), warn_only=True):
             local('git branch -D deploy')
-        local('git branch deploy && git checkout deploy')
+        local('git branch deploy')
+        local('git checkout deploy')
 
+        # build and commit static files
+        local('python manage.py assets -q --parse-templates build')
         local('git add --force ' + os.path.join(static_dir, 'packed.css'))
         local('git add --force ' + os.path.join(static_dir, 'packed.js'))
         local('git commit -m "Static files."')
