@@ -115,11 +115,11 @@ static_data = [
         coords=(49.2181389, 16.5888692)
     ),
     Cinema(
-        name=u'Starobrno letní kino',
-        url='http://www.letnikinobrno.cz',
-        street=u'Lidická 12',
+        name=u'RWE letní kino na Riviéře',
+        url='http://www.kinonariviere.cz/',
+        street=u'Bauerova 322/7',
         town=u'Brno',
-        coords=(49.2013969, 16.6077600)
+        coords=(49.18827, 16.56924)
     ),
     Cinema(
         name=u'Kino Lucerna',
@@ -130,7 +130,7 @@ static_data = [
     ),
     Cinema(
         name=u'Kino Art',
-        url='http://www.kinoartbrno.cz',
+        url='http://www.kinoart.cz',
         street=u'Cihlářská 19',
         town=u'Brno',
         coords=(49.2043861, 16.6034708)
