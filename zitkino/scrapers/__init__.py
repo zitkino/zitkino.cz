@@ -6,7 +6,7 @@ import inspect
 from zitkino.models import Cinema
 
 
-class ScraperRepository(list):
+class ScraperRepository(set):
 
     def register(self, fn_or_cls):
         """Decorator, registers any callable as a scraper. Takes also classes
@@ -14,18 +14,33 @@ class ScraperRepository(list):
         (assuming they have ``__call__`` method).
         """
         if inspect.isclass(fn_or_cls):
+            if [s for s in self if s.__class__ == fn_or_cls]:
+                return fn_or_cls  # already present in repository
             fn = fn_or_cls()  # assuming __call__
         else:
             fn = fn_or_cls
-        self.append(fn)
+        self.add(fn)
+
         return fn_or_cls
 
 
-class CinemaRepository(list):
+class CinemaRepository(set):
 
     def register(self, **kwargs):
         """Registers cinema object."""
-        self.append(Cinema(**kwargs))
+        cinema = Cinema(**kwargs)
+
+        found = [c for c in self if c.slug == cinema.slug]
+        if found:
+            return found[0]
+
+        found = Cinema.objects.with_slug(cinema.slug).first()
+        if found:
+            cinema.id = found.id
+        cinema.save()
+
+        self.add(cinema)
+        return cinema
 
 
 scrapers = ScraperRepository()

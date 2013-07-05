@@ -12,7 +12,7 @@ static_dir = os.path.join(project_dir, 'zitkino/static')
 version_file = os.path.join(project_dir, 'zitkino/__init__.py')
 
 
-__all__ = ('deploy', 'ps', 'logs')
+__all__ = ('deploy', 'ps', 'logs', 'sync')
 
 
 ### Helpers
@@ -81,6 +81,11 @@ def deploy():
         local('git reset HEAD')
         local('git checkout {0}'.format(branch))
         local('git branch -D deploy')
+
+
+def sync():
+    """Manual synchronization."""
+    local('heroku run python manage.py sync all')
 
 
 def ps():

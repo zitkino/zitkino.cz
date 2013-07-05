@@ -6,9 +6,9 @@ import logging
 import times
 from flask.ext.script import Manager, Command
 
-from .models import Cinema, Showtime
+from .models import Showtime
+from .scrapers import scrapers
 from . import __version__ as version
-from .scrapers import scrapers, cinemas
 
 
 class Version(Command):
@@ -18,30 +18,10 @@ class Version(Command):
         print version
 
 
-class SyncCinemas(Command):
-    """Sync cinemas."""
-
-    def _log_cinema(self, msg, cinema):
-        logging.info(u"%s: %s", msg, cinema.slug)
-
-    def _sync_cinema(self, cinema):
-        found = Cinema.objects.with_slug(cinema.slug).first()
-        if found:
-            cinema.id = found.id
-            self._log_cinema('Update', cinema)
-        else:
-            self._log_cinema('Insert', cinema)
-        cinema.save()
-
-    def run(self):
-        for cinema in cinemas:
-            self._sync_cinema(cinema)
-
-
 class SyncShowtimes(Command):
     """Sync showtimes."""
 
-    def _log_showtime(self, msg, showtime):
+    def _log_showtime(self, showtime, msg='Showtime'):
         logging.info(
             msg + u": %s | %s | %s",
             showtime.starts_at,
@@ -51,10 +31,10 @@ class SyncShowtimes(Command):
 
     def _sync_showtime(self, showtime):
         if showtime.starts_at >= times.now():
-            self._log_showtime('OK', showtime)
+            self._log_showtime(showtime)
             showtime.save()
         else:
-            self._log_showtime('Skipping', showtime)
+            self._log_showtime(showtime, 'Past showtime')
 
     def _scrape(self):
         for scraper in scrapers:
@@ -75,11 +55,9 @@ class SyncAll(Command):
     """Sync all."""
 
     def run(self):
-        SyncCinemas().run()
         SyncShowtimes().run()
 
 
 sync = Manager(usage="Run synchronizations.")
-sync.add_command('cinemas', SyncCinemas())
 sync.add_command('showtimes', SyncShowtimes())
 sync.add_command('all', SyncAll())

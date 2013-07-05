@@ -4,12 +4,12 @@
 import requests
 
 from zitkino import formats, parsers
-from zitkino.models import Cinema, Showtime, ScrapedFilm
+from zitkino.models import Showtime, ScrapedFilm
 
 from . import cinemas, scrapers
 
 
-cinemas.register(
+cinema = cinemas.register(
     name=u'RWE letní kino na Riviéře',
     url='http://www.kinonariviere.cz/',
     street=u'Bauerova 322/7',
@@ -29,11 +29,8 @@ class Scraper(object):
     }
 
     def __call__(self):
-        cinema = Cinema.objects.with_slug(self.slug).get()
         for row in self._scrape_rows():
-            showtime = self._parse_row(row, self.url)
-            showtime.cinema = cinema
-            yield showtime
+            yield self._parse_row(row, self.url)
 
     def _scrape_rows(self):
         resp = requests.get(self.url)
@@ -56,6 +53,7 @@ class Scraper(object):
         url_booking = row[8].link(base_url)
 
         return Showtime(
+            cinema=cinema,
             film_scraped=ScrapedFilm(
                 title_main=title_main,
                 titles=[title_main, title_orig],
