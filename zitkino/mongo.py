@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Base MongoDB models (inspired by Flask-MongoEngine)"""
+"""Base MongoDB models (heavily inspired by Flask-MongoEngine)"""
 
 
 import mongoengine
@@ -24,7 +24,6 @@ class MongoEngine(object):
     def __init__(self, app=None):
         _include_mongoengine(self)
         self.Document = Document
-        self.EmbeddedDocument = EmbeddedDocument
         self.SlugMixin = SlugMixin
 
         if app is not None:
@@ -60,20 +59,10 @@ class QuerySet(mongoengine.queryset.QuerySet):
         return obj
 
     def with_slug(self, slug):
-        return self.filter(_slug=slug).first()
+        return self.filter(_slug=slug)
 
 
 ### Model mixins
-
-class ReprMixin(object):
-
-    def _repr_name(self):
-        cls = self.__class__
-        return '.'.join((cls.__module__, cls.__name__))
-
-    def __repr__(self):
-        return '<{0}>'.format(self._repr_name())
-
 
 class SlugMixin(object):
 
@@ -107,21 +96,10 @@ class SlugMixin(object):
             values.append(unicode(value))
         self._slug = slugify('_'.join(values))
 
-    def __repr__(self):
-        try:
-            return '<{0} {1}>'.format(self._repr_name(), self.slug)
-        except ValueError:
-            return super(SlugMixin, self).__repr__()
 
+### Custom model base class
 
-### Custom model base classes
-
-class Document(ReprMixin, mongoengine.Document):
+class Document(mongoengine.Document):
 
     meta = {'abstract': True,
             'queryset_class': QuerySet}
-
-
-class EmbeddedDocument(ReprMixin, mongoengine.EmbeddedDocument):
-
-    meta = {'abstract': True}

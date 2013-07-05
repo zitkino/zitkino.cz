@@ -6,6 +6,7 @@ import os
 from flask import request, render_template, send_from_directory
 
 from . import app
+from .models import Showtime
 
 
 @app.context_processor
@@ -15,7 +16,8 @@ def inject_config():
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    showtimes = Showtime.upcoming()
+    return render_template('index.html', showtimes=showtimes)
 
 
 @app.route('/favicon.ico')

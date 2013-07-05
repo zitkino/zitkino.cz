@@ -159,9 +159,16 @@ header {
 
 /* Showtimes *********************************/
 
-.films {
-    width: 100%;
-    margin-bottom: 1.5em;
+.showtimes {
+    h2 {
+        margin-bottom: 0.3em;
+        border-bottom: 1px solid $grey-medium;
+    }
+
+    table {
+        width: 100%;
+        margin-bottom: 1.5em;
+    }
 
     th, td {
         padding: 0.5em 0;
@@ -187,9 +194,4 @@ header {
             border-bottom: none;
         }
     }
-}
-
-h2 {
-    margin-bottom: 0.3em;
-    border-bottom: 1px solid $grey-medium;
 }

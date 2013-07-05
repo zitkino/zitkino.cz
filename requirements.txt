@@ -2,8 +2,9 @@ cython==0.17.4                                                         # Just to
 https://github.com/surfly/gevent/tarball/1.0rc2#egg=gevent             # Parallelism
 uwsgi==1.9.8                                                           # Web server
 flask==0.9                                                             # Web framework
+jinja2==2.7                                                            # Templates
 mongoengine==0.8.1                                                     # MongoDB
-lxml==3.0.2                                                            # Fastest XML/HTML parser, scraping
+lxml==3.2.1                                                            # Fastest XML/HTML parser, scraping
 requests==1.0.3                                                        # HTTP requests
 times==0.4                                                             # From/to UTC datetime conversion
 unidecode==0.04.9                                                      # Unicode strings to ASCII
@@ -11,3 +12,4 @@ fuzzywuzzy>=0.1                                                        # Fuzzy s
 flask-assets==0.8                                                      # Managing assets
 cssmin==0.1.4                                                          # CSS minifier
 flask-script==0.5.3                                                    # Command line scripts
+cssselect==0.8                                                         # CSS selects for lxml

@@ -1,155 +1,28 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h2 title="Úterý&nbsp;11.&nbsp;6.">Dnes</h2>
-<table class="films">
-    <tr>
-        <th><a href="http://www.csfd.cz/hledat/?q=Vinnetou">Vinnetou</a></th>
-        <td><a href="">Kino Art</a></td>
-    </tr>
-    <tr>
-        <th><a href="http://www.csfd.cz/hledat/?q=Vinnetou">Pěna dní</a></th>
-        <td><a href="">Lucerna</a>, <a href="">Kino Art</a></td>
-    </tr>
-    <tr>
-        <th><a href="http://www.csfd.cz/hledat/?q=Vinnetou">Osamělý jezdec</a></th>
-        <td><a href="">Lucerna</a></td>
-    </tr>
-    <tr>
-        <th><a href="http://www.csfd.cz/hledat/?q=Vinnetou">Liberace!</a></th>
-        <td><a href="">Lucerna</a>, <a href="">Kino Art</a></td>
-    </tr>
-    <tr>
-        <th><a href="http://www.csfd.cz/hledat/?q=Vinnetou">Univerzita pro příšerky</a></th>
-        <td><a href="">Kino Art</a></td>
-    </tr>
-</table>
+{% for showtimes_per_day in showtimes|groupby('starts_at_day') %}
+    {% set starts_at_day = showtimes_per_day.grouper %}
+    <div class="showtimes">
+        <h2>{{ starts_at_day|date }}</h2>
+        <table>
+            {% for showtimes_per_film in showtimes_per_day.list|groupby('film') %}
+            {% set film = showtimes_per_film.grouper %}
+            <tr>
+                <th>
+                    <a href="http://www.csfd.cz/hledat/?q={{ film.title_main|urlencode }}">
+                        {{ film.title_main }}
+                    </a>
+                </th>
+                <td>
+                    {% for cinema in showtimes_per_film.list|map(attribute='cinema')|unique(attribute='name') %}
+                        <a href="{{ cinema.url }}">{{ cinema.name }}</a>
+                    {% endfor %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+{% endfor %}
 
-<h2 title="Středa&nbsp;12.&nbsp;6.">Zítra</h2>
-<table class="films">
-    <tr>
-        <th>Vinnetou</th>
-        <td>Kino Art</td>
-    </tr>
-    <tr>
-        <th>Pěna dní</th>
-        <td>Lucerna, Kino Art</td>
-    </tr>
-    <tr>
-        <th>Osamělý jezdec</th>
-        <td>Lucerna</td>
-    </tr>
-    <tr>
-        <th>Liberace!</th>
-        <td>Lucerna, Kino Art</td>
-    </tr>
-    <tr>
-        <th>Univerzita pro příšerky </th>
-        <td>Kino Art</td>
-    </tr>
-</table>
-
-<h2>Čtvrtek&nbsp;13.&nbsp;6.</h2>
-<table class="films">
-    <tr>
-        <th>Vinnetou</th>
-        <td>Kino Art</td>
-    </tr>
-    <tr>
-        <th>Pěna dní</th>
-        <td>Lucerna, Kino Art</td>
-    </tr>
-    <tr>
-        <th>Osamělý jezdec</th>
-        <td>Lucerna</td>
-    </tr>
-    <tr>
-        <th>Liberace!</th>
-        <td>Lucerna, Kino Art</td>
-    </tr>
-    <tr>
-        <th>Univerzita pro příšerky </th>
-        <td>Kino Art</td>
-    </tr>
-</table>
-
-<h2>Pátek&nbsp;14.&nbsp;6.</h2>
-<table class="films">
-    <tr>
-        <th>Vinnetou</th>
-        <td>Kino Art</td>
-    </tr>
-    <tr>
-        <th>Pěna dní</th>
-        <td>Lucerna, Kino Art</td>
-    </tr>
-    <tr>
-        <th>Osamělý jezdec</th>
-        <td>Lucerna</td>
-    </tr>
-    <tr>
-        <th>Liberace!</th>
-        <td>Lucerna, Kino Art</td>
-    </tr>
-    <tr>
-        <th>Univerzita pro příšerky </th>
-        <td>Kino Art</td>
-    </tr>
-</table>
-
-<h2>Sobota&nbsp;15.&nbsp;6.</h2>
-<table class="films">
-    <tr>
-        <th>Pěna dní</th>
-        <td>Lucerna, Kino Art</td>
-    </tr>
-    <tr>
-        <th>Osamělý jezdec</th>
-        <td>Lucerna</td>
-    </tr>
-    <tr>
-        <th>Liberace!</th>
-        <td>Lucerna, Kino Art</td>
-    </tr>
-    <tr>
-        <th>Univerzita pro příšerky </th>
-        <td>Kino Art</td>
-    </tr>
-</table>
-
-<h2>Neděle&nbsp;16.&nbsp;6.</h2>
-<table class="films">
-    <tr>
-        <th>Vinnetou</th>
-        <td>Kino Art</td>
-    </tr>
-    <tr>
-        <th>Pěna dní</th>
-        <td>Lucerna, Kino Art</td>
-    </tr>
-    <tr>
-        <th>Osamělý jezdec</th>
-        <td>Lucerna</td>
-    </tr>
-</table>
-
-<h2>Pondělí&nbsp;17.&nbsp;6.</h2>
-<table class="films">
-    <tr>
-        <th>Vinnetou</th>
-        <td>Kino Art</td>
-    </tr>
-    <tr>
-        <th>Pěna dní</th>
-        <td>Lucerna, Kino Art</td>
-    </tr>
-    <tr>
-        <th>Liberace!</th>
-        <td>Lucerna, Kino Art</td>
-    </tr>
-    <tr>
-        <th>Univerzita pro příšerky </th>
-        <td>Kino Art</td>
-    </tr>
-</table>
 {% endblock %}
