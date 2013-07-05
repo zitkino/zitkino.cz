@@ -1,82 +1,155 @@
 {% extends 'base.html' %}
 {% block content %}
-<!--
-<div class="showtime">
-    <h3>
-        <span class="rating rating-3">&#9733;&#9733;&#9733;</span>
-        <span title="Winnetou I, Vinetu I, La Valle dei lunghi coltelli, Winnetou I, Apache Gold, Winnetou the Warrior">
-            Vinnetou
-        </span>
-        <small class="year">1963</small>
-    </h3>
-</div>
--->
-<div class="film opened">
-    <h3>
-        <span title="Winnetou I, Vinetu I, La Valle dei lunghi coltelli, Winnetou I, Apache Gold, Winnetou the Warrior">
-            Vinnetou
-        </span>
-        <small class="year">1963</small>
-        <small class="duration">1,5&nbsp;h</small>
-        <small class="rating rating-3">1 ze 3 hvězdiček</small>
-    </h3>
 
-    <div class="showtimes pure-g pure-hidden-phone">
-        <div class="showtimes-cinemas pure-u-1-5">
-            <ul>
-                <li>
-                    <strong>Cinema City Velký Špalíček</strong>
-                </li>
-                <li>
-                    <strong>Cinestar Anděl</strong>
-                </li>
-            </ul>
-        </div>
-        <div class="showtimes-schedule-wrapper pure-u-4-5">
-            <div class="showtimes-schedule">
-                <table>
-                    <tr>
-                        <th><span>12</span></th><th><span>13</span></th><th><span>14</span></th>
-                        <th><span>15</span></th><th><span>16</span></th><th><span>17</span></th>
-                        <th><span>18</span></th><th><span>19</span></th><th><span>20</span></th>
-                        <th><span>21</span></th><th><span>22</span></th>
-                    </tr>
-                    <tr>
-                        <td></td><td><span>13:00</span></td><td></td>
-                        <td><span>15:40</span></td><td></td><td><span>17:00</span></td>
-                        <td></td><td><span>19:50</span></td>
-                        <td></td><td></td><td></td>
-                    </tr>
-                    <tr>
-                        <td><span>12:50</span></td><td><span>13:50</span></td><td></td>
-                        <td><span>15:00</span></td><td><span>16:00</span></td><td><span>17:00</span></td>
-                        <td><span>18:00</span> <span class="minutes">10</span></td><td><span>19:20</span></td><td><span>20:20</span></td>
-                        <td><span>21:00</span> <span class="minutes">30</span></td><td><span>22:30</span></td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-    </div>
+<h2 title="Úterý&nbsp;11.&nbsp;6.">Dnes</h2>
+<table class="films">
+    <tr>
+        <th><a href="http://www.csfd.cz/hledat/?q=Vinnetou">Vinnetou</a></th>
+        <td><a href="">Kino Art</a></td>
+    </tr>
+    <tr>
+        <th><a href="http://www.csfd.cz/hledat/?q=Vinnetou">Pěna dní</a></th>
+        <td><a href="">Lucerna</a>, <a href="">Kino Art</a></td>
+    </tr>
+    <tr>
+        <th><a href="http://www.csfd.cz/hledat/?q=Vinnetou">Osamělý jezdec</a></th>
+        <td><a href="">Lucerna</a></td>
+    </tr>
+    <tr>
+        <th><a href="http://www.csfd.cz/hledat/?q=Vinnetou">Liberace!</a></th>
+        <td><a href="">Lucerna</a>, <a href="">Kino Art</a></td>
+    </tr>
+    <tr>
+        <th><a href="http://www.csfd.cz/hledat/?q=Vinnetou">Univerzita pro příšerky</a></th>
+        <td><a href="">Kino Art</a></td>
+    </tr>
+</table>
 
-    <div class="showtimes showtimes-mobile pure-g pure-hidden-tablet pure-hidden-desktop">
-        <div class="pure-u-1">
-            dodělat mobilní verzi programu
-        </div>
-    </div>
-</div>
-
-<!--
 <h2 title="Středa&nbsp;12.&nbsp;6.">Zítra</h2>
-
+<table class="films">
+    <tr>
+        <th>Vinnetou</th>
+        <td>Kino Art</td>
+    </tr>
+    <tr>
+        <th>Pěna dní</th>
+        <td>Lucerna, Kino Art</td>
+    </tr>
+    <tr>
+        <th>Osamělý jezdec</th>
+        <td>Lucerna</td>
+    </tr>
+    <tr>
+        <th>Liberace!</th>
+        <td>Lucerna, Kino Art</td>
+    </tr>
+    <tr>
+        <th>Univerzita pro příšerky </th>
+        <td>Kino Art</td>
+    </tr>
+</table>
 
 <h2>Čtvrtek&nbsp;13.&nbsp;6.</h2>
+<table class="films">
+    <tr>
+        <th>Vinnetou</th>
+        <td>Kino Art</td>
+    </tr>
+    <tr>
+        <th>Pěna dní</th>
+        <td>Lucerna, Kino Art</td>
+    </tr>
+    <tr>
+        <th>Osamělý jezdec</th>
+        <td>Lucerna</td>
+    </tr>
+    <tr>
+        <th>Liberace!</th>
+        <td>Lucerna, Kino Art</td>
+    </tr>
+    <tr>
+        <th>Univerzita pro příšerky </th>
+        <td>Kino Art</td>
+    </tr>
+</table>
 
 <h2>Pátek&nbsp;14.&nbsp;6.</h2>
+<table class="films">
+    <tr>
+        <th>Vinnetou</th>
+        <td>Kino Art</td>
+    </tr>
+    <tr>
+        <th>Pěna dní</th>
+        <td>Lucerna, Kino Art</td>
+    </tr>
+    <tr>
+        <th>Osamělý jezdec</th>
+        <td>Lucerna</td>
+    </tr>
+    <tr>
+        <th>Liberace!</th>
+        <td>Lucerna, Kino Art</td>
+    </tr>
+    <tr>
+        <th>Univerzita pro příšerky </th>
+        <td>Kino Art</td>
+    </tr>
+</table>
 
 <h2>Sobota&nbsp;15.&nbsp;6.</h2>
+<table class="films">
+    <tr>
+        <th>Pěna dní</th>
+        <td>Lucerna, Kino Art</td>
+    </tr>
+    <tr>
+        <th>Osamělý jezdec</th>
+        <td>Lucerna</td>
+    </tr>
+    <tr>
+        <th>Liberace!</th>
+        <td>Lucerna, Kino Art</td>
+    </tr>
+    <tr>
+        <th>Univerzita pro příšerky </th>
+        <td>Kino Art</td>
+    </tr>
+</table>
 
 <h2>Neděle&nbsp;16.&nbsp;6.</h2>
+<table class="films">
+    <tr>
+        <th>Vinnetou</th>
+        <td>Kino Art</td>
+    </tr>
+    <tr>
+        <th>Pěna dní</th>
+        <td>Lucerna, Kino Art</td>
+    </tr>
+    <tr>
+        <th>Osamělý jezdec</th>
+        <td>Lucerna</td>
+    </tr>
+</table>
 
 <h2>Pondělí&nbsp;17.&nbsp;6.</h2>
--->
+<table class="films">
+    <tr>
+        <th>Vinnetou</th>
+        <td>Kino Art</td>
+    </tr>
+    <tr>
+        <th>Pěna dní</th>
+        <td>Lucerna, Kino Art</td>
+    </tr>
+    <tr>
+        <th>Liberace!</th>
+        <td>Lucerna, Kino Art</td>
+    </tr>
+    <tr>
+        <th>Univerzita pro příšerky </th>
+        <td>Kino Art</td>
+    </tr>
+</table>
 {% endblock %}

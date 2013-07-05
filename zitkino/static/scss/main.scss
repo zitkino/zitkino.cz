@@ -6,6 +6,7 @@ $width-maximum: 940px;
 $width-medium: 500px;
 $width-small: 350px;
 
+$black: #000;
 $red: #EB2D09;
 $grey-dark: #999;
 $grey-medium: #CCC;
@@ -42,11 +43,23 @@ $border-radius: 3px;
     border-bottom-right-radius: $border-radius;
 }
 
+@mixin link($color, $hover-color) {
+    color: $color;
+    text-decoration: none;
+
+    &:hover, &:focus {
+        color: $hover-color;
+        text-decoration: underline;
+    }
+}
+
 
 /* Base **************************************/
 
-.pure-g, .pure-g-r {
-    font-family: Arial, sans-serif;
+html, button, input, select, textarea {
+    // The nicest Helvetica... http://css-tricks.com/snippets/css/better-helvetica/
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+    font-weight: 300;
 }
 
 body {
@@ -69,15 +82,11 @@ h1, h2, h3, h4, h5, h6, .claim {
 }
 
 a {
-    color: $red;
+    @include link($grey-dark, $red);
 }
 
 h3 small {
     font-weight: normal;
-}
-
-.button-container {
-    display: inline;
 }
 
 
@@ -92,7 +101,12 @@ header {
 
     h1, .claim {
         display: inline;
-        font-size: 1.5em;
+        font-size: 1.2em;
+    }
+
+    a {
+        color: $red;
+        text-decoration: none;
     }
 
     .claim {
@@ -120,108 +134,62 @@ header {
 
 .footer {
     color: #000;
-    text-align: center;
-    margin-top: 5em;
+    margin: 0;
+    padding: 0;
+    margin: 3em 0;
+    text-align: right;
 
-    a {
-        color: #000;
+    li {
+        height: 20px;
+        display: inline-block;
+        margin: 0 0 0 1em;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    .contact {
+        line-height: 18px;
+
+        a {
+            font-size: 0.8em;
+        }
     }
 }
 
 
 /* Showtimes *********************************/
 
-.showtimes {
-    padding-top: 1em;
-}
-
-.showtimes-schedule {
-    padding-bottom: 1em;
-    overflow: auto;
-    @include no-select;
+.films {
+    width: 100%;
+    margin-bottom: 1.5em;
 
     th, td {
-        min-width: 4.5em;
-        max-width: 4.5em;
-        width: 4.5em;
-    }
-
-    table {
-        table-layout: fixed;
+        padding: 0.5em 0;
     }
 
     th {
-        vertical-align: middle;
-        text-align: left;
-    }
-
-    th span {
-        font-size: 0.7em;
         font-weight: normal;
-        color: $grey-dark;
+        text-align: left;
+        width: 50%;
+
+        a {
+            @include link($black, $red);
+        }
     }
 
     td {
-        text-align: center;
-        white-space: nowrap;
-        word-spacing: -0.1em;
-        border-left: 1px dotted $grey-light;
+        padding-left: 1em;
+        color: $grey-dark;
     }
 
-    td span {
-        padding: 0 0.2em;
-        color: #000;
-        border: 1px solid $grey-medium;
-        @include border-radius;
-    }
-
-    td .minutes {
-        @include border-radius-right-half;
-        border-left: none;
-    }
-}
-
-.showtimes-schedule-wrapper {
-    @media (max-width: $width-medium) {
-        & {
-            width: auto;
+    tr:last-child {
+        th, td {
+            border-bottom: none;
         }
     }
 }
 
-.showtimes-cinemas {
-    padding-top: 1.4em;
-
-    @media (max-width: $width-medium) {
-        & {
-            width: 10em;
-        }
-    }
-
-    ul, li {
-        margin: 0; padding: 0;
-        list-style-type: none;
-    }
-
-    ul {
-        display: table;
-        width: 100%;
-    }
-
-    li {
-        display: table-row;
-    }
-
-    li strong {
-        font-weight: normal;
-        display: table-cell;
-        height: 3.1em;
-        padding-right: 1em;
-    }
-}
-
-.showtimes-schedule td, .showtimes-cinemas li strong {
-    font-size: 0.8em;
-    height: 3em;
-    vertical-align: middle;
+h2 {
+    margin-bottom: 0.3em;
+    border-bottom: 1px solid $grey-medium;
 }
