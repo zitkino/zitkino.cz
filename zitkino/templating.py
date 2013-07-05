@@ -16,7 +16,7 @@ from .utils import slugify
 def date(value, relative=True):
     """Simple, human-readable date."""
     date = value.date() if isinstance(value, datetime.datetime) else value
-    today = times.now().date()
+    today = times.to_local(times.now(), 'Europe/Prague').date()
 
     if relative:
         if today == date:
