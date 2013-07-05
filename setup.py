@@ -36,11 +36,4 @@ setup(
     include_package_data=True,
     install_requires=install_requires,
     dependency_links=dependency_links,
-    tests_require=['nose>=1.2.1'],
-    test_suite='nose.collector',
-    entry_points={
-        'console_scripts': [
-            'zitkino = manage:manager.run',
-        ],
-    },
 )
