@@ -56,6 +56,15 @@ class SyncShowtimes(Command):
                     self._sync_showtime(showtime)
 
 
+class SyncAll(Command):
+    """Sync all."""
+
+    def run(self):
+        SyncCinemas().run()
+        SyncShowtimes().run()
+
+
 sync = Manager(usage="Run synchronizations.")
 sync.add_command('cinemas', SyncCinemas())
 sync.add_command('showtimes', SyncShowtimes())
+sync.add_command('all', SyncAll())
