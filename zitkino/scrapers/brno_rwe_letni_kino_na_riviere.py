@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 
-import logging
 import requests
 
 from zitkino import formats, parsers
@@ -34,10 +33,7 @@ class Scraper(object):
 
     def __call__(self):
         for row in self._scrape_rows():
-            try:
-                yield self._parse_row(row, self.url)
-            except Exception as e:
-                logging.exception(e)
+            yield self._parse_row(row, self.url)
 
     def _scrape_rows(self):
         resp = requests.get(self.url)
