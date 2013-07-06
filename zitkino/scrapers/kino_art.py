@@ -4,7 +4,7 @@
 from . import cinemas, scrapers
 
 
-cinemas.register(
+cinema = cinemas.register(
     name=u'Kino Art',
     url='http://www.kinoart.cz',
     street=u'Cihlářská 19',

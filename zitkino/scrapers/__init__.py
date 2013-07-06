@@ -48,8 +48,8 @@ cinemas = CinemaRepository()
 
 
 from . import (  # NOQA
-    brno_kino_art,
-    brno_kino_lucerna,
-    brno_letni_kino_na_dobraku,
-    brno_rwe_letni_kino_na_riviere,
+    kino_art,
+    kino_lucerna,
+    letni_kino_na_dobraku,
+    rwe_letni_kino_na_riviere,
 )

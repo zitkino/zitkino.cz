@@ -45,7 +45,7 @@ class Scraper(object):
             yield self._parse_event(event)
 
     def _scrape_events(self):
-        resp = requests.get(self.url)
+        resp = requests.get(self.url, timeout=30)
         cal = formats.ical(resp.content)
         for event in cal.walk():
             if event.name == 'VEVENT':

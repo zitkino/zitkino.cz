@@ -12,7 +12,7 @@ from . import db
 
 class Cinema(db.SlugMixin, db.Document):
 
-    meta = {'slug': ['town', 'name']}
+    meta = {'slug': ['name']}
 
     name = db.StringField(required=True)
     url = db.URLField()

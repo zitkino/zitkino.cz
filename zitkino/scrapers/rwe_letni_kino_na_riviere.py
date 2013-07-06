@@ -32,7 +32,7 @@ class Scraper(object):
             yield self._parse_row(row)
 
     def _scrape_rows(self):
-        resp = requests.get(self.url)
+        resp = requests.get(self.url, timeout=30)
         html = formats.html(resp.content, base_url=resp.url)
         return html.cssselect('.content table tr')
 
@@ -48,8 +48,8 @@ class Scraper(object):
         tags = [self.tags_map.get(t) for t
                 in (row[5].text_content(), row[6].text_content())]
 
-        price = parsers.price(row[7].text_content())
         url_booking = row[8].link()
+        price = parsers.price(row[7].text_content())
 
         return Showtime(
             cinema=cinema,
