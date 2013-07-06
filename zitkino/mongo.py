@@ -7,8 +7,6 @@ from flask import abort
 from mongoengine import ValidationError
 from mongoengine.queryset import (MultipleObjectsReturned, DoesNotExist)
 
-from .utils import slugify
-
 
 ### Base MongoEngine adapter
 
@@ -24,7 +22,6 @@ class MongoEngine(object):
     def __init__(self, app=None):
         _include_mongoengine(self)
         self.Document = Document
-        self.SlugMixin = SlugMixin
 
         if app is not None:
             self.init_app(app)
@@ -57,44 +54,6 @@ class QuerySet(mongoengine.queryset.QuerySet):
         if obj is None:
             abort(404)
         return obj
-
-    def with_slug(self, slug):
-        return self.filter(_slug=slug)
-
-
-### Model mixins
-
-class SlugMixin(object):
-
-    _slug = mongoengine.fields.StringField(required=True, unique=True,
-                                           db_field='slug')
-
-    def __init__(self, *args, **kwargs):
-        super(SlugMixin, self).__init__(*args, **kwargs)
-        if not self._slug:
-            self._create_slug()
-
-    @property
-    def slug(self):
-        self._create_slug()
-        return self._slug
-
-    def clean(self):
-        try:
-            self._create_slug()
-        except ValueError as e:
-            raise mongoengine.ValidationError(*e.args)
-        super(SlugMixin, self).clean()
-
-    def _create_slug(self):
-        values = []
-        for field_name in self._meta.get('slug', []):
-            value = getattr(self, field_name)
-            if value is None or not unicode(value):
-                raise ValueError("Column {0} participates in slug, "
-                                 "but it is empty.".format(field_name))
-            values.append(unicode(value))
-        self._slug = slugify('_'.join(values))
 
 
 ### Custom model base class

@@ -29,12 +29,13 @@ class CinemaRepository(set):
     def register(self, **kwargs):
         """Registers cinema object."""
         cinema = Cinema(**kwargs)
+        cinema.clean()
 
         found = [c for c in self if c.slug == cinema.slug]
         if found:
             return found[0]
 
-        found = Cinema.objects.with_slug(cinema.slug).first()
+        found = Cinema.objects.filter(slug=cinema.slug).first()
         if found:
             cinema.id = found.id
         cinema.save()

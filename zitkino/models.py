@@ -8,12 +8,12 @@ from datetime import timedelta
 import times
 
 from . import db
+from .utils import slugify
 
 
-class Cinema(db.SlugMixin, db.Document):
+class Cinema(db.Document):
 
-    meta = {'slug': ['name']}
-
+    slug = db.StringField(required=True, unique=True)
     name = db.StringField(required=True)
     url = db.URLField()
 
@@ -28,6 +28,9 @@ class Cinema(db.SlugMixin, db.Document):
     @coords.setter
     def coords(self, value):
         self._coords = value
+
+    def clean(self):
+        self.slug = slugify(self.name)
 
 
 class FilmMixin(object):
@@ -52,10 +55,9 @@ class FilmMixin(object):
         return None
 
 
-class Film(db.SlugMixin, FilmMixin, db.Document):
+class Film(FilmMixin, db.Document):
 
-    meta = {'slug': ['title_main', 'year']}
-
+    slug = db.StringField(required=True, unique=True)
     year = db.IntField(required=True)
 
     rating_csfd = db.FloatField()
@@ -75,6 +77,9 @@ class Film(db.SlugMixin, FilmMixin, db.Document):
         if self.rating_fffilm:
             ratings.append(self.rating_fffilm)
         return round(sum(ratings) / len(ratings), 0)
+
+    def clean(self):
+        self.slug = slugify(self.title_main + '_' + str(self.year))
 
 
 class ScrapedFilm(FilmMixin, db.EmbeddedDocument):
@@ -120,4 +125,3 @@ class Showtime(db.Document):
 
     def clean(self):
         self.tags = tuple(frozenset(tag for tag in self.tags if tag))
-        super(Showtime, self).clean()

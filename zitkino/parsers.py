@@ -3,7 +3,6 @@
 
 import datetime
 from decimal import Decimal
-from HTMLParser import HTMLParser
 
 import times
 
@@ -27,9 +26,7 @@ def date_time_year(date, time, year=None, tz='Europe/Prague'):
     )
     possible_formats = (
         '%d. %m. %H:%M %Y',
-        '%d.%m. %H:%M %Y',
         '%d. %m. %H.%M %Y',
-        '%d.%m. %H.%M %Y',
     )
     for format in possible_formats:
         try:
@@ -39,22 +36,3 @@ def date_time_year(date, time, year=None, tz='Europe/Prague'):
         else:
             break
     return times.to_universal(dt, tz)
-
-
-def month(m):
-    """Takes month and returns it's numeric representation."""
-    cs = (u'led', u'úno', u'bře', u'dub', u'kvě', u'čvn',
-          u'čvc', u'srp', u'zář', u'říj', u'lis', u'pro')
-    en = ('jan', 'feb', 'mar', 'apr', 'may', 'jun',
-          'jul', 'aug', 'sep', 'oct', 'nov', 'dec')
-    m = m.lower()
-    if m in cs:
-        return cs.index(m)
-    if m in en:
-        return en.index(m)
-    raise ValueError("Invalid month.")
-
-
-def html_text(text):
-    """Decodes all HTML entities back to Unicode characters."""
-    return HTMLParser().unescape(text)
