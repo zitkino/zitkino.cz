@@ -1,34 +1,14 @@
 # Žít kino
 
-Best calendar of cinemas in Brno.
+Uncluttered cinema program for Brno.
 
 - [web](http://zitkino.cz)
 - [Facebook page](https://www.facebook.com/zitkino)
 - [Twitter](https://twitter.com/zitkino)
 
-# Status: ACTIVE
+## Status: ACTIVE
 
 Under active development and maintenance.
-
-# Installation
-
-It's just one Python script. It's cloned as a git repository and ran every day by [Pub](https://github.com/honzajavorek/pub). Results are released to [GitHub Pages on honzajavorek.cz](https://github.com/honzajavorek/honzajavorek.cz/tree/gh-pages).
-
-You can see it in action here:
-
-- http://zitkino.cz (site)
-- http://zitkino.cz/zitkino.ics (iCalendar export)
-
-## Cinemas involved
-
-- [Kino Art](http://www.kinoartbrno.cz/)
-- [Kino Lucerna](http://www.kinolucerna.info/)
-- [Letní kino Na Dobráku](http://www.kinonadobraku.cz/)
-- [Starobrno Letní kino](http://www.letnikinobrno.cz/)
-
-## Credits
-
-Zuzana Válková, Milan Kubík, Ondřej Beneš, Petr Nohejl
 
 ## License: ISC
 

@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% for showtimes_per_day in showtimes|groupby('starts_at_day') %}
+    {% set starts_at_day = showtimes_per_day.grouper %}
+    <div class="showtimes">
+        <h2>{{ starts_at_day|date }}</h2>
+        <table>
+            {% for showtimes_per_film in showtimes_per_day.list|groupby('film') %}
+            {% set film = showtimes_per_film.grouper %}
+            <tr>
+                <th>
+                    <a href="http://www.csfd.cz/hledat/?q={{ film.title_main|urlencode }}">
+                        {{ film.title_main }}
+                    </a>
+                </th>
+                <td>
+                    {% for cinema in showtimes_per_film.list|map(attribute='cinema')|unique(attribute='name') %}
+                        <a href="{{ cinema.url }}">{{ cinema.name }}</a>
+                    {% endfor %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+{% endfor %}
+
+{% endblock %}

@@ -1,0 +1,3 @@
+recursive-include zitkino *
+global-exclude *.py[co] *~
+include README* *requirements.txt

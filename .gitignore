@@ -25,9 +25,11 @@ pip-log.txt
 
 # Mr Developer
 .mr.developer.cfg
-
-# Pub
-output
-
-# Environment
 .env
+*.sublime-*
+.sass-cache
+.webassets-cache
+
+# Assets
+packed.js
+packed.css
