@@ -52,7 +52,8 @@ class SyncShowtimes(Command):
                 logging.exception(e)
             else:
                 logging.info('Scraper: Deleting obsolete showtimes.')
-                Showtime.objects(scraped_at__lt=sync_start).delete()
+                Showtime.objects(cinema=cinema,
+                                 scraped_at__lt=sync_start).delete()
 
 
 class SyncAll(Command):
