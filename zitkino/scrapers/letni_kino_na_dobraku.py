@@ -3,9 +3,9 @@
 
 import re
 import times
-import requests
 
 from zitkino import formats
+from zitkino.utils import download
 from zitkino.models import Showtime, ScrapedFilm
 
 from . import cinemas, scrapers
@@ -45,7 +45,7 @@ class Scraper(object):
             yield self._parse_event(event)
 
     def _scrape_events(self):
-        resp = requests.get(self.url, timeout=30)
+        resp = download(self.url)
         cal = formats.ical(resp.content)
         for event in cal.walk():
             if event.name == 'VEVENT':

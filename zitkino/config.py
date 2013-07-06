@@ -39,7 +39,12 @@ ASSETS_SASS_DEBUG_INFO = DEBUG
 SEND_FILE_MAX_AGE_DEFAULT = 157680000  # 5 years in seconds
 
 
-### Identification, codes, ...
+### Templates
+
+GA_CODE = 'UA-1316071-11'
+
+
+### Scraping
 
 USER_AGENT = 'zitkino/{0} (+http://zitkino.cz)'.format(version)
-GA_CODE = 'UA-1316071-11'
+HTTP_TIMEOUT = 30

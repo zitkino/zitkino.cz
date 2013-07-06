@@ -39,10 +39,9 @@ class SyncShowtimes(Command):
     def _scrape(self):
         for scraper in scrapers:
             logging.info(u"Scraper: %s", scraper.__module__)
-            results = scraper()
-            if results:
-                for showtime in results:
-                    self._sync_showtime(showtime)
+            results = scraper() or []
+            for showtime in results:
+                self._sync_showtime(showtime)
 
     def run(self):
         now = times.now()

@@ -5,7 +5,7 @@
 import mongoengine
 from flask import abort
 from mongoengine import ValidationError
-from mongoengine.queryset import (MultipleObjectsReturned, DoesNotExist)
+from mongoengine.queryset import MultipleObjectsReturned, DoesNotExist
 
 
 ### Base MongoEngine adapter

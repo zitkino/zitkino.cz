@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-import requests
-
+from zitkino.utils import download
 from zitkino import formats, parsers
 from zitkino.models import Showtime, ScrapedFilm
 
@@ -32,7 +31,7 @@ class Scraper(object):
             yield self._parse_row(row)
 
     def _scrape_rows(self):
-        resp = requests.get(self.url, timeout=30)
+        resp = download(self.url)
         html = formats.html(resp.content, base_url=resp.url)
         return html.cssselect('.content table tr')
 

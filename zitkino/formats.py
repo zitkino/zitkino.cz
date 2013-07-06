@@ -29,20 +29,5 @@ def html(text, base_url=None):
     return lxml.html.fromstring(text, parser=parser, base_url=base_url)
 
 
-class XmlElement(etree.ElementBase):
-
-    def child_text_content(self, tag, namespaces=None):
-        return self.xpath('string(.//' + tag + '/text())',
-                          namespaces=namespaces)
-
-
-def xml(text, base_url=None):
-    lookup = etree.ElementDefaultClassLookup(element=XmlElement)
-    parser = etree.XMLParser(recover=True, remove_comments=True,
-                             remove_pis=True)
-    parser.set_element_class_lookup(lookup)
-    return etree.fromstring(text, parser=parser, base_url=base_url)
-
-
 def ical(text):
     return Calendar.from_ical(text)
