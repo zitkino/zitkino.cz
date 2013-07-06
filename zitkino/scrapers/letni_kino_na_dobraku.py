@@ -6,12 +6,12 @@ import times
 
 from zitkino import formats
 from zitkino.utils import download
-from zitkino.models import Showtime, ScrapedFilm
+from zitkino.models import Cinema, Showtime, ScrapedFilm
 
-from . import cinemas, scrapers
+from . import scrapers
 
 
-cinema = cinemas.register(
+cinema = Cinema(
     name=u'Letní kino Na Dobráku',
     url='http://kinonadobraku.cz',
     street=u'Dobrovského 29',
@@ -20,7 +20,7 @@ cinema = cinemas.register(
 )
 
 
-@scrapers.register
+@scrapers.register(cinema)
 class Scraper(object):
 
     url = ('https://www.google.com/calendar/ical/n6a7pqdcgeprq9v7pf'

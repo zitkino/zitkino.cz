@@ -70,4 +70,9 @@ def unique(iterable, attribute=None):
             yield obj
 
 
+@app.template_filter()
+def uppercase_first(value):
+    return value[0].upper() + value[1:]
+
+
 app.template_filter()(slugify)

@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
 
-from . import cinemas, scrapers
+from zitkino.models import Cinema
+
+from . import scrapers
 
 
-cinema = cinemas.register(
+cinema = Cinema(
     name=u'Kino Art',
     url='http://www.kinoart.cz',
     street=u'Cihlářská 19',
@@ -13,6 +15,6 @@ cinema = cinemas.register(
 )
 
 
-@scrapers.register
+@scrapers.register(cinema)
 def scrape():
     return ()

@@ -6,9 +6,9 @@ import logging
 import times
 from flask.ext.script import Manager, Command
 
-from .models import Showtime
 from .scrapers import scrapers
 from . import __version__ as version
+from .models import Showtime, Cinema
 
 
 class Version(Command):
@@ -36,18 +36,23 @@ class SyncShowtimes(Command):
         else:
             self._log_showtime(showtime, 'Past showtime')
 
-    def _scrape(self):
-        for scraper in scrapers:
-            logging.info(u"Scraper: %s", scraper.__module__)
-            results = scraper() or []
-            for showtime in results:
-                self._sync_showtime(showtime)
-
     def run(self):
-        now = times.now()
-        self._scrape()
-        logging.info('Deleting obsolete showtimes.')
-        Showtime.objects(scraped_at__lt=now).delete()
+        for cinema_slug, scraper in scrapers.items():
+            try:
+                cinema = Cinema.objects(slug=cinema_slug).get()
+                sync_start = times.now()
+
+                logging.info(u"Scraper: %s", cinema_slug)
+                showtimes = scraper() or []
+
+                for showtime in showtimes:
+                    self._sync_showtime(showtime)
+
+            except Exception as e:
+                logging.exception(e)
+            else:
+                logging.info('Scraper: Deleting obsolete showtimes.')
+                Showtime.objects(scraped_at__lt=sync_start).delete()
 
 
 class SyncAll(Command):
