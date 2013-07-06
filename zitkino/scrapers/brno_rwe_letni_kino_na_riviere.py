@@ -21,7 +21,6 @@ cinema = cinemas.register(
 @scrapers.register
 class Scraper(object):
 
-    slug = 'brno_rwe_letni_kino_na_riviere'
     url = 'http://www.kinonariviere.cz/program'
     tags_map = {
         u'premiéra': 'premiere',
@@ -30,14 +29,14 @@ class Scraper(object):
 
     def __call__(self):
         for row in self._scrape_rows():
-            yield self._parse_row(row, self.url)
+            yield self._parse_row(row)
 
     def _scrape_rows(self):
         resp = requests.get(self.url)
-        html = formats.html(resp.text)
+        html = formats.html(resp.content, base_url=resp.url)
         return html.cssselect('.content table tr')
 
-    def _parse_row(self, row, base_url):
+    def _parse_row(self, row):
         starts_at = parsers.date_time_year(
             row[1].text_content(),
             row[2].text_content()
@@ -50,7 +49,7 @@ class Scraper(object):
                 in (row[5].text_content(), row[6].text_content())]
 
         price = parsers.price(row[7].text_content())
-        url_booking = row[8].link(base_url)
+        url_booking = row[8].link()
 
         return Showtime(
             cinema=cinema,

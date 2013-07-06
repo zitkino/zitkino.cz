@@ -16,8 +16,7 @@ def inject_config():
 
 @app.route('/')
 def index():
-    showtimes = Showtime.upcoming()
-    return render_template('index.html', showtimes=showtimes)
+    return render_template('index.html', showtimes=Showtime.upcoming())
 
 
 @app.route('/favicon.ico')

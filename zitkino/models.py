@@ -79,7 +79,11 @@ class Film(db.SlugMixin, FilmMixin, db.Document):
 
 class ScrapedFilm(FilmMixin, db.EmbeddedDocument):
     """Raw representation of film as it was scraped."""
-    pass
+
+    def __eq__(self, other):
+        if isinstance(other, ScrapedFilm):
+            return self.title_main == other.title_main
+        return False
 
 
 class Showtime(db.Document):

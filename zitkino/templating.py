@@ -61,6 +61,7 @@ def unique(iterable, attribute=None):
         get_value = lambda obj: getattr(obj, attribute)
     else:
         get_value = lambda obj: obj
+
     values = set()
     for obj in iterable:
         original_len = len(values)
