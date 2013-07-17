@@ -5,11 +5,16 @@ import lxml.html
 from lxml import etree
 from icalendar import Calendar
 
+from . import parsers
+
 
 class HtmlElement(lxml.html.HtmlElement):
 
-    def text_content(self):
-        return super(HtmlElement, self).text_content().strip()
+    def text_content(self, whitespace=False):
+        text = super(HtmlElement, self).text_content()
+        if whitespace:
+            return text
+        return parsers.whitespace(text)
 
     def links(self):
         self.make_links_absolute()
@@ -20,6 +25,15 @@ class HtmlElement(lxml.html.HtmlElement):
         for link in self.links():
             return link
         return None
+
+    def split(self, tag):
+        elements = []
+        for element in self:
+            if element.tag.lower() == tag.lower():
+                yield elements
+                elements = []
+            else:
+                elements.append(element)
 
 
 def html(text, base_url=None):
