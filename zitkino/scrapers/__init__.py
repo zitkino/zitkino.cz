@@ -27,7 +27,7 @@ class ScraperRepository(dict):
             if inspect.isclass(fn_or_cls):
                 # is it already present in repository?
                 # (this prevents classes to be summoned multiple times)
-                if [s for s in self if s.__class__ == fn_or_cls]:
+                if [s for s in self.values() if s.__class__ == fn_or_cls]:
                     return fn_or_cls
                 # assuming __call__
                 self[cinema.slug] = fn_or_cls()
