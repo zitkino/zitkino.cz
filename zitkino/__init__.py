@@ -4,17 +4,16 @@
 __version__ = '2.1.dev'
 
 
-import logging
-
 from flask import Flask
 from flask.ext.assets import Environment as Assets
 
+from . import log
 from .mongo import MongoEngine
 
 
 app = Flask(__name__)
 app.config.from_object('zitkino.config')
-logging.basicConfig(**app.config['LOGGING'])
+log.config(**app.config['LOGGING'])
 
 
 assets = Assets(app)
