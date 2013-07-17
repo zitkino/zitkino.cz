@@ -59,6 +59,10 @@ def deploy():
     if 'MONGOLAB_URI' not in capture('heroku config | grep MONGOLAB_URI'):
         local('heroku addons:add mongolab:starter')
 
+    # ensure Sentry
+    if 'SENTRY_DSN' not in capture('heroku config | grep SENTRY_DSN'):
+        local('heroku addons:add sentry:developer')
+
     try:
         # prepare throwaway branch 'deploy'
         with settings(hide('warnings', 'stdout', 'stderr'), warn_only=True):

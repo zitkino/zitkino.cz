@@ -13,7 +13,8 @@ from .mongo import MongoEngine
 
 app = Flask(__name__)
 app.config.from_object('zitkino.config')
-log.config(**app.config['LOGGING'])
+
+log.init_app(app, **app.config['LOGGING'])
 
 
 assets = Assets(app)

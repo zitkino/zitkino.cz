@@ -3,10 +3,18 @@
 
 
 from zitkino import app
+from zitkino.log import log_exceptions
 from zitkino.commands import Version, sync
 
 from flask.ext.assets import ManageAssets
-from flask.ext.script import Manager, Server
+from flask.ext.script import Manager as BaseManager, Server
+
+
+class Manager(BaseManager):
+
+    @log_exceptions
+    def run(self, *args, **kwargs):
+        return super(Manager, self).run(*args, **kwargs)
 
 
 manager = Manager(app)

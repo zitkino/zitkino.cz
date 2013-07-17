@@ -9,6 +9,7 @@ from . import __version__ as version
 
 
 DEBUG = bool(os.getenv('ZITKINO_DEBUG', False))
+SENTRY_DSN = os.getenv('SENTRY_DSN')
 
 
 ### Logging

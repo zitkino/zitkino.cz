@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 
-import sys
-
 import times
 from flask.ext.script import Manager, Command
 
@@ -37,9 +35,8 @@ class SyncShowtimes(Command):
             for showtime in showtimes:
                 self._sync_showtime(showtime)
                 counter += 1
-
         except:
-            log.exception(sys.exc_info()[0])
+            raise
         else:
             query = Showtime.objects(cinema=cinema, scraped_at__lt=sync_start)
             query.delete()

@@ -14,3 +14,5 @@ cssmin==0.1.4                                                          # CSS min
 flask-script==0.5.3                                                    # Command line scripts
 cssselect==0.8                                                         # CSS selects for lxml
 icalendar==3.5                                                         # iCalendar format reader
+raven==3.4.1                                                           # Sentry
+blinker==1.3                                                           # Signalling
