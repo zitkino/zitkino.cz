@@ -1,11 +1,18 @@
 # -*- coding: utf-8 -*-
 
 
-import re
 import datetime
 from decimal import Decimal
 
 import times
+from icalendar import Calendar
+
+from .html import html  # NOQA
+
+
+def ical(text):
+    """Takes text and returns iCalendar data structure."""
+    return Calendar.from_ical(text)
 
 
 def price(value):
@@ -14,15 +21,6 @@ def price(value):
     value = value.replace(',', '.')
     value = value.replace(u'Kč', '')
     return Decimal(value.strip())
-
-
-def whitespace(value):
-    """Normalizes whitespace."""
-    whitespace_re = re.compile(
-        ur'[{0}\s\xa0]+'.format(re.escape(
-        ''.join(map(unichr, range(0, 32) + range(127, 160)))))
-    )
-    return whitespace_re.sub(' ', value).strip()
 
 
 def date_time_year(date, time, year=None, tz='Europe/Prague'):

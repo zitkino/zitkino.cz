@@ -14,6 +14,15 @@ def slugify(string, sep='_'):
     return re.sub(r'\W+', sep, string).strip(sep)
 
 
+def clean_whitespace(value):
+    """Normalizes whitespace."""
+    whitespace_re = re.compile(
+        ur'[{0}\s\xa0]+'.format(re.escape(
+        ''.join(map(unichr, range(0, 32) + range(127, 160)))))
+    )
+    return whitespace_re.sub(' ', value).strip()
+
+
 def download(url, method='get', **kwargs):
     """Requests wrapper."""
     kwargs.setdefault('timeout', app.config['HTTP_TIMEOUT'])

@@ -9,13 +9,6 @@ from raven.contrib.flask import Sentry
 from raven.handlers.logging import SentryHandler
 
 
-__all__ = (
-    'init_app',
-    'debug', 'info', 'warning', 'error', 'critical', 'exception',
-    'scraper', 'showtime',
-)
-
-
 def init_app(app, *args, **kwargs):
     logging.basicConfig(*args, **kwargs)
 

@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 
 
-from collections import namedtuple
-
+from zitkino import parsers
 from zitkino.utils import download
-from zitkino import formats, parsers
 from zitkino.models import Cinema, Showtime, ScrapedFilm
 
 from . import scrapers
@@ -19,66 +17,59 @@ cinema = Cinema(
 )
 
 
-Row = namedtuple('Row', ['date', 'time', 'tag', 'link', 'link_booking'])
-
-
 @scrapers.register(cinema)
 class Scraper(object):
 
     url = 'http://www.kultura-brno.cz/cs/film/program-kina-art'
-    tags_map = {
-        u'SEN': 'seniors',
-    }
-    blacklist = [u'Kinové prázdniny']
+    title_blacklist = [u'Kinové prázdniny']
     default_price = 110
     price_map = {
         'seniors': 50,
         'children': 60,
     }
+    tags_map = {
+        u'SEN:': 'seniors',
+    }
 
     def __call__(self):
-        for row in self._scrape_rows():
-            showtime = self._parse_row(row)
-            if showtime:
-                yield showtime
+        return self._parse_table(self._scrape_table())
 
-    def _scrape_rows(self):
+    def _scrape_table(self):
         resp = download(self.url)
-        html = formats.html(resp.content, base_url=resp.url)
-        rows = html.cssselect('#main .film_table tr')
+        html = parsers.html(resp.content, base_url=resp.url)
+        return html.cssselect('#main .film_table tr')
 
-        for row in rows[1:]:  # skip table header
+    def _parse_table(self, rows):
+        for row in rows[1:]:  # skip header
             for subrow in row[2].split('br'):
-                yield self._merge(row, subrow)
+                showtime = self._parse_row(row, subrow)
+                if showtime:
+                    yield showtime
 
-    def _merge(self, row, subrow):
-        date = row[1]
-        tag = None
-        if len(subrow) == 3:
-            time, link, link_booking = subrow
-        elif len(subrow) == 4:
-            time, tag, link, link_booking = subrow
+    def _parse_row(self, row, subrow):
+        links = subrow.cssselect('a')
+        if len(links) == 3:
+            tag_el, title_el, booking_el = links
         else:
-            raise ValueError('Unable to merge rows.')
-        return Row(date, time, tag, link, link_booking)
+            tag_el = None
+            title_el, booking_el = links
 
-    def _parse_row(self, row):
-        title_main = row.link.text_content()
-        if title_main in self.blacklist:
+        title_main = title_el.text_content()
+        if title_main in self.title_blacklist:
             return None
 
         starts_at = parsers.date_time_year(
-            row.date.text_content(),
-            row.time.text_content(),
+            row.cssselect('.film_table_datum')[0].text_content(),
+            subrow.cssselect('.cas')[0].text_content(),
         )
-
-        tag = None
+        tags = []
         price = self.default_price
-        if row.tag is not None:
-            tag = self.tags_map.get(row.tag.text_content())
-            price = self.price_map.get(tag)
+        url_booking = booking_el.link()
 
-        url_booking = row.link_booking.link()
+        if tag_el is not None:
+            tag = self.tags_map.get(tag_el.text_content())
+            price = self.price_map.get(tag, self.default_price)
+            tags.append(tag)
 
         return Showtime(
             cinema=cinema,
@@ -87,7 +78,10 @@ class Scraper(object):
                 titles=[title_main],
             ),
             starts_at=starts_at,
-            tags=[tag],
+            tags=tags,
             url_booking=url_booking,
             price=price,
+            prices={
+
+            }
         )
