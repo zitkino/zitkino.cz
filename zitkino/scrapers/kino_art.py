@@ -23,12 +23,14 @@ class Scraper(object):
     url = 'http://www.kultura-brno.cz/cs/film/program-kina-art'
     title_blacklist = [u'Kinové prázdniny']
     default_price = 110
-    price_map = {
-        'seniors': 50,
-        'children': 60,
-    }
+    price_map = (
+        ('seniors', 50),
+        ('children', 80),
+        ('small_hall', 100),
+    )
     tags_map = {
         u'SEN:': 'seniors',
+        u'ART DĚTEM:': 'children',
     }
 
     def __call__(self):
@@ -45,15 +47,42 @@ class Scraper(object):
                 showtime = self._parse_row(row, subrow)
                 if showtime:
                     yield showtime
+            for subrow in row[3].split('br'):  # small hall
+                showtime = self._parse_row(row, subrow, tags=['small_hall'])
+                if showtime:
+                    yield showtime
 
-    def _parse_row(self, row, subrow):
+    def _parse_subrow(self, subrow):
         links = subrow.cssselect('a')
-        if len(links) == 3:
-            tag_el, title_el, booking_el = links
-        else:
-            tag_el = None
-            title_el, booking_el = links
+        elements = {'tag': None, 'title': None, 'booking': None}
 
+        booking_el = None
+        for i, link in enumerate(links):
+            if link.text_content() == 'R':
+                elements['booking'] = link
+                links.pop(i)
+
+        count = len(links)
+        if count == 2:
+            elements['tag'] = links[0]
+            elements['title'] = links[1]
+        if count == 1:
+            elements['title'] = links[0]
+
+        return elements
+
+    def _select_price(self, tags):
+        for tag, price in self.price_map:
+            if tag in tags:
+                return price
+        return self.default_price
+
+    def _parse_row(self, row, subrow, tags=None):
+        elements = self._parse_subrow(subrow)
+
+        title_el = elements.get('title')
+        if title_el is None:
+            return None
         title_main = title_el.text_content()
         if title_main in self.title_blacklist:
             return None
@@ -62,14 +91,16 @@ class Scraper(object):
             row.cssselect('.film_table_datum')[0].text_content(),
             subrow.cssselect('.cas')[0].text_content(),
         )
-        tags = []
-        price = self.default_price
-        url_booking = booking_el.link()
 
+        booking_el = elements.get('booking')
+        url_booking = booking_el.link() if booking_el else None
+
+        tags = tags or []
+        tag_el = elements.get('tag')
         if tag_el is not None:
-            tag = self.tags_map.get(tag_el.text_content())
-            price = self.price_map.get(tag, self.default_price)
-            tags.append(tag)
+            tags.append(self.tags_map.get(tag_el.text_content()))
+
+        price = self._select_price(tags)
 
         return Showtime(
             cinema=cinema,
@@ -81,7 +112,4 @@ class Scraper(object):
             tags=tags,
             url_booking=url_booking,
             price=price,
-            prices={
-
-            }
         )
