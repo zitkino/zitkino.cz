@@ -10,10 +10,9 @@ Uncluttered cinema program for Brno.
 
 Under active development and maintenance.
 
-## License: ISC
+## License: MIT
 
 © 2012 Jan Javorek &lt;<a
 href="mailto:jan.javorek&#64;gmail.com">jan.javorek&#64;gmail.com</a>&gt;
 
-This work is licensed under [ISC license](https://en.wikipedia.org/wiki/ISC_license).
-
+This work is licensed under [MIT license](https://en.wikipedia.org/wiki/MIT_License).
