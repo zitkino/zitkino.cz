@@ -18,6 +18,7 @@
 - Diskuse, popisy pull requestů apod. by měly být česky, protože je prakticky
   nulová šance, že by tento projekt zajímal i někoho jiného než česky mluvící,
   zvláště pokud je i celá stránka zitkino.cz pouze česky a pro Čechy.
+- Píše se *scraper*, ne **scrapper**, se stim smiř!
 
 ## Kód
 
