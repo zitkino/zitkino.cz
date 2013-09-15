@@ -101,8 +101,6 @@ class Showtime(db.Document):
     starts_at = db.DateTimeField(required=True)
     tags = db.ListField(db.StringField())  # dubbing, 3D, etc.
     url_booking = db.URLField()
-    price = db.DecimalField()
-    prices = db.MapField(db.DecimalField())
     scraped_at = db.DateTimeField(required=True, default=lambda: times.now())
 
     @property
