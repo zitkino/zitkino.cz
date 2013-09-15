@@ -22,12 +22,6 @@ class Scraper(object):
 
     url = 'http://www.kultura-brno.cz/cs/film/program-kina-art'
     title_blacklist = [u'Kinové prázdniny']
-    default_price = 110
-    price_map = (
-        ('seniors', 50),
-        ('children', 80),
-        ('small_hall', 100),
-    )
     tags_map = {
         u'SEN:': 'seniors',
         u'ART DĚTEM:': 'children',
@@ -70,12 +64,6 @@ class Scraper(object):
 
         return elements
 
-    def _select_price(self, tags):
-        for tag, price in self.price_map:
-            if tag in tags:
-                return price
-        return self.default_price
-
     def _parse_row(self, row, subrow, tags=None):
         elements = self._parse_subrow(subrow)
 
@@ -99,8 +87,6 @@ class Scraper(object):
         if tag_el is not None:
             tags.append(self.tags_map.get(tag_el.text_content()))
 
-        price = self._select_price(tags)
-
         return Showtime(
             cinema=cinema,
             film_scraped=ScrapedFilm(
@@ -110,5 +96,4 @@ class Scraper(object):
             starts_at=starts_at,
             tags=tags,
             url_booking=url_booking,
-            price=price,
         )

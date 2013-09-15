@@ -48,7 +48,6 @@ class Scraper(object):
                 in (row[5].text_content(), row[6].text_content())]
 
         url_booking = row[8].link()
-        price = parsers.price(row[7].text_content())
 
         return Showtime(
             cinema=cinema,
@@ -59,5 +58,4 @@ class Scraper(object):
             starts_at=starts_at,
             tags=tags,
             url_booking=url_booking,
-            price=price,
         )

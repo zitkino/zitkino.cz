@@ -2,6 +2,7 @@
 
 
 import re
+
 import times
 
 from zitkino import parsers
@@ -25,7 +26,6 @@ class Scraper(object):
 
     url = ('https://www.google.com/calendar/ical/n6a7pqdcgeprq9v7pf'
            '84dk3djo%40group.calendar.google.com/public/basic.ics')
-    price = 90
     tags_map = {
         u'čes. tit.': 'subtitles',
         u'od 15 let': 'age15',
@@ -82,5 +82,4 @@ class Scraper(object):
             ),
             starts_at=starts_at,
             tags=tags,
-            price=self.price,
         )

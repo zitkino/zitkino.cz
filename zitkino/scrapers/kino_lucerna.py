@@ -8,8 +8,9 @@ from dateutil import rrule
 
 from zitkino import parsers
 from zitkino.utils import download
-from zitkino.scrapers import scrapers
 from zitkino.models import Cinema, Showtime, ScrapedFilm
+
+from zitkino.scrapers import scrapers
 
 
 cinema = Cinema(
