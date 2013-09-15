@@ -56,7 +56,6 @@ class Scraper(object):
         links = subrow.cssselect('a')
         elements = {'tag': None, 'title': None, 'booking': None}
 
-        booking_el = None
         for i, link in enumerate(links):
             if link.text_content() == 'R':
                 elements['booking'] = link
@@ -93,7 +92,7 @@ class Scraper(object):
         )
 
         booking_el = elements.get('booking')
-        url_booking = booking_el.link() if booking_el else None
+        url_booking = booking_el.link() if booking_el is not None else None
 
         tags = tags or []
         tag_el = elements.get('tag')
