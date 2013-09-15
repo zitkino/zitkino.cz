@@ -4,6 +4,7 @@
 import re
 from datetime import datetime, date, time
 
+import times
 from dateutil import rrule
 
 from zitkino import parsers
@@ -29,6 +30,8 @@ class Scraper(object):
            '&view=article&id=37&Itemid=61')
     url_booking = ('http://www.kinolucerna.info/index.php?option=com_contact'
                    '&view=contact&id=1&Itemid=63')
+
+    tz = 'Europe/Prague'
 
     entry_re = re.compile(r'\d+:\d+')
     entry_split_re = re.compile(r'[\b\s]+(?=\d+\.)')
@@ -117,7 +120,7 @@ class Scraper(object):
             end_month = int(match.group(4))
 
             # times
-            times = self._parse_times(match.group(5))
+            time_args_list = self._parse_times(match.group(5))
 
             # years
             start_year = self._determine_year(start_month)
@@ -129,8 +132,11 @@ class Scraper(object):
 
             # construct and yield datetimes
             for day in rrule.rrule(rrule.DAILY, dtstart=start, until=end):
-                for time_args in times:
-                    yield datetime.combine(day, time(*time_args))
+                for time_args in time_args_list:
+                    yield times.to_universal(
+                        datetime.combine(day, time(*time_args)),
+                        self.tz
+                    )
 
     def _parse_standalone_dates(self, dates_text):
         """Takes text with date & time information, parses out and generates
@@ -138,10 +144,10 @@ class Scraper(object):
         """
         dates_text = self.range_re.sub('', dates_text)
         for match in self.standalone_re.finditer(dates_text):
-            dates = []
+            date_args_list = []
 
             # standalone date
-            dates.append(map(int, [
+            date_args_list.append(map(int, [
                 self._determine_year(match.group(2)),  # year
                 match.group(2),  # month
                 match.group(1),  # day
@@ -149,19 +155,22 @@ class Scraper(object):
 
             # date+date, let's process the second one
             if match.group(3):
-                dates.append(map(int, [
+                date_args_list.append(map(int, [
                     self._determine_year(match.group(5)),  # year
                     match.group(5),  # month
                     match.group(4),  # day
                 ]))
 
             # parse times
-            times = self._parse_times(match.group(6))
+            time_args_list = self._parse_times(match.group(6))
 
             # construct and yield datetimes
-            for date_args in dates:
-                for time_args in times:
-                    yield datetime(*(date_args + time_args))
+            for date_args in date_args_list:
+                for time_args in time_args_list:
+                    yield times.to_universal(
+                        datetime(*(date_args + time_args)),
+                        self.tz
+                    )
 
     def _split_entry_text(self, text):
         """Takes main entry text and returns tuple with title part
