@@ -11,8 +11,10 @@ from .models import Showtime
 
 @app.context_processor
 def inject_config():
-    return {'ga_code': app.config['GA_CODE'], 'debug': app.debug,
-            'scss': app.config['ASSETS_SASS_FILTER']}
+    return {
+        'ga_code': app.config['GA_CODE'],
+        'debug': app.debug,
+    }
 
 
 @app.route('/')

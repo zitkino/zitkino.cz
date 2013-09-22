@@ -33,9 +33,6 @@ MONGODB_DB = mongodb_uri.path.replace('/', '') or 'zitkino'
 
 ### Static files
 
-# change to pyScss, if you're adventurous
-ASSETS_SASS_FILTER = os.getenv('ASSETS_SASS_FILTER', 'scss')
-
 ASSETS_DEBUG = DEBUG
 ASSETS_AUTO_BUILD = DEBUG
 ASSETS_SASS_DEBUG_INFO = DEBUG

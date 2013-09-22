@@ -12,10 +12,11 @@ Je potřeba MongoDB, které nainstalujete podle návodů na jejich webu
 ([Ubuntu](http://docs.mongodb.org/manual/tutorial/install-mongodb-on-debian-or-ubuntu-linux/),
 [Fedora](http://docs.mongodb.org/manual/tutorial/install-mongodb-on-red-hat-centos-or-fedora-linux/)).
 
-Dále je nutné mít nějaký Scss kompilátor. Buďto použijte originál napsaný v Ruby,
-nebo [pyScss](https://github.com/Kronuz/pyScss), ale to nemusí fungovat úplně
-správně. Pokud budete mít v systému Scss, mělo by vše jet. Pokud chcete použít
-pyScss, tak musíte ještě v konfiguraci změnit `ASSETS_SASS_FILTER`.
+Dále je nutné mít Scss kompilátor - použijte originál napsaný v Ruby:
+
+```bash
+$ gem install sass
+```
 
 No a potom už stačí jen nainstalovat Žít kino ze složky projektu:
 

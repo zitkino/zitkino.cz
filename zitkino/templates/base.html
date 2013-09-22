@@ -24,7 +24,7 @@
         {% endif %}
         <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Domine&amp;subset=latin,latin-ext">
         <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.1.0/pure-min.css">
-        {% assets filters=scss + ",cssmin", output="packed.css", "scss/main.scss" %}
+        {% assets filters=("scss", "cssmin"), output="packed.css", "scss/main.scss" %}
             <link rel="stylesheet" href="{{ ASSET_URL }}">
         {% endassets %}
 
@@ -57,7 +57,7 @@
                     <a href="https://twitter.com/zitkino" class="twitter-follow-button" data-show-count="false" data-lang="cs" data-show-screen-name="false">Sledovat @zitkino</a>
                 </li>
                 <li class="button-container">
-                    <iframe src="http://ghbtns.com/github-btn.html?user=honzajavorek&repo=zitkino.cz&type=fork"
+                    <iframe src="http://ghbtns.com/github-btn.html?user=honzajavorek&amp;repo=zitkino.cz&amp;type=fork"
                     allowtransparency="true" frameborder="0" scrolling="0" width="62" height="20"></iframe>
                 </li>
             </ul>
