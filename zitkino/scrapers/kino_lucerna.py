@@ -47,6 +47,11 @@ class Scraper(object):
     )
     time_re = re.compile(r'(\d+):(\d+)')
 
+    tag_re = (
+        (re.compile(r'(?P<title>.*) *ve? *2[dD]$'), '2D'),
+        (re.compile(r'(?P<title>.*) *ve? *3[dD]$'), '3D'),
+    )
+
     def __call__(self):
         for entry in self._scrape_entries():
             for showtime in self._parse_entry(entry):
@@ -180,10 +185,25 @@ class Scraper(object):
         remainder = self.entry_split_price_re.split(remainder, maxsplit=1)
         return title.strip(), remainder[0].strip()
 
+    def _split_title_text(self, title):
+        title = title.strip()
+        tags = []
+        matched = True
+        while matched:
+            matched = False
+            for regex, tag in self.tag_re:
+                match = regex.match(title)
+                if match:
+                    title = match.group('title').strip()
+                    tags.append(tag)
+                    matched = True
+        return title, tags
+
     def _parse_entry(self, entry):
         """Takes HTML element with film header line and generates showtimes."""
         text = entry.text_content().strip()
-        title_main, dates_text = self._split_entry_text(text)
+        title, dates_text = self._split_entry_text(text)
+        title_main, tags = self._split_title_text(title)
 
         date_ranges = self._parse_date_ranges(dates_text)
         standalone_dates = self._parse_standalone_dates(dates_text)
@@ -198,4 +218,5 @@ class Scraper(object):
                 ),
                 starts_at=starts_at,
                 url_booking=self.url_booking,
+                tags=tags,
             )
