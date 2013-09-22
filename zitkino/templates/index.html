@@ -1,13 +1,12 @@
 {% extends 'base.html' %}
 {% block content %}
 
-{% for showtimes_per_day in showtimes|sort(attribute='starts_at_day')|groupby('starts_at_day') %}
-    {% set starts_at_day = showtimes_per_day.grouper %}
+{% for starts_at_day in data %}
     <div class="showtimes">
         <h2>{{ starts_at_day|date }}</h2>
         <table>
-            {% for showtimes_per_film in showtimes_per_day.list|sort(attribute='film')|groupby('film') %}
-            {% set film = showtimes_per_film.grouper %}
+            {% for showtime in data[starts_at_day] %}
+            {% set film = showtime.film %}
             <tr>
                 <th>
                     <a href="http://www.csfd.cz/hledat/?q={{ film.title_main|urlencode }}">
@@ -15,9 +14,8 @@
                     </a>
                 </th>
                 <td>
-                    {% for cinema in showtimes_per_film.list|map(attribute='cinema')|unique(attribute='name')|sort(attribute='starts_at') %}
-                        <a href="{{ cinema.url }}">{{ cinema.name }}</a>
-                    {% endfor %}
+                    {% set cinema = showtime.cinema %}
+                    <a href="{{ cinema.url }}">{{ cinema.name }}</a>
                 </td>
             </tr>
             {% endfor %}
