@@ -17,8 +17,9 @@ def slugify(string, sep='_'):
 def clean_whitespace(value):
     """Normalizes whitespace."""
     whitespace_re = re.compile(
-        ur'[{0}\s\xa0]+'.format(re.escape(
-        ''.join(map(unichr, range(0, 32) + range(127, 160)))))
+        ur'[{0}\s\xa0]+'.format(
+            re.escape(''.join(map(unichr, range(0, 32) + range(127, 160))))
+        )
     )
     return whitespace_re.sub(' ', value).strip()
 
