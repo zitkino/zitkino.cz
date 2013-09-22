@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
+from collections import OrderedDict
 import os
 
 from flask import request, render_template, send_from_directory
@@ -17,7 +18,16 @@ def inject_config():
 
 @app.route('/')
 def index():
-    return render_template('index.html', showtimes=Showtime.upcoming())
+    upcoming = Showtime.upcoming().order_by('title_main', 'starts_at')
+    data = OrderedDict()
+    seen = set()
+    for showtime in upcoming:
+        key = showtime.starts_at_day, showtime.cinema.slug, showtime.film
+        if key in seen:
+            continue
+        seen.add(key)
+        data.setdefault(showtime.starts_at_day, []).append(showtime)
+    return render_template('index.html', data=data)
 
 
 @app.route('/favicon.ico')
