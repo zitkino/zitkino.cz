@@ -44,7 +44,8 @@ Výchozí konfigurace se nachází v souboru `config.py`. Je parametrizovatelná
 systémové proměnné, např. nastavením `export MONGOLAB_URI='mongodb://localhost/zitkino'`
 změníme připojení k databázi. Je možné si udělat i celý vlastní konfigurační
 soubor, který může přepsat výchozí hodnoty, a to nastavením `ZITKINO_CONFIG` na
-cestu k vašemu konfiguračnímu souboru (viz dokumentace Flasku).
+cestu k vašemu konfiguračnímu souboru (viz
+[dokumentace Flasku](http://flask.pocoo.org/docs/config/#configuring-from-files)).
 
 ## Pravidla pro přispívání
 
