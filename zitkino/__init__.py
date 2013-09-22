@@ -13,6 +13,7 @@ from .mongo import MongoEngine
 
 app = Flask(__name__)
 app.config.from_object('zitkino.config')
+app.config.from_envvar('ZITKINO_CONFIG', silent=True)
 
 log.init_app(app, **app.config['LOGGING'])
 
