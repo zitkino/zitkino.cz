@@ -85,6 +85,13 @@ class Film(FilmMixin, db.Document):
 class ScrapedFilm(FilmMixin, db.EmbeddedDocument):
     """Raw representation of film as it was scraped."""
 
+    @property
+    def title_normalized(self):
+        title = unicode(self.title_main)
+        if len(title) > 3 and title.isupper():
+            return title.capitalize()
+        return title
+
     def __eq__(self, other):
         if isinstance(other, ScrapedFilm):
             return self.title_main == other.title_main
