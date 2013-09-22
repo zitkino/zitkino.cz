@@ -90,6 +90,12 @@ class ScrapedFilm(FilmMixin, db.EmbeddedDocument):
             return self.title_main == other.title_main
         return False
 
+    def __neq__(self, other):
+        return not self == other
+
+    def __hash__(self):
+        return hash(ScrapedFilm) ^ hash(self.title_main)
+
 
 class Showtime(db.Document):
 
