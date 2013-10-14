@@ -53,8 +53,8 @@ class Scraper(object):
     )
 
     def __call__(self):
-        for entry in self._scrape_entries():
-            for showtime in self._parse_entry(entry):
+        for entry_text in self._scrape_entries():
+            for showtime in self._parse_entry_text(entry_text):
                 yield showtime
 
     def _is_entry(self, el):
@@ -80,12 +80,37 @@ class Scraper(object):
             return bool(next_el.tail)
         return False
 
+    def _extract_entry_text(self, entry):
+        """Extracts relevant entry text from given STRONG element and it's
+        siblings (sometimes film entry actually consists of multiple STRONG
+        elements as someone made the text bold by selecting multiple
+        parts of it and pushing the button in WYSIWYG editor)."""
+
+        def extract_siblings(el, direction):
+            text = ''
+            while True:
+                el = getattr(el, 'get' + direction)()
+                if el is not None and el.tag == 'strong':  # continuation
+                    if direction != 'previous' or el.tail is None:
+                        text += (el.text_content(whitespace=True) or '')
+                else:
+                    return text
+
+        text = extract_siblings(entry, 'previous')
+        text += (entry.text_content(whitespace=True) or '')
+        text += extract_siblings(entry, 'next')
+        return text.strip()
+
     def _scrape_entries(self):
-        """Downloads and scrapes HTML elements, each with film header line."""
+        """Downloads and scrapes text of HTML elements, each with film
+        header line.
+        """
         resp = download(self.url)
         html = parsers.html(resp.content, base_url=resp.url)
-        return (el for el in html.cssselect('.contentpaneopen strong')
-                if self._is_entry(el))
+
+        for el in html.cssselect('.contentpaneopen strong'):
+            if self._is_entry(el):
+                yield self._extract_entry_text(el)
 
     def _determine_year(self, month):
         """Determines the right year of datetime from given month."""
@@ -199,9 +224,8 @@ class Scraper(object):
                     matched = True
         return title, tags
 
-    def _parse_entry(self, entry):
+    def _parse_entry_text(self, text):
         """Takes HTML element with film header line and generates showtimes."""
-        text = entry.text_content().strip()
         title, dates_text = self._split_entry_text(text)
         title_main, tags = self._split_title_text(title)
 
