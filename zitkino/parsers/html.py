@@ -28,6 +28,10 @@ class HTMLElement(lxml.html.HtmlElement):
             return link
         return None
 
+    def has_class(self, value):
+        """Tests presence of class."""
+        return value in self.get('class', '').split()
+
     def split(self, tag, wrapper='div'):
         """Splits element's children into sets and returns these sets
         wrapped in newly created HTML elements (wrapper's tag can be

@@ -43,6 +43,7 @@ scrapers = ScraperRepository()
 
 # import all scrapers and let decorators do their job
 from . import (  # NOQA
+    kino_scala,
     kino_art,
     kino_lucerna,
     letni_kino_na_dobraku,

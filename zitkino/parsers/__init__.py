@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
+import re
 import datetime
 from decimal import Decimal
 
@@ -24,7 +25,7 @@ def price(value):
 
 
 def date_time_year(date, time, year=None, tz='Europe/Prague'):
-    """Parses strings representating parts of datetime and combines them
+    """Parses strings representing parts of datetime and combines them
     together. Resulting datetime is in UTC.
     """
     dt_string = u'{date} {time} {year}'.format(
@@ -48,3 +49,33 @@ def date_time_year(date, time, year=None, tz='Europe/Prague'):
         return times.to_universal(dt, tz)
     else:
         raise ValueError(dt_string)
+
+
+def date_cs(value):
+    """Parses a Czech text to a date object."""
+    match = re.search(r'(\d+)\s*\.?\s+(\w+)(\s+\d{2,4})?', value, re.U)
+    if match:
+        # day
+        day = int(match.group(1))
+
+        # month
+        months = (
+            u'leden', u'únor', u'březen', u'duben',
+            u'květen', u'červen', u'červenec', u'srpen',
+            u'září', u'říjen', u'listopad', u'prosinec',
+            u'ledna', u'února', u'března', u'dubna',
+            u'května', u'června', u'července', u'srpna',
+            u'září', u'října', u'listopadu', u'prosince',
+        )
+        month = (months.index(match.group(2)) + 1) % 12
+
+        # year
+        if not match.group(3):
+            year = times.now().year
+        elif len(match.group(3)) == 2:
+            year = 2000 + int(match.group(3))
+        else:
+            year = int(match.group(3))
+
+        return datetime.date(year, month, day)
+    return None
