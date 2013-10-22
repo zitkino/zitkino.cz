@@ -75,6 +75,9 @@ class Scraper(object):
                     return False
                 next_el = next_el.getnext()  # get next sibling
 
+            if next_el is None:
+                return False
+
             # we found BR tag - does it have tail (standalone text after the
             # element) with some film details?
             return bool(next_el.tail)
