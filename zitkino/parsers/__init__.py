@@ -67,7 +67,7 @@ def date_cs(value):
             u'května', u'června', u'července', u'srpna',
             u'září', u'října', u'listopadu', u'prosince',
         )
-        month = (months.index(match.group(2)) + 1) % 12
+        month = (months.index(match.group(2)) % 12) + 1
 
         # year
         if not match.group(3):
