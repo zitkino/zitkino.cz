@@ -38,14 +38,17 @@ class Scraper(object):
         return parsers.html(resp.content, base_url=resp.url)
 
     def _parse_html(self, html):
-        year = times.now().year
+        y = times.now().year
+        m = 11
         d = None
 
         for p in html.cssselect('.content p'):
             text = p.text_content().strip()
             match = self.day_re.match(text)
             if match:
-                d = date(day=int(match.group(1)), month=12, year=year)
+                if 'prosinec' in text:
+                    m += 1
+                d = date(day=int(match.group(1)), month=m, year=y)
             elif u'Zimní kino' in text:
                 match = self.title_re.search(text)
                 if match:

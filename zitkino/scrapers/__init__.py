@@ -48,4 +48,5 @@ from . import (  # NOQA
     kino_lucerna,
     letni_kino_na_dobraku,
     rwe_letni_kino_na_riviere,
+    zimni_kino,
 )
