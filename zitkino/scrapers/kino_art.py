@@ -21,7 +21,7 @@ cinema = Cinema(
 class Scraper(object):
 
     url = 'http://www.kultura-brno.cz/cs/film/program-kina-art'
-    title_blacklist = [u'Kinové prázdniny']
+    title_blacklist = [u'Kinové prázdniny', u'KINO NEHRAJE']
     tags_map = {
         u'SEN:': 'seniors',
         u'ART DĚTEM:': 'children',
