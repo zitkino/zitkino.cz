@@ -11,7 +11,8 @@ from . import app
 
 def slugify(string, sep='_'):
     string = unidecode.unidecode(string).lower()
-    return re.sub(r'\W+', sep, string).strip(sep)
+    string = re.sub(r'\W+', sep, string)
+    return re.sub('{}+'.format(sep), sep, string).strip(sep)
 
 
 def clean_whitespace(value):

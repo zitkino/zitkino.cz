@@ -5,6 +5,7 @@ import times
 from flask.ext.script import Manager, Command
 
 from . import log
+from .services import pair
 from .scrapers import scrapers
 from . import __version__ as version
 from .models import Cinema, Showtime, Film
@@ -55,7 +56,19 @@ class SyncPairing(Command):
     """Find unpaired showtimes and try to find films for them."""
 
     def run(self):
-        pass
+        for showtime in Showtime.objects.filter(film_paired=None):
+            log.info('Pairing: %s', showtime)
+            film = pair(
+                showtime.film_scraped.title_main,
+                year=showtime.film_scraped.year
+            )
+            if film:
+                film.save()
+                log.info('Pairing: found %s', film)
+                showtime.film_paired = film
+                showtime.save()
+            else:
+                log.info('Pairing: no match')
 
 
 class SyncCleanup(Command):

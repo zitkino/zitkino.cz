@@ -41,7 +41,6 @@ class FilmMixin(object):
     url_imdb = db.URLField()
 
     title_main = db.StringField(required=True)
-    title_orig = db.StringField()
     titles = db.ListField(db.StringField())
 
     year = db.IntField()
@@ -49,10 +48,22 @@ class FilmMixin(object):
     length = db.IntField()
 
     @property
+    def title_normalized(self):
+        title = self.title_main
+        if len(title) > 3 and title.isupper():
+            return title.capitalize()
+        return title
+
+    @property
     def length_hours(self):
         if self.length:
             return round(self.length / 60, 1)
         return None
+
+    def __unicode__(self):
+        if self.year:
+            return u'{} ({})'.format(self.title_main, self.year)
+        return u'{}'.format(self.title_main)
 
 
 class Film(FilmMixin, db.Document):
@@ -60,15 +71,17 @@ class Film(FilmMixin, db.Document):
     slug = db.StringField(required=True, unique=True)
     year = db.IntField(required=True)
 
-    rating_csfd = db.FloatField()
-    rating_imdb = db.FloatField()
-    rating_fffilm = db.FloatField()
+    # rating as percentage
+    rating_csfd = db.IntField(min_value=0, max_value=100)
+    rating_imdb = db.IntField(min_value=0, max_value=100)
+    rating_fffilm = db.IntField(min_value=0, max_value=100)
 
     url_fffilm = db.URLField()
     url_synopsitv = db.URLField()
 
     @property
     def rating(self):
+        """Overall rating as percentage."""
         ratings = []
         if self.rating_csfd:
             ratings.append(self.rating_csfd)
@@ -84,13 +97,6 @@ class Film(FilmMixin, db.Document):
 
 class ScrapedFilm(FilmMixin, db.EmbeddedDocument):
     """Raw representation of film as it was scraped."""
-
-    @property
-    def title_normalized(self):
-        title = unicode(self.title_main)
-        if len(title) > 3 and title.isupper():
-            return title.capitalize()
-        return title
 
     def __eq__(self, other):
         if isinstance(other, ScrapedFilm):
