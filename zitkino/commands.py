@@ -22,11 +22,11 @@ class SyncShowtimes(Command):
 
     def _sync_showtime(self, showtime):
         if showtime.starts_at >= times.now():
-            log.showtime(showtime)
+            log.info('Scraping: %s', showtime)
             showtime.save()
 
     def _sync_cinema(self, cinema, showtimes):
-        log.scraper_info(cinema.name)
+        log.info('Scraping: %s', cinema.name)
 
         sync_start = times.now()
         counter = 0
@@ -41,7 +41,7 @@ class SyncShowtimes(Command):
             query = Showtime.objects(cinema=cinema, scraped_at__lt=sync_start)
             query.delete()
         finally:
-            log.scraper_info('created %d showtimes', counter)
+            log.info('Scraping: created %d showtimes', counter)
 
     def run(self):
         for cinema_slug, scraper in scrapers.items():
@@ -64,14 +64,16 @@ class SyncCleanup(Command):
     """
 
     def run(self):
-        now = times.now()
-
         # delete redundant showtimes
-        Showtime.objects.filter(starts_at__lt=now).delete()
+        query = Showtime.objects.filter(starts_at__lt=times.now())
+        count = query.count()
+        query.delete()
+        log.info('Cleanup: cleaned %d showtimes.', count)
 
         # delete redundant films
         for film in Film.objects.all():
             if not Showtime.objects.filter(film_paired=film).count():
+                log.info('Cleanup: deleting %r.', film)
                 film.delete()
 
 
@@ -94,4 +96,7 @@ class SyncAll(Command):
 
 sync = Manager(usage="Run synchronizations.")
 sync.add_command('showtimes', SyncShowtimes())
+sync.add_command('pairing', SyncPairing())
+sync.add_command('cleanup', SyncCleanup())
+sync.add_command('update', SyncUpdate())
 sync.add_command('all', SyncAll())

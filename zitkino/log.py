@@ -24,10 +24,6 @@ error = logging.error
 critical = logging.critical
 
 
-def scraper_info(msg, *args, **kwargs):
-    info('Scraper: ' + msg, *args, **kwargs)
-
-
 def exception(**kwargs):
     exc_info = sys.exc_info()
     logging.exception(
@@ -36,15 +32,6 @@ def exception(**kwargs):
         exc_info[1],
         exc_info=exc_info,
         **kwargs
-    )
-
-
-def showtime(showtime):
-    info(
-        u'Showtime: %s | %s | %s',
-        showtime.starts_at,
-        showtime.cinema.name,
-        showtime.film.title_main
     )
 
 

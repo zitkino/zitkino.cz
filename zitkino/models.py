@@ -137,3 +137,10 @@ class Showtime(db.Document):
 
     def clean(self):
         self.tags = tuple(frozenset(tag for tag in self.tags if tag))
+
+    def __unicode__(self):
+        return u'{} | {} | {}'.format(
+            self.starts_at,
+            self.cinema.name,
+            self.film.title_main
+        )
