@@ -46,7 +46,7 @@ from . import (  # NOQA
     kino_scala,
     kino_art,
     kino_lucerna,
-    letni_kino_na_dobraku,
-    rwe_letni_kino_na_riviere,
+    # letni_kino_na_dobraku,
+    # rwe_letni_kino_na_riviere,
     zimni_kino,
 )
