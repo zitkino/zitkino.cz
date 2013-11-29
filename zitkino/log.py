@@ -22,11 +22,21 @@ info = logging.info
 warning = logging.warning
 error = logging.error
 critical = logging.critical
-exception = logging.exception
 
 
-def scraper(msg, *args, **kwargs):
+def scraper_info(msg, *args, **kwargs):
     info('Scraper: ' + msg, *args, **kwargs)
+
+
+def exception(**kwargs):
+    exc_info = sys.exc_info()
+    logging.exception(
+        '%s: %s',
+        exc_info[0].__name__,
+        exc_info[1],
+        exc_info=exc_info,
+        **kwargs
+    )
 
 
 def showtime(showtime):
@@ -44,12 +54,6 @@ def log_exceptions(fn):
         try:
             return fn(*args, **kwargs)
         except Exception:
-            exc_info = sys.exc_info()
-            exception(
-                '%s: %s',
-                exc_info[0].__name__,
-                exc_info[1],
-                exc_info=exc_info
-            )
+            exception()
             raise
     return wrapper

@@ -26,7 +26,7 @@ class SyncShowtimes(Command):
             showtime.save()
 
     def _sync_cinema(self, cinema, showtimes):
-        log.scraper(cinema.name)
+        log.scraper_info(cinema.name)
 
         sync_start = times.now()
         counter = 0
@@ -36,12 +36,12 @@ class SyncShowtimes(Command):
                 self._sync_showtime(showtime)
                 counter += 1
         except:
-            raise
+            log.exception()
         else:
             query = Showtime.objects(cinema=cinema, scraped_at__lt=sync_start)
             query.delete()
         finally:
-            log.scraper('created %d showtimes', counter)
+            log.scraper_info('created %d showtimes', counter)
 
     def run(self):
         for cinema_slug, scraper in scrapers.items():
