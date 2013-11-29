@@ -7,7 +7,7 @@ from flask.ext.script import Manager, Command
 from . import log
 from .scrapers import scrapers
 from . import __version__ as version
-from .models import Cinema, Showtime
+from .models import Cinema, Showtime, Film
 
 
 class Version(Command):
@@ -51,11 +51,45 @@ class SyncShowtimes(Command):
                 self._sync_cinema(cinema, showtimes)
 
 
+class SyncPairing(Command):
+    """Find unpaired showtimes and try to find films for them."""
+
+    def run(self):
+        pass
+
+
+class SyncCleanup(Command):
+    """Find redundant films and showtimes and delete them to keep
+    the db lightweight.
+    """
+
+    def run(self):
+        now = times.now()
+
+        # delete redundant showtimes
+        Showtime.objects.filter(starts_at__lt=now).delete()
+
+        # delete redundant films
+        for film in Film.objects.all():
+            if not Showtime.objects.filter(film_paired=film).count():
+                film.delete()
+
+
+class SyncUpdate(Command):
+    """Find paired films and try to get newer/more complete data for them."""
+
+    def run(self):
+        pass
+
+
 class SyncAll(Command):
     """Sync all."""
 
     def run(self):
         SyncShowtimes().run()
+        SyncPairing().run()
+        SyncCleanup().run()
+        SyncUpdate().run()
 
 
 sync = Manager(usage="Run synchronizations.")
