@@ -109,7 +109,8 @@ class Showtime(db.Document):
     meta = {'ordering': ['-starts_at']}
 
     cinema = db.ReferenceField(Cinema, dbref=False, required=True)
-    film_paired = db.ReferenceField(Film, dbref=False)
+    film_paired = db.ReferenceField(Film, dbref=False,
+                                    reverse_delete_rule=db.DENY)
     film_scraped = db.EmbeddedDocumentField(ScrapedFilm, required=True)
     starts_at = db.DateTimeField(required=True)
     tags = db.ListField(db.StringField())  # dubbing, 3D, etc.
