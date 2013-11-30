@@ -9,9 +9,11 @@
             {% set film = showtime.film %}
             <tr>
                 <th>
-                    <a href="http://www.csfd.cz/hledat/?q={{ film.title_main|urlencode }}">
-                        {{ film.title_normalized }}
-                    </a>
+                    {% if film.url_csfd %}
+                        <a href="{{ film.url_csfd }}">{{ film.title_normalized }}</a>
+                    {% else %}
+                        <span>{{ film.title_normalized }}</span>
+                    {% endif %}
                 </th>
                 <td>
                     {% set cinema = showtime.cinema %}
