@@ -20,7 +20,7 @@ FilmOrigin = namedtuple('FilmOrigin', ['year', 'length'])
 
 class CSFDService(FilmDataService):
 
-    min_similarity_ratio = 80
+    min_similarity_ratio = 90
     year_re = re.compile(r'(\d{4})')
     length_re = re.compile(r'(\d+)\s*min')
     id_re = re.compile(r'/film/(\d+)')  # /film/216106-lie-with-me/
