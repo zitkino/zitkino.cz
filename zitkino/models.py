@@ -60,6 +60,37 @@ class FilmMixin(object):
             return round(self.length / 60, 1)
         return None
 
+    def sync(self):
+        """Insert or update, depending on unique fields."""
+        cls = self.__class__  # model class
+
+        # prepare data as in save
+        self.clean()
+
+        # get all unique fields
+        unique_fields = {}
+        for key in self._data.keys():
+            field = getattr(cls, key)  # field object
+            if field.unique:
+                unique_fields[key] = getattr(self, key)  # value
+            for key in (field.unique_with or []):
+                unique_fields[key] = getattr(self, key)  # value
+
+        # select the object by its unique fields
+        query = cls.objects(**unique_fields)
+
+        # prepare data to set
+        data = {}
+        for key, value in self._data.items():
+            data['set__' + key] = value
+        del data['set__id']
+
+        # perform upsert
+        query.update_one(upsert=True, **data)
+
+        # set id
+        self.id = cls.objects.get(**unique_fields).id
+
     def __unicode__(self):
         if self.year:
             return u'{} ({})'.format(self.title_main, self.year)

@@ -27,7 +27,17 @@ class CSFDService(FilmDataService):
 
     def search(self, title, year=None):
         year = int(year) if year else None
-        items = self._iterparse_items(self._scrape_results(title), year)
+
+        resp = download(
+            'http://www.csfd.cz/hledat/complete-films/?q='
+            + urllib.quote_plus(unicode(title).encode('utf-8'))
+        )
+        match = self.id_re.search(resp.url)  # direct redirect to the film page
+        if match:
+            return self.lookup(match.group(1))
+
+        html = parsers.html(resp.content, base_url=resp.url)
+        items = self._iterparse_items(html, year)
 
         for item in items:
             similarity_ratio = fuzz.partial_ratio(
@@ -38,13 +48,6 @@ class CSFDService(FilmDataService):
                 return self.lookup(self._parse_film_id(item))  # lookup data
 
         return None  # there is no match
-
-    def _scrape_results(self, title):
-        resp = download(
-            'http://www.csfd.cz/hledat/complete-films/?q='
-            + urllib.quote_plus(unicode(title).encode('utf-8'))
-        )
-        return parsers.html(resp.content, base_url=resp.url)
 
     def _iterparse_items(self, html, year=None):
         for item in html.cssselect('#search-films .content li'):
@@ -61,7 +64,7 @@ class CSFDService(FilmDataService):
 
     def _parse_title(self, item):
         title_el = item.cssselect_first('.search-name')
-        if title_el:
+        if title_el is not None:
             return title_el.text_content().lstrip('(').rstrip(')')
         return item.cssselect('.film')[0].text_content()
 
@@ -96,14 +99,14 @@ class CSFDService(FilmDataService):
 
     def _parse_imdb_url(self, html):
         imdb_img = html.cssselect_first('.links img.imdb')
-        if imdb_img:
+        if imdb_img is not None:
             imdb_a = next(imdb_img.iterancestors(tag='a'))
             return imdb_a.get('href')
         return None
 
     def _iterparse_titles(self, info):
         yield info.cssselect_first('h1').text.strip()
-        for title in info.cssselect_first('.names h3'):
+        for title in info.cssselect('.names h3'):
             yield title.text.strip()
 
     def _parse_origin(self, info):
@@ -122,14 +125,14 @@ class CSFDService(FilmDataService):
         return FilmOrigin(year, length)
 
     def _iterparse_directors(self, info):
-        for creators_h4 in info.cssselect_first('.creators div h4'):
+        for creators_h4 in info.cssselect('.creators div h4'):
             if u'Režie' in creators_h4.text_content():
                 wrapper = next(creators_h4.iterancestors(tag='div'))
                 for link in wrapper.cssselect('a'):
                     yield link.text_content()
 
     def _parse_rating(self, html):
-        rating_text = html.cssselect_first('#rating').text_content()
+        rating_text = html.cssselect_first('#rating h2').text_content()
         rating_text = rating_text.rstrip('%')
         if rating_text:
             return int(rating_text)

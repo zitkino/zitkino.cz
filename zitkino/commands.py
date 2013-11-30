@@ -59,11 +59,11 @@ class SyncPairing(Command):
         for showtime in Showtime.objects.filter(film_paired=None):
             log.info('Pairing: %s', showtime)
             film = pair(
-                showtime.film_scraped.title_main,
+                showtime.film_scraped.title_normalized,
                 year=showtime.film_scraped.year
             )
             if film:
-                film.save()
+                film.sync()
                 log.info('Pairing: found %s', film)
                 showtime.film_paired = film
                 showtime.save()

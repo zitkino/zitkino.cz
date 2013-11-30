@@ -16,6 +16,9 @@ def init_app(app, *args, **kwargs):
     handler = SentryHandler(sentry.client, level=logging.ERROR)
     logging.getLogger().addHandler(handler)
 
+    requests_log = logging.getLogger('requests')
+    requests_log.setLevel(logging.WARNING)
+
 
 debug = logging.debug
 info = logging.info
