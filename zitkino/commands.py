@@ -58,13 +58,36 @@ class SyncPairing(Command):
     def _get_showtimes(self):
         return Showtime.objects.filter(film_paired=None)
 
+    def _pair_by_db(self, showtime):
+        scraped_title = showtime.film_scraped.title_normalized
+        scraped_year = showtime.film_scraped.year
+
+        params = {'titles': scraped_title}
+        if scraped_year is not None:
+            params['year'] = scraped_year
+        try:
+            return Film.objects.get(**params)
+        except Film.DoesNotExist:
+            return None
+
+    def _pair_by_services(self, showtime):
+        scraped_title = showtime.film_scraped.title_normalized
+        scraped_year = showtime.film_scraped.year
+
+        log.info('Pairing: asking services')
+        film = pair(scraped_title, year=scraped_year)
+        if film:
+            film.titles.append(scraped_title)
+        return film
+
+    def _pair(self, showtime):
+        return self._pair_by_db(showtime) or self._pair_by_services(showtime)
+
     def run(self):
         for showtime in self._get_showtimes():
             log.info('Pairing: %s', showtime)
-            film = pair(
-                showtime.film_scraped.title_normalized,
-                year=showtime.film_scraped.year
-            )
+
+            film = self._pair(showtime)
             if film:
                 film.sync()
                 log.info('Pairing: found %s', film)
@@ -80,6 +103,9 @@ class SyncFullPairing(SyncPairing):
 
     def _get_showtimes(self):
         return Showtime.objects.all()
+
+    def _pair(self, showtime):
+        return self._pair_by_services(showtime)
 
 
 class SyncCleanup(Command):

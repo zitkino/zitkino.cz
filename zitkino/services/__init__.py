@@ -19,8 +19,8 @@ from .csfd import CSFDService
 # from .synopsitv import SynopsiTVService
 
 
-def pair(*args, **kwargs):
-    return CSFDService().search(*args, **kwargs)
+def pair(title, year=None):
+    return CSFDService().search(title, year)
 
 
 def update(film):
