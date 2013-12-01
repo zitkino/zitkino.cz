@@ -47,6 +47,8 @@ class FilmMixin(object):
     directors = db.ListField(db.StringField())
     length = db.IntField()
 
+    url_cover = db.URLField()
+
     @property
     def title_normalized(self):
         title = self.title_main
@@ -60,36 +62,11 @@ class FilmMixin(object):
             return round(self.length / 60, 1)
         return None
 
-    def sync(self):
-        """Insert or update, depending on unique fields."""
-        cls = self.__class__  # model class
-
-        # prepare data as in save
-        self.clean()
-
-        # get all unique fields
-        unique_fields = {}
-        for key in self._data.keys():
-            field = getattr(cls, key)  # field object
-            if field.unique:
-                unique_fields[key] = getattr(self, key)  # value
-            for key in (field.unique_with or []):
-                unique_fields[key] = getattr(self, key)  # value
-
-        # select the object by its unique fields
-        query = cls.objects(**unique_fields)
-
-        # prepare data to set
-        data = {}
-        for key, value in self._data.items():
-            data['set__' + key] = value
-        del data['set__id']
-
-        # perform upsert
-        query.update_one(upsert=True, **data)
-
-        # set id
-        self.id = cls.objects.get(**unique_fields).id
+    def clean(self):
+        self.titles = (
+            [self.title_main] +
+            list(set(t for t in self.titles if t != self.title_main))
+        )
 
     def __unicode__(self):
         if self.year:
@@ -123,7 +100,49 @@ class Film(FilmMixin, db.Document):
         return round(sum(ratings) / len(ratings), 0)
 
     def clean(self):
+        super(Film, self).clean()
         self.slug = slugify(self.title_main + '_' + str(self.year))
+
+    def save_overwrite(self):
+        """Insert or update, depending on unique fields."""
+        cls = self.__class__  # model class
+
+        # prepare data as in save
+        self.clean()
+
+        # get all unique fields
+        unique_fields = {}
+        for key in self._data.keys():
+            field = getattr(cls, key)  # field object
+            if field.unique:
+                unique_fields[key] = getattr(self, key)  # value
+            for key in (field.unique_with or []):
+                unique_fields[key] = getattr(self, key)  # value
+
+        # select the object by its unique fields
+        query = cls.objects(**unique_fields)
+
+        # prepare data to set
+        data = {}
+        for key, value in self._data.items():
+            data['set__' + key] = value
+        del data['set__id']
+
+        # perform upsert
+        query.update_one(upsert=True, **data)
+
+        # set id (not very atomic...)
+        self.id = cls.objects.get(**unique_fields).id
+
+    def sync(self, film):
+        """Synchronize data with other film object."""
+        blacklist = ['id', 'slug', 'titles', 'title_main']
+        for key in self._data.keys():
+            if key not in blacklist:
+                setattr(self, key, getattr(film, key))  # update
+        self.titles.append(film.title_main)
+        self.titles.extend(film.titles)
+        self.save()
 
 
 class ScrapedFilm(FilmMixin, db.EmbeddedDocument):

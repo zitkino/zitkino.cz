@@ -5,4 +5,5 @@ from . import FilmDataService
 
 
 class SynopsiTVService(FilmDataService):
-    pass
+
+    name = u'SynopsiTV'

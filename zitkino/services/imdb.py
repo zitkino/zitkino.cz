@@ -5,4 +5,5 @@ from . import FilmDataService
 
 
 class IMDbService(FilmDataService):
-    pass
+
+    name = u'IMDb'

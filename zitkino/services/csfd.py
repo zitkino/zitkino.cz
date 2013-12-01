@@ -20,21 +20,31 @@ FilmOrigin = namedtuple('FilmOrigin', ['year', 'length'])
 
 class CSFDService(FilmDataService):
 
+    name = u'ČSFD'
+
     min_similarity_ratio = 90
     year_re = re.compile(r'(\d{4})')
     length_re = re.compile(r'(\d+)\s*min')
     id_re = re.compile(r'/film/(\d+)')  # /film/216106-lie-with-me/
 
+    def _download(self, *args, **kwargs):
+        try:
+            return download(*args, **kwargs)
+        except HTTPError as e:
+            if e.response.status_code == 502:  # ČSFD's WTF issue, try again
+                return self._download(*args, **kwargs)
+            raise
+
     def search(self, title, year=None):
         year = int(year) if year else None
 
-        resp = download(
+        resp = self._download(
             'http://www.csfd.cz/hledat/complete-films/?q='
             + urllib.quote_plus(unicode(title).encode('utf-8'))
         )
         match = self.id_re.search(resp.url)  # direct redirect to the film page
         if match:
-            return self.lookup(match.group(1))
+            return self.lookup(resp.url)
 
         html = parsers.html(resp.content, base_url=resp.url)
         results = self._iterparse_search_results(html, year)
@@ -45,7 +55,7 @@ class CSFDService(FilmDataService):
                 self._parse_matched_title(result)
             )
             if similarity_ratio >= self.min_similarity_ratio:
-                return self.lookup(self._parse_film_id(result))  # lookup data
+                return self.lookup(self._parse_film_url(result))  # lookup data
 
         return None  # there is no match
 
@@ -68,13 +78,13 @@ class CSFDService(FilmDataService):
             return title_el.text_content().lstrip('(').rstrip(')')
         return result.cssselect('.film')[0].text_content()
 
-    def _parse_film_id(self, result):
-        film_url = result.cssselect_first('.film').get('href')
-        return self.id_re.search(film_url).group(1)
+    def _parse_film_url(self, result):
+        result.make_links_absolute()
+        return result.cssselect_first('.film').get('href')
 
-    def lookup(self, film_id):
+    def lookup(self, url_csfd):
         try:
-            resp = download('http://www.csfd.cz/film/{}/'.format(film_id))
+            resp = self._download(url_csfd)
         except HTTPError as e:
             if e.response.status_code == 404:
                 return None  # there is no match
@@ -136,4 +146,13 @@ class CSFDService(FilmDataService):
         rating_text = rating_text.rstrip('%')
         if rating_text:
             return int(rating_text)
+        return None
+
+    def lookup_obj(self, film):
+        if film.url_csfd:
+            return self.lookup(film.url_csfd)
+        for title in film.titles:
+            f = self.search(title, film.year)
+            if f:
+                return f
         return None

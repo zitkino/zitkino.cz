@@ -5,4 +5,5 @@ from . import FilmDataService
 
 
 class FFFilmService(FilmDataService):
-    pass
+
+    name = u'FFFilm'
