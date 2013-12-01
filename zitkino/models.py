@@ -82,9 +82,7 @@ class Film(FilmMixin, db.Document):
     # rating as percentage
     rating_csfd = db.IntField(min_value=0, max_value=100)
     rating_imdb = db.IntField(min_value=0, max_value=100)
-    rating_fffilm = db.IntField(min_value=0, max_value=100)
 
-    url_fffilm = db.URLField()
     url_synopsitv = db.URLField()
 
     @property
@@ -95,8 +93,6 @@ class Film(FilmMixin, db.Document):
             ratings.append(self.rating_csfd)
         if self.rating_imdb:
             ratings.append(self.rating_imdb)
-        if self.rating_fffilm:
-            ratings.append(self.rating_fffilm)
         return round(sum(ratings) / len(ratings), 0)
 
     def clean(self):
@@ -136,10 +132,14 @@ class Film(FilmMixin, db.Document):
 
     def sync(self, film):
         """Synchronize data with other film object."""
+        if film is None:
+            return
         blacklist = ['id', 'slug', 'titles', 'title_main']
         for key in self._data.keys():
             if key not in blacklist:
-                setattr(self, key, getattr(film, key))  # update
+                val = getattr(film, key, None)
+                if val is not None:
+                    setattr(self, key, val)  # update
         self.titles.append(film.title_main)
         self.titles.extend(film.titles)
         self.save()
