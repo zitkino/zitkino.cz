@@ -44,7 +44,7 @@ class CSFDService(FilmDataService):
                 title,
                 self._parse_title(item)
             )
-            if similarity_ratio > self.min_similarity_ratio:
+            if similarity_ratio >= self.min_similarity_ratio:
                 return self.lookup(self._parse_film_id(item))  # lookup data
 
         return None  # there is no match
