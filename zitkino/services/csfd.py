@@ -37,39 +37,39 @@ class CSFDService(FilmDataService):
             return self.lookup(match.group(1))
 
         html = parsers.html(resp.content, base_url=resp.url)
-        items = self._iterparse_items(html, year)
+        results = self._iterparse_search_results(html, year)
 
-        for item in items:
+        for result in results:
             similarity_ratio = fuzz.partial_ratio(
                 title,
-                self._parse_title(item)
+                self._parse_matched_title(result)
             )
             if similarity_ratio >= self.min_similarity_ratio:
-                return self.lookup(self._parse_film_id(item))  # lookup data
+                return self.lookup(self._parse_film_id(result))  # lookup data
 
         return None  # there is no match
 
-    def _iterparse_items(self, html, year=None):
-        for item in html.cssselect('#search-films .content li'):
+    def _iterparse_search_results(self, html, year=None):
+        for result in html.cssselect('#search-films .content li'):
             if year:
                 # check year
-                year_el = item.cssselect_first('.film-year')
+                year_el = result.cssselect_first('.film-year')
                 if year_el:
                     year_text = year_el.text_content()
                 else:
-                    year_text = item.cssselect_first('p').text_content()
+                    year_text = result.cssselect_first('p').text_content()
                 if year != int(self.year_re.search(year_text).group(1)):
                     continue  # skip this result
-            yield item
+            yield result
 
-    def _parse_title(self, item):
-        title_el = item.cssselect_first('.search-name')
+    def _parse_matched_title(self, result):
+        title_el = result.cssselect_first('.search-name')
         if title_el is not None:
             return title_el.text_content().lstrip('(').rstrip(')')
-        return item.cssselect('.film')[0].text_content()
+        return result.cssselect('.film')[0].text_content()
 
-    def _parse_film_id(self, item):
-        film_url = item.cssselect_first('.film').get('href')
+    def _parse_film_id(self, result):
+        film_url = result.cssselect_first('.film').get('href')
         return self.id_re.search(film_url).group(1)
 
     def lookup(self, film_id):
