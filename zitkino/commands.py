@@ -55,8 +55,11 @@ class SyncShowtimes(Command):
 class SyncPairing(Command):
     """Find unpaired showtimes and try to find films for them."""
 
+    def _get_showtimes(self):
+        return Showtime.objects.filter(film_paired=None)
+
     def run(self):
-        for showtime in Showtime.objects.filter(film_paired=None):
+        for showtime in self._get_showtimes():
             log.info('Pairing: %s', showtime)
             film = pair(
                 showtime.film_scraped.title_normalized,
@@ -66,9 +69,17 @@ class SyncPairing(Command):
                 film.sync()
                 log.info('Pairing: found %s', film)
                 showtime.film_paired = film
-                showtime.save()
             else:
+                showtime.film_paired = None
                 log.info('Pairing: no match')
+            showtime.save()
+
+
+class SyncFullPairing(SyncPairing):
+    """Try to pair all showtimes."""
+
+    def _get_showtimes(self):
+        return Showtime.objects.all()
 
 
 class SyncCleanup(Command):
@@ -81,6 +92,17 @@ class SyncCleanup(Command):
         query = Showtime.objects.filter(starts_at__lt=times.now())
         count = query.count()
         query.delete()
+
+        for showtime in Showtime.objects.all():
+            duplicates = Showtime.objects.filter(
+                id__ne=showtime.id,
+                cinema=showtime.cinema,
+                starts_at=showtime.starts_at,
+                film_scraped__title_main=showtime.film_scraped.title_main
+            )
+            count += duplicates.count()
+            duplicates.delete()
+
         log.info('Cleanup: cleaned %d showtimes.', count)
 
         # delete redundant films
@@ -110,6 +132,7 @@ class SyncAll(Command):
 sync = Manager(usage="Run synchronizations.")
 sync.add_command('showtimes', SyncShowtimes())
 sync.add_command('pairing', SyncPairing())
+sync.add_command('full-pairing', SyncFullPairing())
 sync.add_command('cleanup', SyncCleanup())
 sync.add_command('update', SyncUpdate())
 sync.add_command('all', SyncAll())
