@@ -5,18 +5,27 @@ class FilmDataService(object):
     """Film data service."""
 
     name = None
+    url_attr = None
 
     def search(self, title, year=None):
         """Find a film by guessing."""
         raise NotImplementedError
 
-    def lookup(self, key):
-        """Find a film by ID or URL lookup."""
+    def lookup(self, url):
+        """Find a film by URL lookup."""
         raise NotImplementedError
 
     def lookup_obj(self, film):
         """Find a film by :class:`~zitkino.models.Film` object."""
-        raise NotImplementedError
+        if self.url_attr:
+            url = getattr(film, self.url_attr)
+            if url:
+                return self.lookup(url)
+        for title in film.titles:
+            f = self.search(title, film.year)
+            if f:
+                return f
+        return None
 
 
 from .csfd import CSFDService

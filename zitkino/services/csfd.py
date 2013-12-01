@@ -21,6 +21,7 @@ FilmOrigin = namedtuple('FilmOrigin', ['year', 'length'])
 class CSFDService(FilmDataService):
 
     name = u'ČSFD'
+    url_attr = 'url_csfd'
 
     min_similarity_ratio = 90
     year_re = re.compile(r'(\d{4})')
@@ -82,9 +83,9 @@ class CSFDService(FilmDataService):
         result.make_links_absolute()
         return result.cssselect_first('.film').get('href')
 
-    def lookup(self, url_csfd):
+    def lookup(self, url):
         try:
-            resp = self._download(url_csfd)
+            resp = self._download(url)
         except HTTPError as e:
             if e.response.status_code == 404:
                 return None  # there is no match
@@ -146,13 +147,4 @@ class CSFDService(FilmDataService):
         rating_text = rating_text.rstrip('%')
         if rating_text:
             return int(rating_text)
-        return None
-
-    def lookup_obj(self, film):
-        if film.url_csfd:
-            return self.lookup(film.url_csfd)
-        for title in film.titles:
-            f = self.search(title, film.year)
-            if f:
-                return f
         return None
