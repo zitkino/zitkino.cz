@@ -7,7 +7,7 @@ class FilmDataService(object):
     name = None
     url_attr = None
 
-    def search(self, title, year=None):
+    def search(self, titles, year=None):
         """Find a film by guessing."""
         raise NotImplementedError
 
@@ -21,16 +21,11 @@ class FilmDataService(object):
             url = getattr(film, self.url_attr)
             if url:
                 return self.lookup(url)
-        for title in film.titles:
-            f = self.search(title, film.year)
-            if f:
-                return f
-        return None
+        return self.search(film.titles, film.year)
 
 
 from .csfd import CSFDService
-# from .imdb import IMDbService
-# from .fffilm import FFFilmService
+from .imdb import IMDbService
 # from .synopsitv import SynopsiTVService
 
 
@@ -38,9 +33,10 @@ def pair(film):
     service = CSFDService()
     if film.url_csfd:
         service.lookup(film.url_csfd)
-    return service.search(film.title_normalized, film.year)
+    return service.search([film.title_normalized] + film.titles, film.year)
 
 
 services = [
     CSFDService(),
+    IMDbService(),
 ]

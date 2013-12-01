@@ -3,10 +3,10 @@
 
 import re
 import urllib
-from requests import HTTPError
 from collections import namedtuple
 
 from fuzzywuzzy import fuzz
+from requests import HTTPError
 
 from zitkino import parsers
 from zitkino.models import Film
@@ -36,27 +36,31 @@ class CSFDService(FilmDataService):
                 return self._download(*args, **kwargs)
             raise
 
-    def search(self, title, year=None):
+    def search(self, titles, year=None):
         year = int(year) if year else None
 
-        resp = self._download(
-            'http://www.csfd.cz/hledat/complete-films/?q='
-            + urllib.quote_plus(unicode(title).encode('utf-8'))
-        )
-        match = self.id_re.search(resp.url)  # direct redirect to the film page
-        if match:
-            return self.lookup(resp.url)
-
-        html = parsers.html(resp.content, base_url=resp.url)
-        results = self._iterparse_search_results(html, year)
-
-        for result in results:
-            similarity_ratio = fuzz.partial_ratio(
-                title,
-                self._parse_matched_title(result)
+        for title in titles:
+            resp = self._download(
+                'http://www.csfd.cz/hledat/complete-films/?q='
+                + urllib.quote_plus(unicode(title).encode('utf-8'))
             )
-            if similarity_ratio >= self.min_similarity_ratio:
-                return self.lookup(self._parse_film_url(result))  # lookup data
+
+            # direct redirect to the film page
+            match = self.id_re.search(resp.url)
+            if match:
+                return self.lookup(resp.url)
+
+            # results page
+            html = parsers.html(resp.content, base_url=resp.url)
+            results = self._iterparse_search_results(html, year)
+
+            for result in results:
+                similarity_ratio = fuzz.partial_ratio(
+                    title,
+                    self._parse_matched_title(result)
+                )
+                if similarity_ratio >= self.min_similarity_ratio:
+                    return self.lookup(self._parse_film_url(result))
 
         return None  # there is no match
 
