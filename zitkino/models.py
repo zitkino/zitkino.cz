@@ -109,11 +109,12 @@ class Film(FilmMixin, db.Document):
         # get all unique fields
         unique_fields = {}
         for key in self._data.keys():
-            field = getattr(cls, key)  # field object
-            if field.unique:
-                unique_fields[key] = getattr(self, key)  # value
-            for key in (field.unique_with or []):
-                unique_fields[key] = getattr(self, key)  # value
+            if hasattr(cls, key):  # (in case of changes in model)
+                field = getattr(cls, key)  # field object
+                if field.unique:
+                    unique_fields[key] = getattr(self, key)  # value
+                for key in (field.unique_with or []):
+                    unique_fields[key] = getattr(self, key)  # value
 
         # select the object by its unique fields
         query = cls.objects(**unique_fields)
@@ -121,7 +122,8 @@ class Film(FilmMixin, db.Document):
         # prepare data to set
         data = {}
         for key, value in self._data.items():
-            data['set__' + key] = value
+            if hasattr(cls, key):  # (in case of changes in model)
+                data['set__' + key] = value
         del data['set__id']
 
         # perform upsert
