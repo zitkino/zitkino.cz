@@ -164,7 +164,7 @@ class CsfdFilmService(BaseFilmService):
 
     def _parse_poster_url(self, html):
         img = html.cssselect_first('#poster img')
-        if img is not None:
+        if img is None:
             return None  # no image?!
 
         url = img.get('src')
@@ -176,4 +176,5 @@ class CsfdFilmService(BaseFilmService):
             return None  # default image
 
         # strip params so we get the largest image
-        return urlparse.unparse(parts.scheme, parts.netloc, parts.path)
+        parts = (parts.scheme, parts.netloc, parts.path, None, None, None)
+        return urlparse.urlunparse(parts)

@@ -103,6 +103,11 @@ class SynopsitvFilmService(BaseFilmService):
         return super(SynopsitvFilmService, self).lookup_obj(film)
 
     def _create_film(self, result):
+        if 'movie' not in result.get('cover_full', ''):
+            url_poster = result.get('cover_full')
+        else:
+            url_poster = None  # default image
+
         return Film(
             url_synopsitv='http://www.synopsi.tv' + result['url'],
             year=result.get('year'),
@@ -110,6 +115,6 @@ class SynopsitvFilmService(BaseFilmService):
             titles=[result['name']],
             directors=[d['name'] for d in result.get('directors', [])],
             length=result.get('runtime'),
-            url_poster=result.get('cover_large'),
+            url_poster=url_poster,
             url_trailer=result.get('trailer') or None,
         )

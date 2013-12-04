@@ -17,3 +17,4 @@ icalendar==3.5       # iCalendar format reader
 raven==3.4.1         # Sentry
 blinker==1.3         # Signalling
 pytz==2013d          # Use "development" version of pytz. Related to pypa/pip#974
+pillow==2.2.1        # Image manipulation

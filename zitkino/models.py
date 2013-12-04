@@ -6,8 +6,10 @@ from __future__ import division
 from datetime import timedelta
 
 import times
+from requests import RequestException
 
 from . import db
+from .image import Image
 from .utils import slugify
 
 
@@ -47,7 +49,7 @@ class FilmMixin(object):
     directors = db.ListField(db.StringField())
     length = db.IntField()
 
-    url_cover = db.URLField()
+    url_poster = db.URLField()
     url_trailer = db.URLField()
 
     @property
@@ -138,16 +140,41 @@ class Film(FilmMixin, db.Document):
         """Synchronize data with other film object."""
         if film is None:
             return
-        blacklist = ['id', 'slug', 'directors', 'titles', 'title_main']
+
+        blacklist = [
+            'id', 'slug', 'directors', 'titles', 'title_main', 'url_poster'
+        ]
         for key in self._data.keys():
             if key not in blacklist:
                 val = getattr(film, key, None)
                 if val is not None:
                     setattr(self, key, val)  # update
+
+        # special cases
         self.titles.append(film.title_main)
         self.titles.extend(film.titles)
         self.directors.extend(film.directors)
+
+        if self._is_larger_poster(film.url_poster):
+            self.url_poster = film.url_poster
+
+        # save changes
         self.save()
+
+    def _is_larger_poster(self, url):
+        """Decides whether given poster URL *url* points to an image which
+        is larger than the one represented by already present poster URL.
+        """
+        if not url:
+            return False
+        if not self.url_poster:
+            return True
+        try:
+            size1 = Image.from_url(self.url_poster).size
+            size2 = Image.from_url(url).size
+        except RequestException:
+            return False
+        return (size1[0] * size1[1]) < (size2[0] * size2[1])  # compare areas
 
 
 class ScrapedFilm(FilmMixin, db.EmbeddedDocument):
