@@ -36,7 +36,7 @@ class SyncShowtimes(Command):
             for showtime in showtimes:
                 self._save_showtime(showtime)
                 counter += 1
-        except:
+        except Exception:
             log.exception()
         else:
             query = Showtime.objects(cinema=cinema, scraped_at__lt=now)
@@ -146,15 +146,16 @@ class SyncUpdate(Command):
 
     def _update(self, film):
         for service in services:
-            log.info('Update: asking %s', service.name)
             try:
+                log.info(u'Update: %s ← %s', film, service.name)
                 film.sync(service.lookup_obj(film))
             except NotImplementedError:
-                log.info('Update: not implemented')
+                pass
+            except Exception:
+                log.exception()
 
     def run(self):
         for film in Film.objects.all():
-            log.info('Update: %s', film)
             self._update(film)
 
 
