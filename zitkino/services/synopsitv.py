@@ -29,7 +29,7 @@ class SynopsitvFilmService(BaseFilmService):
     password = app.config['SYNOPSITV_PASSWORD']
 
     properties = [
-        'id', 'cover_large', 'url', 'name', 'year', 'trailer',
+        'id', 'cover_full', 'url', 'name', 'year', 'trailer',
         'directors', 'runtime',
     ]
 
@@ -62,10 +62,12 @@ class SynopsitvFilmService(BaseFilmService):
                     'title_property[]': ','.join(self.properties),
                 },
             )
-            if resp.status_code == 200:
-                results = json.loads(resp.content)['relevant_results']
-                if results:
-                    return self._create_film(results[0])
+            if resp.status_code == 404:
+                continue
+            resp.raise_for_status()
+            results = json.loads(resp.content)['relevant_results']
+            if results:
+                return self._create_film(results[0])
         return None
 
     def lookup(self, url):
@@ -79,6 +81,7 @@ class SynopsitvFilmService(BaseFilmService):
         )
         if resp.status_code == 404:
             return None
+        resp.raise_for_status()
         return self._create_film(json.loads(resp.content))
 
     def lookup_obj(self, film):
@@ -92,7 +95,8 @@ class SynopsitvFilmService(BaseFilmService):
                     'title_property[]': ','.join(self.properties),
                 },
             )
-            if resp.status_code == 200:
+            if resp.status_code != 404:
+                resp.raise_for_status()
                 results = json.loads(resp.content)['relevant_results']
                 if results:
                     return self._create_film(results[0])
@@ -106,6 +110,6 @@ class SynopsitvFilmService(BaseFilmService):
             titles=[result['name']],
             directors=[d['name'] for d in result.get('directors', [])],
             length=result.get('runtime'),
-            url_cover=result.get('cover_large'),
-            url_trailer=result.get('trailer'),
+            url_poster=result.get('cover_large'),
+            url_trailer=result.get('trailer') or None,
         )

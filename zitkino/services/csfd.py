@@ -36,7 +36,8 @@ class CsfdFilmService(BaseFilmService):
         try:
             return download(*args, **kwargs)
         except HTTPError as e:
-            if e.response.status_code == 502:  # ČSFD's WTF issue, try again
+            if e.response.status_code in (502, 403):
+                # ČSFD's WTF issues, try again
                 return self._download(*args, **kwargs)
             raise
 
@@ -117,7 +118,7 @@ class CsfdFilmService(BaseFilmService):
             directors=list(self._iterparse_directors(info)),
             length=origin.length,
             rating_csfd=self._parse_rating(html),
-            url_cover=self._parse_cover_url(html),
+            url_poster=self._parse_poster_url(html),
         )
 
     def _parse_imdb_url(self, html):
@@ -161,9 +162,9 @@ class CsfdFilmService(BaseFilmService):
             return int(rating_text)
         return None
 
-    def _parse_cover_url(self, html):
+    def _parse_poster_url(self, html):
         img = html.cssselect_first('#poster img')
-        if not img:
+        if img is not None:
             return None  # no image?!
 
         url = img.get('src')
