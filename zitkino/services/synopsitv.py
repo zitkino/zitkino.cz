@@ -62,10 +62,10 @@ class SynopsitvFilmService(BaseFilmService):
                     'title_property[]': ','.join(self.properties),
                 },
             )
-            resp.raise_for_status()
-            results = json.loads(resp.content)['relevant_results']
-            if results:
-                return self._create_film(results[0])
+            if resp.status_code == 200:
+                results = json.loads(resp.content)['relevant_results']
+                if results:
+                    return self._create_film(results[0])
         return None
 
     def lookup(self, url):
@@ -77,7 +77,8 @@ class SynopsitvFilmService(BaseFilmService):
                 'title_property[]': ','.join(self.properties),
             },
         )
-        resp.raise_for_status()
+        if resp.status_code == 404:
+            return None
         return self._create_film(json.loads(resp.content))
 
     def lookup_obj(self, film):
@@ -91,10 +92,10 @@ class SynopsitvFilmService(BaseFilmService):
                     'title_property[]': ','.join(self.properties),
                 },
             )
-            resp.raise_for_status()
-            results = json.loads(resp.content)['relevant_results']
-            if results:
-                return self._create_film(results[0])
+            if resp.status_code == 200:
+                results = json.loads(resp.content)['relevant_results']
+                if results:
+                    return self._create_film(results[0])
         return super(SynopsitvFilmService, self).lookup_obj(film)
 
     def _create_film(self, result):
@@ -108,3 +109,12 @@ class SynopsitvFilmService(BaseFilmService):
             url_cover=result.get('cover_large'),
             url_trailer=result.get('trailer'),
         )
+
+
+if __name__ == '__main__':
+    print SynopsitvFilmService().search(['!'])
+    print SynopsitvFilmService().search(['matrix'])
+    print SynopsitvFilmService().lookup('http://synopsi.tv/movies/64978/the-matrix-1999/')
+    print SynopsitvFilmService().lookup_obj(Film.objects.get(id='529c4729dd7ce9e34fc2d985'))
+    print SynopsitvFilmService().lookup_obj(Film(url_imdb='http://imdb.com/title/tt0418832/'))
+    print SynopsitvFilmService().lookup_obj(Film(titles=['Lie with me']))
