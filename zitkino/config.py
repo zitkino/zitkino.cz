@@ -2,6 +2,7 @@
 
 
 import os
+import base64
 import logging
 from urlparse import urlparse
 
@@ -49,3 +50,14 @@ GA_CODE = 'UA-1316071-11'
 
 USER_AGENT = 'zitkino/{0} (+http://zitkino.cz)'.format(version)
 HTTP_TIMEOUT = 30
+
+
+### SynopsiTV credentials
+
+# Encoding the password by base64 is not meant to be secure,
+# it just prevents 'man-behind-my-shoulder' attacks.
+
+SYNOPSITV_OAUTH_KEY = os.getenv('SYNOPSITV_OAUTH_KEY')
+SYNOPSITV_OAUTH_SECRET = os.getenv('SYNOPSITV_OAUTH_SECRET')
+SYNOPSITV_USERNAME = os.getenv('SYNOPSITV_USERNAME')
+SYNOPSITV_PASSWORD = base64.b64decode(os.getenv('SYNOPSITV_PASSWORD'))
