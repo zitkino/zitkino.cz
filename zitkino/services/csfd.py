@@ -3,6 +3,7 @@
 
 import re
 import urllib
+import urlparse
 from collections import namedtuple
 
 from fuzzywuzzy import fuzz
@@ -116,6 +117,7 @@ class CsfdFilmService(BaseFilmService):
             directors=list(self._iterparse_directors(info)),
             length=origin.length,
             rating_csfd=self._parse_rating(html),
+            url_cover=self._parse_cover_url(html),
         )
 
     def _parse_imdb_url(self, html):
@@ -158,3 +160,19 @@ class CsfdFilmService(BaseFilmService):
         if rating_text:
             return int(rating_text)
         return None
+
+    def _parse_cover_url(self, html):
+        img = html.cssselect_first('#poster img')
+        if not img:
+            return None  # no image?!
+
+        url = img.get('src')
+        if url.startswith('//'):
+            url = 'https:' + url
+
+        parts = urlparse.urlparse(url)
+        if 'assets' in parts.path:
+            return None  # default image
+
+        # strip params so we get the largest image
+        return urlparse.unparse(parts.scheme, parts.netloc, parts.path)
