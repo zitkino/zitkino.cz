@@ -34,22 +34,26 @@ class SynopsitvFilmService(BaseFilmService):
     ]
 
     def __init__(self):
-        self.token = self._get_token()
+        self._token = None
 
-    def _get_token(self):
-        resp = requests.post(
-            'https://api.synopsi.tv/oauth2/token/',
-            data={
-                'grant_type': 'password',
-                'client_id': self.oauth_key,
-                'client_secret': self.oauth_secret,
-                'username': self.username,
-                'password': self.password,
-            },
-            auth=(self.oauth_key, self.oauth_secret)
-        )
-        resp.raise_for_status()
-        return json.loads(resp.content)['access_token']
+    @property
+    def token(self):
+        """Lazy token getter."""
+        if not self._token:
+            resp = requests.post(
+                'https://api.synopsi.tv/oauth2/token/',
+                data={
+                    'grant_type': 'password',
+                    'client_id': self.oauth_key,
+                    'client_secret': self.oauth_secret,
+                    'username': self.username,
+                    'password': self.password,
+                },
+                auth=(self.oauth_key, self.oauth_secret)
+            )
+            resp.raise_for_status()
+            self._token = json.loads(resp.content)['access_token']
+        return self._token
 
     def search(self, titles, year=None):
         for title in titles:
