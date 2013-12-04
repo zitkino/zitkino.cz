@@ -48,6 +48,7 @@ class FilmMixin(object):
     length = db.IntField()
 
     url_cover = db.URLField()
+    url_trailer = db.URLField()
 
     @property
     def title_normalized(self):
@@ -67,6 +68,7 @@ class FilmMixin(object):
             [self.title_main] +
             list(set(t for t in self.titles if t != self.title_main))
         )
+        self.directors = list(frozenset(self.directors))
 
     def __unicode__(self):
         if self.year:
@@ -136,7 +138,7 @@ class Film(FilmMixin, db.Document):
         """Synchronize data with other film object."""
         if film is None:
             return
-        blacklist = ['id', 'slug', 'titles', 'title_main']
+        blacklist = ['id', 'slug', 'directors', 'titles', 'title_main']
         for key in self._data.keys():
             if key not in blacklist:
                 val = getattr(film, key, None)
@@ -144,6 +146,7 @@ class Film(FilmMixin, db.Document):
                     setattr(self, key, val)  # update
         self.titles.append(film.title_main)
         self.titles.extend(film.titles)
+        self.directors.extend(film.directors)
         self.save()
 
 

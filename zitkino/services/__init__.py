@@ -1,7 +1,21 @@
 # -*- coding: utf-8 -*-
 
 
-class FilmDataService(object):
+class BaseFilmID(unicode):
+    """Film's ID."""
+
+    url_re = None
+    url_re_group = 1
+
+    @classmethod
+    def from_url(cls, url):
+        match = cls.url_re.search(url)
+        if not match:
+            raise ValueError
+        return match.group(cls.url_re_group)
+
+
+class BaseFilmService(object):
     """Film data service."""
 
     name = None
@@ -24,19 +38,20 @@ class FilmDataService(object):
         return self.search(film.titles, film.year)
 
 
-from .csfd import CSFDService
-from .imdb import IMDbService
-# from .synopsitv import SynopsiTVService
+from .csfd import CsfdFilmService
+from .imdb import ImdbFilmService
+from .synopsitv import SynopsitvFilmService
 
 
 def pair(film):
-    service = CSFDService()
+    service = CsfdFilmService()
     if film.url_csfd:
         service.lookup(film.url_csfd)
     return service.search([film.title_normalized] + film.titles, film.year)
 
 
 services = [
-    CSFDService(),
-    IMDbService(),
+    CsfdFilmService(),
+    ImdbFilmService(),
+    SynopsitvFilmService(),
 ]

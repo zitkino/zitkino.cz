@@ -12,13 +12,17 @@ from zitkino import parsers
 from zitkino.models import Film
 from zitkino.utils import download
 
-from . import FilmDataService
+from . import BaseFilmID, BaseFilmService
+
+
+class CsfdFilmID(BaseFilmID):
+    url_re = re.compile(r'/film/(\d+)')
 
 
 FilmOrigin = namedtuple('FilmOrigin', ['year', 'length'])
 
 
-class CSFDService(FilmDataService):
+class CsfdFilmService(BaseFilmService):
 
     name = u'ČSFD'
     url_attr = 'url_csfd'
@@ -26,7 +30,6 @@ class CSFDService(FilmDataService):
     min_similarity_ratio = 90
     year_re = re.compile(r'(\d{4})')
     length_re = re.compile(r'(\d+)\s*min')
-    id_re = re.compile(r'/film/(\d+)')  # /film/216106-lie-with-me/
 
     def _download(self, *args, **kwargs):
         try:
@@ -46,8 +49,11 @@ class CSFDService(FilmDataService):
             )
 
             # direct redirect to the film page
-            match = self.id_re.search(resp.url)
-            if match:
+            try:
+                CsfdFilmID.from_url(resp.url)
+            except ValueError:
+                pass
+            else:
                 return self.lookup(resp.url)
 
             # results page

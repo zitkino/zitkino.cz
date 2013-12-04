@@ -1,16 +1,22 @@
 # -*- coding: utf-8 -*-
 
 
+import re
+
 from requests import HTTPError
 
 from zitkino import parsers
 from zitkino.models import Film
 from zitkino.utils import download
 
-from . import FilmDataService
+from . import BaseFilmID, BaseFilmService
 
 
-class IMDbService(FilmDataService):
+class ImdbFilmID(BaseFilmID):
+    url_re = re.compile(r'/title/tt([^/]+)')
+
+
+class ImdbFilmService(BaseFilmService):
 
     name = u'IMDb'
     url_attr = 'url_imdb'
