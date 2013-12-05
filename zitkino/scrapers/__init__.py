@@ -25,8 +25,9 @@ class ScraperRepository(dict):
                     cinema.id = found.id
                     cinema.save()
             except db.ConnectionError:
-                # sometimes it is necessary to import scrapers without connection to database
-                log.warning('Cinema %s could not be updated. No database connection.', cinema)
+                # sometimes it is necessary to import scrapers without
+                # connection to database
+                log.warning('Cinema %s could not be updated, no db.', cinema)
 
         def decorator(fn_or_cls):
             if inspect.isclass(fn_or_cls):
