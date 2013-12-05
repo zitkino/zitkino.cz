@@ -7,7 +7,7 @@ import urlparse
 from collections import namedtuple
 
 from fuzzywuzzy import fuzz
-from requests import HTTPError
+from requests import HTTPError, TooManyRedirects
 
 from zitkino import parsers
 from zitkino.models import Film
@@ -33,11 +33,16 @@ class CsfdFilmService(BaseFilmService):
     length_re = re.compile(r'(\d+)\s*min')
 
     def _download(self, *args, **kwargs):
+        """Dealing with various ČSFD's network issues and eventually
+        trying to perform requests again.
+        """
         try:
             return download(*args, **kwargs)
+
+        except TooManyRedirects:
+            return self._download(*args, **kwargs)
         except HTTPError as e:
             if e.response.status_code in (502, 403):
-                # ČSFD's WTF issues, try again
                 return self._download(*args, **kwargs)
             raise
 
