@@ -34,6 +34,9 @@ class Cinema(db.Document):
     def clean(self):
         self.slug = slugify(self.name)
 
+    def __unicode__(self):
+        return u'{}'.format(self.name)
+
 
 class FilmMixin(object):
 
