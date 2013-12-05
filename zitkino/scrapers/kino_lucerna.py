@@ -209,9 +209,16 @@ class Scraper(object):
         """Takes main entry text and returns tuple with title part
         and a part containing information about dates & times.
         """
-        title, remainder = self.entry_split_re.split(text, maxsplit=1)
-        remainder = self.entry_split_price_re.split(remainder, maxsplit=1)
-        return title.strip(), remainder[0].strip()
+        if '\n' in text:
+            parts = text.split('\n')
+            title = parts[0]
+            for info in parts[1:]:
+                dates = self.entry_split_price_re.split(info, maxsplit=1)[0]
+                yield title.strip(), dates.strip()
+        else:
+            title, info = self.entry_split_re.split(text, maxsplit=1)
+            dates = self.entry_split_price_re.split(info, maxsplit=1)[0]
+            yield title.strip(), dates.strip()
 
     def _split_title_text(self, title):
         title = title.strip()
@@ -229,21 +236,21 @@ class Scraper(object):
 
     def _parse_entry_text(self, text):
         """Takes HTML element with film header line and generates showtimes."""
-        title, dates_text = self._split_entry_text(text)
-        title_main, tags = self._split_title_text(title)
+        for title, dates in self._split_entry_text(text):
+            title_main, tags = self._split_title_text(title)
 
-        date_ranges = self._parse_date_ranges(dates_text)
-        standalone_dates = self._parse_standalone_dates(dates_text)
+            date_ranges = self._parse_date_ranges(dates)
+            standalone_dates = self._parse_standalone_dates(dates)
 
-        dates = list(date_ranges) + list(standalone_dates)
-        for starts_at in dates:
-            yield Showtime(
-                cinema=cinema,
-                film_scraped=ScrapedFilm(
-                    title_main=title_main,
-                    titles=[title_main],
-                ),
-                starts_at=starts_at,
-                url_booking=self.url_booking,
-                tags=tags,
-            )
+            dates = list(date_ranges) + list(standalone_dates)
+            for starts_at in dates:
+                yield Showtime(
+                    cinema=cinema,
+                    film_scraped=ScrapedFilm(
+                        title_main=title_main,
+                        titles=[title_main],
+                    ),
+                    starts_at=starts_at,
+                    url_booking=self.url_booking,
+                    tags=tags,
+                )

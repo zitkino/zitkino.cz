@@ -11,9 +11,26 @@ class HTMLElement(lxml.html.HtmlElement):
 
     def text_content(self, whitespace=False):
         """Returns text content, by default with normalized whitespace."""
-        text = super(HTMLElement, self).text_content()
         if whitespace:
+            # add newline after every <br>
+            for br in self.xpath('.//br'):
+                if br.tail:
+                    br.tail = '\n' + br.tail
+                else:
+                    br.tail = '\n'
+
+            # get the text
+            text = super(HTMLElement, self).text_content()
+
+            # remove added newlines
+            for br in self.xpath('.//br'):
+                br.tail = br.tail[1:]
+
+            # provide the text
             return text
+
+        # replace all whitespace with single spaces
+        text = super(HTMLElement, self).text_content()
         return clean_whitespace(text)
 
     def links(self):
