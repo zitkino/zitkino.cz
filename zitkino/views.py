@@ -4,10 +4,11 @@
 from collections import OrderedDict
 import os
 
-from flask import request, render_template, send_from_directory
+from flask import request, render_template, send_from_directory, abort
 
 from . import app
-from .models import Showtime
+from .image import generated_image, Image
+from .models import Showtime, Film
 
 
 @app.context_processor
@@ -39,3 +40,23 @@ def index():
 def static_files():
     static_dir = os.path.join(app.root_path, 'static')
     return send_from_directory(static_dir, request.path.lstrip('/'))
+
+
+@app.route('/images/poster/<film_id>.jpg')
+@generated_image
+def poster(film_id):
+    film = Film.objects.get_or_404(id=film_id)
+    if not film.url_poster:
+        abort(404)
+
+    w, h = request.args.get('resize', 'x').split('x')
+    crop = request.args.get('crop')
+
+    img = Image.from_url(film.url_poster)
+    if crop:
+        img.crop(int(crop))
+    if w and h:
+        img.resize_crop(int(w), int(h))
+    img.sharpen()
+
+    return img.to_stream()

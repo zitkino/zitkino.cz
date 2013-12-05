@@ -32,6 +32,11 @@ class HTMLElement(lxml.html.HtmlElement):
         """Tests presence of class."""
         return value in self.get('class', '').split()
 
+    def cssselect_first(self, selector):
+        """Takes first match from cssselect or returns :obj:`None`."""
+        results = self.cssselect(selector)
+        return results[0] if results else None
+
     def split(self, tag, wrapper='div'):
         """Splits element's children into sets and returns these sets
         wrapped in newly created HTML elements (wrapper's tag can be

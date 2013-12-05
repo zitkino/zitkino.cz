@@ -3,6 +3,7 @@
 
 import inspect
 
+from zitkino import db, log
 from zitkino.models import Cinema
 
 
@@ -18,10 +19,14 @@ class ScraperRepository(dict):
         # to be updated multiple times)
         cinema.clean()
         if cinema.slug not in self:
-            found = Cinema.objects.filter(slug=cinema.slug).first()
-            if found:
-                cinema.id = found.id
-            cinema.save()
+            try:
+                found = Cinema.objects.filter(slug=cinema.slug).first()
+                if found:
+                    cinema.id = found.id
+                    cinema.save()
+            except db.ConnectionError:
+                # sometimes it is necessary to import scrapers without connection to database
+                log.warning('Cinema %s could not be updated. No database connection.', cinema)
 
         def decorator(fn_or_cls):
             if inspect.isclass(fn_or_cls):
@@ -46,7 +51,7 @@ from . import (  # NOQA
     kino_scala,
     kino_art,
     kino_lucerna,
-    letni_kino_na_dobraku,
-    rwe_letni_kino_na_riviere,
+    # letni_kino_na_dobraku,
+    # rwe_letni_kino_na_riviere,
     zimni_kino,
 )

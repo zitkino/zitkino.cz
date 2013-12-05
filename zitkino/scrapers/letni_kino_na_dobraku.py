@@ -75,7 +75,6 @@ class Scraper(object):
             cinema=cinema,
             film_scraped=ScrapedFilm(
                 title_main=title_main,
-                title_orig=title_orig,
                 titles=titles,
                 year=year,
                 length=length,

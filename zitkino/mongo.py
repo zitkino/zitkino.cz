@@ -35,7 +35,13 @@ class MongoEngine(object):
             'port': int(app.config.get('MONGODB_PORT') or 0) or None
         }
         conn_settings = dict([(k, v) for k, v in conn_settings.items() if v])
-        self.connection = mongoengine.connect(**conn_settings)
+
+        # lazy connection
+        mongoengine.register_connection(
+            mongoengine.DEFAULT_CONNECTION_NAME,
+            conn_settings.pop('db', None),
+            **conn_settings
+        )
 
 
 ### Custom QuerySet
