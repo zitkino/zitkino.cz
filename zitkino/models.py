@@ -48,19 +48,12 @@ class FilmMixin(object):
     title_main = db.StringField(required=True)
     titles = db.ListField(db.StringField())
 
-    year = db.IntField()
+    year = db.IntField(min_value=1877, max_value=times.now().year + 10)
     directors = db.ListField(db.StringField())
-    length = db.IntField()
+    length = db.IntField(min_value=0)
 
     url_poster = db.URLField()
     url_trailer = db.URLField()
-
-    @property
-    def title_normalized(self):
-        title = self.title_main
-        if len(title) > 3 and title.isupper():
-            return title.capitalize()
-        return title
 
     @property
     def length_hours(self):
@@ -83,8 +76,10 @@ class FilmMixin(object):
 
 class Film(FilmMixin, db.Document):
 
+    is_ghost = db.BooleanField(required=True, default=False)
+
     slug = db.StringField(required=True, unique=True)
-    year = db.IntField(required=True)
+    year = db.IntField(min_value=1877, max_value=times.now().year + 10)
 
     # rating as percentage
     rating_csfd = db.IntField(min_value=0, max_value=100)
@@ -96,15 +91,26 @@ class Film(FilmMixin, db.Document):
     def rating(self):
         """Overall rating as percentage."""
         ratings = []
-        if self.rating_csfd:
+        if self.rating_csfd is not None:
             ratings.append(self.rating_csfd)
-        if self.rating_imdb:
+        if self.rating_imdb is not None:
             ratings.append(self.rating_imdb)
-        return round(sum(ratings) / len(ratings), 0)
+        return int(round(sum(ratings) / len(ratings), 0))
+
+    @property
+    def showtimes(self):
+        return Showtime.objects.filter(film=self)
 
     def clean(self):
         super(Film, self).clean()
-        self.slug = slugify(self.title_main + '_' + str(self.year))
+        if not self.is_ghost and not self.year:
+            raise db.ValidationError(
+                'Only ghost films can be without release year.'
+            )
+        if self.year:
+            self.slug = slugify(self.title_main + '-' + str(self.year))
+        else:
+            self.slug = slugify(self.title_main)
 
     def save_overwrite(self):
         """Insert or update, depending on unique fields."""
@@ -145,7 +151,8 @@ class Film(FilmMixin, db.Document):
             return
 
         blacklist = [
-            'id', 'slug', 'directors', 'titles', 'title_main', 'url_poster'
+            'id', 'slug', 'directors', 'titles', 'title_main', 'url_poster',
+            'is_ghost',
         ]
         for key in self._data.keys():
             if key not in blacklist:
@@ -160,9 +167,6 @@ class Film(FilmMixin, db.Document):
 
         if self._is_larger_poster(film.url_poster):
             self.url_poster = film.url_poster
-
-        # save changes
-        self.save()
 
     def _is_larger_poster(self, url):
         """Decides whether given poster URL *url* points to an image which
@@ -179,20 +183,58 @@ class Film(FilmMixin, db.Document):
             return False
         return (size1[0] * size1[1]) < (size2[0] * size2[1])  # compare areas
 
+    def __unicode__(self):
+        s = self.title_main
+        if self.year:
+            s = s + ' ({})'.format(self.year)
+        if self.is_ghost:
+            s = s + ' [ghost]'
+        return s
+
 
 class ScrapedFilm(FilmMixin, db.EmbeddedDocument):
     """Raw representation of film as it was scraped."""
 
+    title_scraped = db.StringField(required=True)
+
+    def clean(self):
+        title = self.title_scraped or self.title_main
+
+        if len(title) > 3 and title.isupper():
+            title_normalized = title.capitalize()
+            main_titles = [title_normalized, title]
+        else:
+            title_normalized = title
+            main_titles = [title]
+
+        self.title_main = title_normalized
+        self.title_scraped = title
+
+        super(ScrapedFilm, self).clean()
+
+        self.titles = (
+            main_titles +
+            list(set(t for t in self.titles if t not in main_titles))
+        )
+
+    def to_ghost(self):
+        film = Film(
+            is_ghost=True,
+            title_main=self.title_main,
+        )
+        film.sync(self)
+        return film
+
     def __eq__(self, other):
         if isinstance(other, ScrapedFilm):
-            return self.title_main == other.title_main
+            return self.title_scraped == other.title_scraped
         return False
 
     def __neq__(self, other):
         return not self == other
 
     def __hash__(self):
-        return hash(ScrapedFilm) ^ hash(self.title_main)
+        return hash(ScrapedFilm) ^ hash(self.title_scraped)
 
 
 class Showtime(db.Document):
@@ -200,8 +242,7 @@ class Showtime(db.Document):
     meta = {'ordering': ['-starts_at']}
 
     cinema = db.ReferenceField(Cinema, dbref=False, required=True)
-    film_paired = db.ReferenceField(Film, dbref=False,
-                                    reverse_delete_rule=db.DENY)
+    film = db.ReferenceField(Film, dbref=False, reverse_delete_rule=db.DENY)
     film_scraped = db.EmbeddedDocumentField(ScrapedFilm, required=True)
     starts_at = db.DateTimeField(required=True)
     tags = db.ListField(db.StringField())  # dubbing, 3D, etc.
@@ -209,12 +250,12 @@ class Showtime(db.Document):
     scraped_at = db.DateTimeField(required=True, default=lambda: times.now())
 
     @property
-    def starts_at_day(self):
-        return self.starts_at.date()
+    def is_paired(self):
+        return self.film and not self.film.is_ghost
 
     @property
-    def film(self):
-        return self.film_paired or self.film_scraped
+    def starts_at_day(self):
+        return self.starts_at.date()
 
     @db.queryset_manager
     def upcoming(cls, queryset):
@@ -226,6 +267,10 @@ class Showtime(db.Document):
                     .order_by('starts_at')
         )
 
+    @classmethod
+    def unpaired(cls):
+        return (s for s in cls.objects.all() if not s.is_paired)
+
     def clean(self):
         self.tags = tuple(frozenset(tag for tag in self.tags if tag))
 
@@ -233,5 +278,5 @@ class Showtime(db.Document):
         return u'{} | {} | {}'.format(
             self.starts_at,
             self.cinema.name,
-            self.film.title_main
+            self.film_scraped.title_scraped
         )

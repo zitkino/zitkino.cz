@@ -23,7 +23,7 @@ class ScraperRepository(dict):
                 found = Cinema.objects.filter(slug=cinema.slug).first()
                 if found:
                     cinema.id = found.id
-                    cinema.save()
+                cinema.save()
             except db.ConnectionError:
                 # sometimes it is necessary to import scrapers without
                 # connection to database

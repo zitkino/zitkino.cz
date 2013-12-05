@@ -46,7 +46,7 @@ class SyncShowtimes(Command):
 
     def run(self):
         for cinema_slug, scraper in scrapers.items():
-            cinema = Cinema.objects(slug=cinema_slug).get()
+            cinema = Cinema.objects.get(slug=cinema_slug)
             showtimes = scraper()
             if showtimes:
                 self._sync_cinema(cinema, showtimes)
@@ -55,54 +55,45 @@ class SyncShowtimes(Command):
 class SyncPairing(Command):
     """Find unpaired showtimes and try to find films for them."""
 
-    def _get_showtimes(self):
-        return Showtime.objects.filter(film_paired=None)
-
     def _pair_by_db(self, showtime):
-        scraped_title = showtime.film_scraped.title_normalized
+        scraped_title = showtime.film_scraped.title_scraped
         scraped_year = showtime.film_scraped.year
 
         params = {'titles': scraped_title}
         if scraped_year is not None:
             params['year'] = scraped_year
         try:
-            return Film.objects.get(**params)
+            film = Film.objects.get(**params)
         except Film.DoesNotExist:
             return None
+        film.sync(showtime.film_scraped)
+        return film
 
     def _pair_by_services(self, showtime):
         log.info('Pairing: asking services')
         film = pair(showtime.film_scraped)
         if film:
-            film.titles.append(showtime.film_scraped.title_normalized)
+            film.sync(showtime.film_scraped)
         return film
 
     def _pair(self, showtime):
         return self._pair_by_db(showtime) or self._pair_by_services(showtime)
 
     def run(self):
-        for showtime in self._get_showtimes():
+        for showtime in Showtime.unpaired():
             log.info('Pairing: %s', showtime)
 
             film = self._pair(showtime)
             if film:
                 film.save_overwrite()
                 log.info('Pairing: found %s', film)
-                showtime.film_paired = film
+                showtime.film = film
             else:
-                showtime.film_paired = None
-                log.info('Pairing: no match')
+                film = showtime.film_scraped.to_ghost()
+                film.save_overwrite()
+                log.info('Pairing: no match, creating ghost film')
+                showtime.film = film
             showtime.save()
-
-
-class SyncFullPairing(SyncPairing):
-    """Try to pair all showtimes."""
-
-    def _get_showtimes(self):
-        return Showtime.objects.all()
-
-    def _pair(self, showtime):
-        return self._pair_by_services(showtime)
 
 
 class SyncCleanup(Command):
@@ -131,7 +122,7 @@ class SyncCleanup(Command):
 
     def _delete_redundant_films(self):
         for film in Film.objects.all():
-            if not Showtime.objects.filter(film_paired=film).count():
+            if not film.showtimes.count():
                 log.info('Cleanup: deleting redundant film %s.', film)
                 film.delete()
 
@@ -149,13 +140,14 @@ class SyncUpdate(Command):
             try:
                 log.info(u'Update: %s ← %s', film, service.name)
                 film.sync(service.lookup_obj(film))
+                film.save()
             except NotImplementedError:
                 pass
             except Exception:
                 log.exception()
 
     def run(self):
-        for film in Film.objects.all():
+        for film in Film.objects.filter(is_ghost=False):
             self._update(film)
 
 
@@ -172,7 +164,6 @@ class SyncAll(Command):
 sync = Manager(usage="Run synchronizations.")
 sync.add_command('showtimes', SyncShowtimes())
 sync.add_command('pairing', SyncPairing())
-sync.add_command('full-pairing', SyncFullPairing())
 sync.add_command('cleanup', SyncCleanup())
 sync.add_command('update', SyncUpdate())
 sync.add_command('all', SyncAll())

@@ -66,7 +66,7 @@ class Scraper(object):
         """
         title_main = el.xpath('.//a')[0].text_content()
         return ScrapedFilm(
-            title_main=title_main,
+            title_scraped=title_main,
             titles=[title_main],
         )
 

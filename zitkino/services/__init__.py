@@ -47,7 +47,7 @@ def pair(film):
     service = CsfdFilmService()
     if film.url_csfd:
         service.lookup(film.url_csfd)
-    return service.search([film.title_normalized] + film.titles, film.year)
+    return service.search(film.titles, film.year)
 
 
 services = [
