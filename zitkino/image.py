@@ -14,13 +14,7 @@ from flask import send_file, request
 from PIL import Image as PILImage, ImageEnhance
 
 
-class Image(object):
-
-    def __init__(self, f):
-        image = PILImage.open(f)
-        if image.mode != 'RGB':
-            image = image.convert('RGB')
-        self.image = image
+class BaseImage(object):
 
     @property
     def size(self):
@@ -60,11 +54,22 @@ class Image(object):
         sharpener = ImageEnhance.Sharpness(self.image)
         self.image = sharpener.enhance(sharpness)
 
-    def to_stream(self):
+    def to_stream(self, image_format='JPEG', **kwargs):
+        if image_format == 'JPEG' and not kwargs:
+            kwargs['quality'] = 100
         img_io = StringIO()
-        self.image.save(img_io, 'JPEG', quality=100)
+        self.image.save(img_io, image_format.upper(), **kwargs)
         img_io.seek(0)
         return img_io
+
+
+class Image(BaseImage):
+
+    def __init__(self, f):
+        image = PILImage.open(f)
+        if image.mode != 'RGB':
+            image = image.convert('RGB')
+        self.image = image
 
     @classmethod
     def from_url(cls, url):
@@ -72,6 +77,13 @@ class Image(object):
         response = requests.get(url)
         response.raise_for_status()
         return cls(StringIO(response.content))
+
+
+class PlaceholderImage(BaseImage):
+
+    def __init__(self, color='#000', width=1, height=1):
+        image = PILImage.new('RGB', (width, height), color)
+        self.image = image
 
 
 def generated_image(f):
