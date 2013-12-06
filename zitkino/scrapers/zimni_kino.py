@@ -27,9 +27,9 @@ class Scraper(object):
 
     url = 'http://www.brnenskevanoce.cz/cs/program-brnenskych-vanoc'
 
-    day_re = re.compile(r'^(\d{1,2})\.\s+.+$')
+    day_re = re.compile(r'^(\d{1,2})\.\s+')
     title_re = re.compile(
-        ur'(\d{2})\.(\d{2})\s+(([^–„](?!\d{2}\.\d{2}))+)\s+–\s+„Zimní kino“?'
+        ur'(\d{2})\.(\d{2})\s+(([^–„](?!\d{2}\.\d{2}))+)\s+–\s+„Zimní kino'
     )
 
     def __call__(self):
@@ -42,17 +42,22 @@ class Scraper(object):
     def _parse_html(self, html):
         y = times.now().year
         m = 11
-        d = None
+        day = None
 
         for p in html.cssselect('.content p'):
-            text = p.text_content().strip()
-            match = self.day_re.match(text)
+            text = p.text_content(whitespace=True).strip()
+            lines = text.splitlines()
+
+            header = ''.join(lines[0:1])
+            film = ''.join([l for l in lines if u'Zimní kino' in l])
+
+            match = self.day_re.match(header)
             if match:
-                if 'prosinec' in text:
+                if u'prosinec' in header:
                     m += 1
-                d = date(day=int(match.group(1)), month=m, year=y)
-            elif u'Zimní kino' in text:
-                match = self.title_re.search(text)
+                day = date(day=int(match.group(1)), month=m, year=y)
+            if film:
+                match = self.title_re.search(film)
                 if match:
                     t = time(
                         hour=int(match.group(1)),
@@ -60,7 +65,7 @@ class Scraper(object):
                     )
 
                     starts_at = times.to_universal(
-                        datetime.combine(d, t),
+                        datetime.combine(day, t),
                         'Europe/Prague'
                     )
                     title_main = match.group(3)
