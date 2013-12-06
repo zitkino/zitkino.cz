@@ -22,25 +22,29 @@
         <meta property="og:title" content="{% block title %}{{ self.site_name() }}{% endblock %}">
         {% if self.image() %}<meta property="og:image" content="{% block image %}{% endblock %}">
         {% endif %}
-        <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Domine&amp;subset=latin,latin-ext">
-        <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.1.0/pure-min.css">
-        {% assets filters=("scss", "cssmin"), output="packed.css", "scss/main.scss" %}
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Domine&amp;subset=latin,latin-ext">
+        {% assets filters=("scss", "cssmin"), output="scss/packed.css", "scss/bootstrap.min.css", "scss/bootstrap-theme.min.css", "scss/main.scss" %}
             <link rel="stylesheet" href="{{ ASSET_URL }}">
         {% endassets %}
 
         <script src="{{ url_for('static', filename='js/modernizr-2.6.2.min.js') }}"></script>
     </head>
-    <body>
-        <div class="document" id="{{ request.endpoint }}">
-            <header>
-                <h1><a href="{{ url_for('index') }}">{{ self.site_name() }}</a></h1>
-                <p class="claim">je&nbsp;{{ self.claim() }}</p>
+    <body id="{{ request.endpoint }}">
+        <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+            <header class="container">
+                <div class="navbar-header">
+                    <h1><a class="navbar-brand" href="{{ url_for('index') }}">{{ self.site_name() }}</a></h1>
+                    <p class="navbar-text claim hidden-xs">je&nbsp;{{ self.claim() }}</p>
+                </div>
             </header>
+        </nav>
 
-            <div class="content">
-                {% block content %}{% endblock %}
-            </div>
+        <div class="content container">
+            {% block content %}{% endblock %}
+        </div>
 
+        <!--
+        <footer>
             <ul class="footer">
                 <li class="contact">
                     <a href="http://honzajavorek.cz">Kontakt</a>
@@ -61,11 +65,10 @@
                     allowtransparency="true" frameborder="0" scrolling="0" width="62" height="20"></iframe>
                 </li>
             </ul>
-        </div>
+        </footer>
+        -->
 
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
-        <script>window.jQuery || document.write('<script src="{{ url_for('static', filename='js/jquery-1.10.1.min.js') }}"><\/script>')</script>
-        {% assets filters="rjsmin", output="packed.js", "js/main.js" %}
+        {% assets filters="rjsmin", output="js/packed.js", "js/jquery-1.10.1.min.js", "js/bootstrap.min.js", "js/main.js" %}
             <script type="text/javascript" src="{{ ASSET_URL }}"></script>
         {% endassets %}
 
@@ -77,7 +80,7 @@
 
             (function() {
                 var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-                ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+                ga.src = 'https://ssl.google-analytics.com/ga.js';
                 var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
             })();
         </script>

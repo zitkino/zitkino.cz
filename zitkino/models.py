@@ -95,6 +95,8 @@ class Film(FilmMixin, db.Document):
             ratings.append(self.rating_csfd)
         if self.rating_imdb is not None:
             ratings.append(self.rating_imdb)
+        if not ratings:
+            return None
         return int(round(sum(ratings) / len(ratings), 0))
 
     @property

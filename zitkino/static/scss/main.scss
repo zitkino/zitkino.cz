@@ -8,7 +8,7 @@ $width-small: 350px;
 
 $black: #000;
 $red: #EB2D09;
-$grey-dark: #999;
+$grey-dark: #888;
 $grey-medium: #CCC;
 $grey-light: #EEE;
 
@@ -17,31 +17,31 @@ $border-radius: 3px;
 
 /* Mixins ************************************/
 
-@mixin no-select {
-    -moz-user-select: -moz-none;
-    -khtml-user-select: none;
-    -webkit-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-}
+// @mixin no-select {
+//     -moz-user-select: -moz-none;
+//     -khtml-user-select: none;
+//     -webkit-user-select: none;
+//     -ms-user-select: none;
+//     user-select: none;
+// }
 
-@mixin border-radius {
-    -webkit-border-radius: $border-radius;
-    -moz-border-radius: $border-radius;
-    border-radius: $border-radius;
-}
+// @mixin border-radius {
+//     -webkit-border-radius: $border-radius;
+//     -moz-border-radius: $border-radius;
+//     border-radius: $border-radius;
+// }
 
-@mixin border-radius-right-half {
-    -webkit-border-radius: 0;
-    -webkit-border-top-right-radius: $border-radius;
-    -webkit-border-bottom-right-radius: $border-radius;
-    -moz-border-radius: 0;
-    -moz-border-radius-topright: $border-radius;
-    -moz-border-radius-bottomright: $border-radius;
-    border-radius: 0;
-    border-top-right-radius: $border-radius;
-    border-bottom-right-radius: $border-radius;
-}
+// @mixin border-radius-right-half {
+//     -webkit-border-radius: 0;
+//     -webkit-border-top-right-radius: $border-radius;
+//     -webkit-border-bottom-right-radius: $border-radius;
+//     -moz-border-radius: 0;
+//     -moz-border-radius-topright: $border-radius;
+//     -moz-border-radius-bottomright: $border-radius;
+//     border-radius: 0;
+//     border-top-right-radius: $border-radius;
+//     border-bottom-right-radius: $border-radius;
+// }
 
 @mixin link($color, $hover-color) {
     color: $color;
@@ -56,23 +56,6 @@ $border-radius: 3px;
 
 /* Base **************************************/
 
-html, button, input, select, textarea {
-    // The nicest Helvetica... http://css-tricks.com/snippets/css/better-helvetica/
-    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
-    font-weight: 300;
-}
-
-body {
-    width: 98%;
-    margin: 0 auto;
-
-    @media (min-width: $width-maximum + 20px) {
-        & {
-            width: $width-maximum;
-        }
-    }
-}
-
 h1, h2, h3, h4, h5, h6, .claim {
     font-family: 'Domine', serif;
 
@@ -85,113 +68,106 @@ a {
     @include link($grey-dark, $red);
 }
 
-h3 small {
-    font-weight: normal;
-}
-
 
 /* Header ************************************/
 
-header {
-    margin: 1em 0 2em 0;
+body {
+    padding-top: 60px;
+}
 
-    h1 {
-        color: $red;
-    }
+.navbar-header h1 {
+    display: inline;
+    font-size: inherit;
+    margin: 0;
+    padding: 0;
+}
 
-    h1, .claim {
-        display: inline;
-        font-size: 1.2em;
-    }
+.navbar-default .navbar-brand {
+    color: $red;
+    padding-right: 3px;
+}
 
-    a {
-        color: $red;
-        text-decoration: none;
-    }
+.navbar-default .navbar-brand:hover, .navbar-default .navbar-brand:focus {
+    color: $red;
+    text-decoration: underline;
+}
 
-    .claim {
-        color: $grey-dark;
-        margin-left: 0.2em;
-
-        @media (max-width: $width-medium) {
-            & {
-                font-size: 1em;
-            }
-        }
-
-        @media (max-width: $width-small) {
-            & {
-                display: block;
-                margin: 0.3em 0;
-                font-size: 1em;
-            }
-        }
-    }
+.navbar-default .claim {
+    color: $grey-dark;
+    margin-left: 3px;
 }
 
 
 /* Footer ************************************/
 
-.footer {
-    color: #000;
-    margin: 0;
-    padding: 0;
-    margin: 3em 0;
-    text-align: right;
+// .footer {
+//     color: #000;
+//     margin: 0;
+//     padding: 0;
+//     margin: 3em 0;
+//     text-align: right;
 
-    li {
-        height: 20px;
-        display: inline-block;
-        margin: 0 0 0 1em;
-        padding: 0;
-        overflow: hidden;
-    }
+//     li {
+//         height: 20px;
+//         display: inline-block;
+//         margin: 0 0 0 1em;
+//         padding: 0;
+//         overflow: hidden;
+//     }
 
-    .contact {
-        line-height: 18px;
+//     .contact {
+//         line-height: 18px;
 
-        a {
-            font-size: 0.8em;
-        }
-    }
-}
+//         a {
+//             font-size: 0.8em;
+//         }
+//     }
+// }
 
 
 /* Showtimes *********************************/
 
+#more:before {
+    // trick http://css-tricks.com/hash-tag-links-padding/
+    display: block;
+    content: " ";
+    margin-top: -100px;
+    height: 100px;
+    visibility: hidden;
+}
+
+.page-wide-text {
+    text-align: center;
+}
+
 .showtimes {
-    h2 {
-        margin-bottom: 0.3em;
-        border-bottom: 1px solid $grey-medium;
-    }
-
-    table {
+    .poster {
         width: 100%;
-        margin-bottom: 1.5em;
     }
 
-    th, td {
-        padding: 0.5em 0;
-    }
+    a.thumbnail {
+        position: relative;
 
-    th {
-        font-weight: normal;
-        text-align: left;
-        width: 50%;
+        .caption {
+            width: 98%;
+            min-height: 25%;
+            text-align: center;
+            text-decoration: none;
+            position: absolute; bottom: 0;
+            background: rgba(255, 255, 255, 0.85);
 
-        a {
-            @include link($black, $red);
-        }
-    }
+            h3 {
+                font-weight: bold;
+                margin-top: 10px;
+                margin-bottom: 5px;
 
-    td {
-        padding-left: 1em;
-        color: $grey-dark;
-    }
-
-    tr:last-child {
-        th, td {
-            border-bottom: none;
+                small {
+                    font-size: 90%;
+                    display: block;
+                    color: $grey-dark;
+                    margin-top: 0.3em;
+                }
+            }
         }
     }
 }

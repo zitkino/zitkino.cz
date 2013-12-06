@@ -1,28 +1,73 @@
 {% extends 'base.html' %}
 {% block content %}
 
-{% for starts_at_day in data %}
-    <div class="showtimes">
-        <h2>{{ starts_at_day|date }}</h2>
-        <table>
-            {% for showtime in data[starts_at_day] %}
-            {% set film = showtime.film %}
-            <tr>
-                <th>
-                    {% if film.url_csfd %}
-                        <a href="{{ film.url_csfd }}" title="Název v programu kina: {{ showtime.film_scraped.title_main }}">{{ film.title_normalized }}</a>
+{% for starts_at_day, films in data.items() %}
+    <div class="showtimes"{% if more and loop.index == less_items %} id="more"{% endif %}>
+        {% if loop.first %}
+            <div class="page-header page-wide-text">
+                {% if starts_at_day|date == 'Dnes' %}
+                    <h2>Na&nbsp;co&nbsp;si&nbsp;dnes v&nbsp;Brně můžete zajít do&nbsp;kina?</h2>
+                {% else %}
+                    {% if today_any_showtimes %}
+                        <h2>Dnes už&nbsp;v&nbsp;Brně bohužel nic nestihnete, ale&nbsp;{{ starts_at_day|date|lower }} je&nbsp;taky den</h2>
                     {% else %}
-                        <span title="Název v programu kina: {{ showtime.film_scraped.title_main }}">{{ film.title_normalized }}</span>
+                        <h2>V Brně se&nbsp;promítá až&nbsp;{{ starts_at_day|date|lower }}</h2>
                     {% endif %}
-                </th>
-                <td>
-                    {% set cinema = showtime.cinema %}
-                    <a href="{{ cinema.url }}">{{ cinema.name }}</a>
-                </td>
-            </tr>
+                {% endif %}
+                <p class="lead">
+                    {{ starts_at_day|date }} na&nbsp;vás
+                    {% if showtimes_count == 1 %}
+                        čeká už&nbsp;jen&nbsp;jedno jediné promítání.
+                    {% else %}
+                        {% if showtimes_count < 5 %}čekají{% else %}čeká{% endif %}
+                        {{ showtimes_count }}&nbsp;promítání
+                        {% if cinemas_count < 5 %}v{% else %}ve{% endif %}&nbsp;{{ cinemas_count }}&nbsp;kinech.
+                    {% endif %}
+                </p>
+            </div>
+        {% else %}
+            <div class="page-header">
+                <h2>{{ starts_at_day|date }}</h2>
+            </div>
+        {% endif %}
+
+        <div class="row">
+            {% for film, showtimes in films %}
+                <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                    <a href="{{ url_for('film', film_slug=film.slug) }}" class="thumbnail">
+                        <img src="{{ url_for('poster', film_id=film.id, resize='300x424') }}" class="poster">
+                        <div class="caption">
+                            <h3>
+                                {{ film.title_main }}
+                                {% if film.year %}
+                                    <small>{{ film.year }}</small>
+                                {% endif %}
+                            </h3>
+                            <!--
+                            {% if not film.rating is none %}
+                                <p class="rating rating-{{ (film.rating / 25.0)|round|int }}" title="Hodnocení: {{ film.rating }}%">
+                                    <span class="glyphicon glyphicon-star"></span>
+                                </p>
+                            {% endif %}
+                            -->
+                        </div>
+                    </a>
+                </div>
+                {% if loop.index is divisibleby 4 %}<div class="clearfix visible-lg visible-md"></div>{% endif %}
+                {% if loop.index is divisibleby 2 %}<div class="clearfix visible-sm"></div>{% endif %}
             {% endfor %}
-        </table>
+        </div>
     </div>
 {% endfor %}
-
+<hr>
+{% if not more %}
+<ul class="pager">
+    <li><a href="{{ url_for('index', more=True) }}#more">Chci vidět i další dny</a></li>
+</ul>
+{% else %}
+<p class="page-wide-text lead">
+    Dál do budoucnosti vidí už jedině
+    <a href="http://www.fffilm.name/2009/10/recenze-knezna-libuse-pagan-queen-0.html">kněžna Libuše</a>.
+</p>
+{% endif %}
 {% endblock %}
