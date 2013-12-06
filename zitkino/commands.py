@@ -56,7 +56,7 @@ class SyncPairing(Command):
     """Find unpaired showtimes and try to find films for them."""
 
     def _pair_by_db(self, showtime):
-        scraped_title = showtime.film_scraped.title_scraped
+        scraped_title = showtime.film_scraped.title_main  # normalized
         scraped_year = showtime.film_scraped.year
 
         params = {'titles': scraped_title}
