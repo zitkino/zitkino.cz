@@ -36,6 +36,10 @@
                     <h1><a class="navbar-brand" href="{{ url_for('index') }}">{{ self.site_name() }}</a></h1>
                     <p class="navbar-text claim hidden-xs">je&nbsp;{{ self.claim() }}</p>
                 </div>
+                <div class="navbar-right">
+                    <a href="https://www.facebook.com/zitkino" class="btn btn-sm btn-primary navbar-btn">Facebook</a>
+                    <a href="https://twitter.com/zitkino" class="btn btn-sm btn-primary navbar-btn">Twitter</a>
+                </div>
             </header>
         </nav>
 
@@ -43,30 +47,26 @@
             {% block content %}{% endblock %}
         </div>
 
-        <!--
-        <footer>
-            <ul class="footer">
-                <li class="contact">
-                    <a href="http://honzajavorek.cz">Kontakt</a>
-                </li>
-                <li class="button-container">
-                    <div class="fb-like"
-                        data-layout="button_count"
-                        data-href="http://www.facebook.com/zitkino"
-                        data-send="false"
-                        data-width="150">
-                    </div>
-                </li>
-                <li class="button-container">
-                    <a href="https://twitter.com/zitkino" class="twitter-follow-button" data-show-count="false" data-lang="cs" data-show-screen-name="false">Sledovat @zitkino</a>
-                </li>
-                <li class="button-container">
-                    <iframe src="http://ghbtns.com/github-btn.html?user=honzajavorek&amp;repo=zitkino.cz&amp;type=fork"
-                    allowtransparency="true" frameborder="0" scrolling="0" width="62" height="20"></iframe>
-                </li>
-            </ul>
+        <footer class="navbar navbar-inverse" role="navigation">
+            <div class="container">
+                <p class="navbar-text">
+                    Od roku 2012 tvoří <a href="http://honzajavorek.cz" class="navbar-link">Honza Javorek</a>.
+                    <br>
+                    <small>
+                        Data se stahují jednou denně přímo z webů jednotlivých kin.
+                        Doplňující informace jsou z
+                        <a href="http://www.csfd.cz/">ČSFD</a>,
+                        <a href="http://www.imdb.com/">IMDb</a>, a
+                        <a href="http://www.synopsi.tv/">SynopsiTV</a>.
+                    </small>
+                </p>
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="https://www.facebook.com/zitkino">Facebook</a></li>
+                    <li><a href="https://twitter.com/zitkino">Twitter</a></li>
+                    <li><a href="https://github.com/honzajavorek/zitkino.cz/">GitHub</a></li>
+                </ul>
+            </div>
         </footer>
-        -->
 
         {% assets filters="rjsmin", output="js/packed.js", "js/jquery-1.10.1.min.js", "js/bootstrap.min.js", "js/main.js" %}
             <script type="text/javascript" src="{{ ASSET_URL }}"></script>
@@ -85,14 +85,5 @@
             })();
         </script>
         {% endif %}
-        <script>(function(d, s, id) {
-            var js, fjs = d.getElementsByTagName(s)[0];
-            if (d.getElementById(id)) return;
-            js = d.createElement(s); js.id = id;
-            js.src = "//connect.facebook.net/en_US/all.js#xfbml=1";
-            fjs.parentNode.insertBefore(js, fjs);
-        }(document, 'script', 'facebook-jssdk'));</script>
-        <div id="fb-root"></div>
-        <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
     </body>
 </html>

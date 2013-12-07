@@ -8,7 +8,7 @@
     </div>
     <div class="row">
         {% for cinema in cinemas %}
-            <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <div class="box cinema">
                 <a href="{{ url_for('cinema', cinema_slug=cinema.slug) }}" class="thumbnail">
                     <img src="{{ url_for('photo', cinema_slug=cinema.slug, resize='300x100') }}" class="photo">
                     <div class="caption">
@@ -18,8 +18,8 @@
                     </div>
                 </a>
             </div>
-            {% if loop.index is divisibleby 4 %}<div class="clearfix visible-lg visible-md"></div>{% endif %}
-            {% if loop.index is divisibleby 2 %}<div class="clearfix visible-sm"></div>{% endif %}
+            {% if loop.index is divisibleby 4 %}<div class="box-clearfix-4"></div>{% endif %}
+            {% if loop.index is divisibleby 2 %}<div class="box-clearfix-2"></div>{% endif %}
         {% endfor %}
     </div>
 </div>
@@ -29,12 +29,12 @@
         {% if loop.first %}
             <div class="page-header page-wide-text">
                 {% if starts_at_day|date == 'Dnes' %}
-                    <h2>Na co si dnes v Brně můžeš zajít do kina?</h2>
+                    <h2>Na co si <strong>dnes</strong> můžeš zajít do kina?</h2>
                 {% else %}
                     {% if today_any_showtimes %}
-                        <h2>Dnes už v Brně bohužel nic nestihneš, ale {{ starts_at_day|date|lower }} je taky den</h2>
+                        <h2>Dnes už bohužel nic nestihneš, ale <strong>{{ starts_at_day|date|lower }}</strong> je taky den</h2>
                     {% else %}
-                        <h2>V Brně se promítá až {{ starts_at_day|date|lower }}</h2>
+                        <h2>Promítá se až <strong>{{ starts_at_day|date|lower }}</strong></h2>
                     {% endif %}
                 {% endif %}
                 <p class="lead">
@@ -56,7 +56,7 @@
         {% endif %}
         <div class="row">
             {% for film, showtimes in films.items() %}
-                <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                <div class="box film">
                     <a href="{{ url_for('film', film_slug=film.slug) }}" class="thumbnail">
                         <img src="{{ url_for('poster', film_slug=film.slug, resize='300x424') }}" class="poster">
                         <div class="caption">
@@ -76,17 +76,19 @@
                         </div>
                     </a>
                 </div>
-                {% if loop.index is divisibleby 4 %}<div class="clearfix visible-lg visible-md"></div>{% endif %}
-                {% if loop.index is divisibleby 2 %}<div class="clearfix visible-sm"></div>{% endif %}
+                {% if loop.index is divisibleby 4 %}<div class="box-clearfix-4"></div>{% endif %}
+                {% if loop.index is divisibleby 2 %}<div class="box-clearfix-2"></div>{% endif %}
             {% endfor %}
         </div>
     </div>
 {% endfor %}
 <hr>
 {% if not more %}
-<ul class="pager">
-    <li><a href="{{ url_for('index', more=True) }}#more">Chci vidět i další dny</a></li>
-</ul>
+<div class="page-info">
+    <ul class="pager">
+        <li><a href="{{ url_for('index', more=True) }}#more">Další dny</a></li>
+    </ul>
+</div>
 {% else %}
 <div class="page-info">
     <p>

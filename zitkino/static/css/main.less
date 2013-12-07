@@ -45,7 +45,7 @@ body {
         padding: 0;
     }
 
-    @logo-spacing: (@line-height-computed / 3);
+    @logo-spacing: (@line-height-computed / 5);
 
     .navbar-brand {
         padding-right: @logo-spacing;
@@ -65,8 +65,19 @@ body {
 }
 
 
-/* Page components ***************************/
+/* Footer ************************************/
 
+footer.navbar small a {
+    color: @navbar-inverse-link-color;
+
+    &:hover,
+    &:focus {
+        color: @navbar-inverse-link-hover-color;
+    }
+}
+
+
+/* Page components ***************************/
 
 #more {
     .anchor;
@@ -84,11 +95,33 @@ body {
 .page-info {
     .page-header;
     border: none;
+
+    .pager a {
+        .btn-lg;
+        .btn-primary;
+    }
 }
 
 
 /* Thumbnails ********************************/
 
+.box {
+    .make-xs-column(12);
+    .make-sm-column(6);
+    .make-md-column(3);
+    .make-lg-column(3);
+}
+
+.box-clearfix-4 {
+    .clearfix;
+    .visible-lg;
+    .visible-md;
+}
+
+.box-clearfix-2 {
+    .clearfix;
+    .visible-sm;
+}
 
 a.thumbnail {
     position: relative;
