@@ -25,7 +25,7 @@
 </div>
 
 {% for starts_at_day, films in data.items() %}
-    <div class="films"{% if more and loop.index == less_items %} id="more"{% endif %}>
+    <div class="films"{% if more and loop.index == (less_items + 1) %} id="more"{% endif %}>
         {% if loop.first %}
             <div class="page-header page-wide-text">
                 {% if starts_at_day|date == 'Dnes' %}
@@ -37,17 +37,6 @@
                         <h2>Promítá se až <strong>{{ starts_at_day|date|lower }}</strong></h2>
                     {% endif %}
                 {% endif %}
-                <p class="lead">
-                    {% if closest_showtimes_count == 1 %}
-                        Čeká na tebe už jen jedno jediné promítání.
-                    {% else %}
-                        {% if closest_showtimes_count < 5 %}Čekají{% else %}Čeká{% endif %}
-                        na tebe
-                        {{ closest_showtimes_count }} promítání
-                        {{ 'v'|vocalize(closest_cinemas_count) }}
-                        {{ closest_cinemas_count }} kinech.
-                    {% endif %}
-                </p>
             </div>
         {% else %}
             <div class="page-header">

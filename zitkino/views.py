@@ -2,10 +2,8 @@
 
 
 import os
-from itertools import chain
 from collections import OrderedDict
 
-import times
 from flask import request, render_template, send_from_directory
 
 from . import app, parsers, log
@@ -53,19 +51,12 @@ def index(more):
         key=lambda c: (c.priority, c.name)
     )
 
-    # stats for the closest day
-    closest_showtimes = list(
-        chain(*[showtimes for (f, showtimes) in data.values()[0].items()])
-    )
-    closest_cinemas_count = len(frozenset(s.cinema for s in closest_showtimes))
-    closest_showtimes_count = len(closest_showtimes)
-    today_any_showtimes = bool(data.get(times.now().date(), False))
+    # stats
+    today_any_showtimes = bool(Showtime.today().count())
 
     # render the template
     return render_template('index.html', data=data, more=more,
                            cinemas=cinemas, less_items=less_items,
-                           closest_cinemas_count=closest_cinemas_count,
-                           closest_showtimes_count=closest_showtimes_count,
                            today_any_showtimes=today_any_showtimes)
 
 

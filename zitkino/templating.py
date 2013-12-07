@@ -57,16 +57,4 @@ def uppercase_first(value):
     return value[0].upper() + value[1:]
 
 
-@app.template_filter()
-def vocalize(preposition, n):
-    """Vocalization of prepositions before numbers, see
-    `the rules <http://prirucka.ujc.cas.cz/?id=770>_`.
-    """
-    if n >= 1000:
-        return vocalize(preposition, int(str(n)[0]))
-    if n < 5 or 11 < n < 15 or 20 <= n < 50 or 100 <= n < 500:
-        return preposition + 'e'
-    return preposition
-
-
 app.template_filter()(slugify)

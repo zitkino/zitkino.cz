@@ -298,6 +298,15 @@ class Showtime(db.Document):
                     .order_by('starts_at')
         )
 
+    @db.queryset_manager
+    def today(cls, queryset):
+        today = times.now().date()
+        return (
+            queryset.filter(starts_at__gt=today - timedelta(days=1))
+                    .filter(starts_at__lt=today + timedelta(days=1))
+                    .order_by('starts_at')
+        )
+
     @classmethod
     def unpaired(cls):
         return (s for s in cls.objects.all() if not s.is_paired)
