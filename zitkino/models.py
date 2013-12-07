@@ -290,7 +290,7 @@ class Showtime(db.Document):
 
     @db.queryset_manager
     def upcoming(cls, queryset):
-        now = times.now()
+        now = times.now() - timedelta(minutes=20)
         week_later = now + timedelta(days=7)
         return (
             queryset.filter(starts_at__gte=now)
