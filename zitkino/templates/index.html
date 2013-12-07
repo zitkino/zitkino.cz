@@ -2,9 +2,9 @@
 {% block content %}
 
 <div class="cinemas">
-    <div class="page-header page-wide-text">
+    <div class="page-header">
         <h2>Omrzel tě Hollywood v multiplexech?</h2>
-        <p class="lead">Vyber si z promítání, která mají duši.</p>
+        <p>Vyber si z promítání, která mají duši.</p>
     </div>
     <div class="row">
         {% for cinema in cinemas %}
@@ -88,9 +88,11 @@
     <li><a href="{{ url_for('index', more=True) }}#more">Chci vidět i další dny</a></li>
 </ul>
 {% else %}
-<p class="page-wide-text lead">
-    Dál do budoucnosti vidí už jedině
-    <a href="http://www.fffilm.name/2009/10/recenze-knezna-libuse-pagan-queen-0.html">kněžna Libuše</a>.
-</p>
+<div class="page-info">
+    <p>
+        Dál do budoucnosti vidí už jedině
+        <a href="http://www.fffilm.name/2009/10/recenze-knezna-libuse-pagan-queen-0.html">kněžna Libuše</a>.
+    </p>
+</div>
 {% endif %}
 {% endblock %}

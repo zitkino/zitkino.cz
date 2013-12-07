@@ -1,0 +1,135 @@
+
+
+@import "custom-bootstrap.less";
+
+
+@dark-grey: #777;
+
+
+/* Base **************************************/
+
+h1, h2, h3, h4, h5, h6, .claim {
+    font-family: 'Domine', serif;
+    a {
+        text-decoration: none;
+    }
+}
+
+
+/* Header ************************************/
+
+body {
+    padding-top: @line-height-computed;
+}
+
+.anchor {
+    &:before {
+        /*
+            trick http://css-tricks.com/hash-tag-links-padding/
+        */
+        @anchor-padding: (@line-height-computed * 5);
+
+        display: block;
+        content: " ";
+        margin-top: -1 * @anchor-padding;
+        height: @anchor-padding;
+        visibility: hidden;
+    }
+}
+
+.navbar-default {
+    .navbar-header h1 {
+        display: inline;
+        font-size: inherit;
+        margin: 0;
+        padding: 0;
+    }
+
+    @logo-spacing: (@line-height-computed / 3);
+
+    .navbar-brand {
+        padding-right: @logo-spacing;
+        color: @brand-primary;
+        text-decoration: none;
+
+        &:hover, &:focus {
+            color: @brand-primary;
+            text-decoration: underline;
+        }
+    }
+
+    .claim {
+        color: @dark-grey;
+        margin-left: @logo-spacing;
+    }
+}
+
+
+/* Page components ***************************/
+
+
+#more {
+    .anchor;
+}
+
+.page-header {
+    text-align: center;
+    margin: (@line-height-computed * 4) 0 (@line-height-computed * 2);
+
+    p {
+       .lead;
+    }
+}
+
+.page-info {
+    .page-header;
+    border: none;
+}
+
+
+/* Thumbnails ********************************/
+
+
+a.thumbnail {
+    position: relative;
+    text-decoration: none;
+
+    .caption {
+        text-align: center;
+
+        h3 {
+            margin-top: (@line-height-computed / 2);
+            margin-bottom: (@line-height-computed / 4);
+        }
+    }
+}
+
+
+/* Films *************************************/
+
+
+.films {
+    .poster {
+        width: 100%;
+    }
+
+    a.thumbnail {
+        .caption {
+            width: 98%; // so it does not hide the right border
+            min-height: 25%;
+            position: absolute; bottom: 0;
+            background: #FFF; background: rgba(255, 255, 255, 0.85);
+
+            h3 {
+                font-weight: bold;
+
+                small {
+                    font-size: @font-size-large;
+                    display: block;
+                    color: @dark-grey;
+                    margin-top: (@line-height-computed / 3);
+                }
+            }
+        }
+    }
+}

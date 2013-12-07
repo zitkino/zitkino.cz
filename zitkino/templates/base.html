@@ -23,7 +23,7 @@
         {% if self.image() %}<meta property="og:image" content="{% block image %}{% endblock %}">
         {% endif %}
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Domine&amp;subset=latin,latin-ext">
-        {% assets filters=("scss", "cssmin"), output="scss/packed.css", "scss/bootstrap.min.css", "scss/bootstrap-theme.min.css", "scss/main.scss" %}
+        {% assets filters=("less", "cssmin"), output="css/packed.css", "css/main.less" %}
             <link rel="stylesheet" href="{{ ASSET_URL }}">
         {% endassets %}
 
