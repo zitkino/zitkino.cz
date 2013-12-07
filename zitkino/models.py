@@ -170,20 +170,31 @@ class Film(FilmMixin, db.Document):
         if film is None:
             return
 
-        blacklist = [
+        # exclude special cases and already filled attributes
+        exclude = [
             'id', 'slug', 'directors', 'titles', 'title_main', 'url_poster',
             'is_ghost',
         ]
-        for key in self._data.keys():
-            if key not in blacklist:
-                val = getattr(film, key, None)
-                if val is not None:
-                    setattr(self, key, val)  # update
+        attrs = (
+            k for (k, v) in self._data.items()
+            if (
+                (k not in exclude)  # special cases
+                and (v is None)  # value is missing
+                and (getattr(film, k, None) is not None)  # new value != None
+            )
+        )
+
+        # update missing attributes
+        for attr in attrs:
+            setattr(self, attr, getattr(film, attr, None))
 
         # special cases
         self.titles.append(film.title_main)
         self.titles.extend(film.titles)
         self.directors.extend(film.directors)
+
+        if self.is_ghost and not getattr(film, 'is_ghost', True):
+            self.is_ghost = False
 
         if self._is_larger_poster(film.url_poster):
             self.url_poster = film.url_poster

@@ -46,7 +46,7 @@ class CsfdFilmService(BaseFilmService):
                 return self._download(*args, **kwargs)
             raise
 
-    def search(self, titles, year=None):
+    def search(self, titles, year=None, directors=None):
         year = int(year) if year else None
 
         for title in titles:
@@ -68,7 +68,7 @@ class CsfdFilmService(BaseFilmService):
             results = self._iterparse_search_results(html, year)
 
             for result in results:
-                similarity_ratio = fuzz.partial_ratio(
+                similarity_ratio = fuzz.ratio(
                     title,
                     self._parse_matched_title(result)
                 )
