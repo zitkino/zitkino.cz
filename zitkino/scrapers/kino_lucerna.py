@@ -8,7 +8,7 @@ import times
 from dateutil import rrule
 
 from zitkino import parsers
-from zitkino.utils import download
+from zitkino.utils import download, clean_whitespace
 from zitkino.models import Cinema, Showtime, ScrapedFilm
 
 from zitkino.scrapers import scrapers
@@ -39,11 +39,11 @@ class Scraper(object):
 
     range_re = re.compile(
         r'(\d+)\.(\d+)\.-(\d+)\.(\d+)\.'  # date range
-        r'((\s+(ve?|a)\s+\d+:\d+)*)'  # times
+        r'((\s+(ve?|a)\s+\d+:\d+)+)'  # times
     )
     standalone_re = re.compile(
         r'(\d+)\.(\d+)\.(\s*\+\s*(\d+)\.(\d+)\.)?'  # single dates or date+date
-        r'((\s+(ve?|a)\s+\d+:\d+)*)'  # times
+        r'((\s+(ve?|a)\s+\d+:\d+)+)'  # times
     )
     time_re = re.compile(r'(\d+):(\d+)')
 
@@ -214,11 +214,11 @@ class Scraper(object):
             title = parts[0]
             for info in parts[1:]:
                 dates = self.entry_split_price_re.split(info, maxsplit=1)[0]
-                yield title.strip(), dates.strip()
+                yield clean_whitespace(title), clean_whitespace(dates)
         else:
             title, info = self.entry_split_re.split(text, maxsplit=1)
             dates = self.entry_split_price_re.split(info, maxsplit=1)[0]
-            yield title.strip(), dates.strip()
+            yield clean_whitespace(title), clean_whitespace(dates)
 
     def _split_title_text(self, title):
         title = title.strip()
@@ -236,11 +236,11 @@ class Scraper(object):
 
     def _parse_entry_text(self, text):
         """Takes HTML element with film header line and generates showtimes."""
-        for title, dates in self._split_entry_text(text):
-            title_main, tags = self._split_title_text(title)
+        for title_text, dates_text in self._split_entry_text(text):
+            title_main, tags = self._split_title_text(title_text)
 
-            date_ranges = self._parse_date_ranges(dates)
-            standalone_dates = self._parse_standalone_dates(dates)
+            date_ranges = self._parse_date_ranges(dates_text)
+            standalone_dates = self._parse_standalone_dates(dates_text)
 
             dates = list(date_ranges) + list(standalone_dates)
             for starts_at in dates:
