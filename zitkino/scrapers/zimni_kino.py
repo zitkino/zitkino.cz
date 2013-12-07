@@ -18,7 +18,8 @@ cinema = Cinema(
     url='http://www.brnenskevanoce.cz/',
     street=u'Náměstí Svobody',
     town=u'Brno',
-    coords=(49.19515, 16.608319)
+    coords=(49.19515, 16.608319),
+    is_exclusive=True,
 )
 
 

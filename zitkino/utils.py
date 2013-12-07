@@ -4,13 +4,13 @@
 import re
 
 import requests
-import unidecode
+from unidecode import unidecode
 
 from . import app
 
 
 def slugify(string, sep='-'):
-    string = unidecode.unidecode(string).lower()
+    string = unidecode(string).lower()
     string = re.sub(r'\W+', sep, string)
     return re.sub('{}+'.format(sep), sep, string).strip(sep)
 

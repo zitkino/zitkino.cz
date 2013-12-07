@@ -23,6 +23,9 @@ class Cinema(db.Document):
     town = db.StringField(required=True)
     _coords = db.PointField(db_field='coords')
 
+    is_exclusive = db.BooleanField(default=False)
+    is_multiplex = db.BooleanField(default=False)
+
     @property
     def coords(self):
         return self._coords.get('coordinates', None)
@@ -31,8 +34,23 @@ class Cinema(db.Document):
     def coords(self, value):
         self._coords = value
 
+    @property
+    def priority(self):
+        """Priority of this cinema. Lower is better."""
+        if self.is_exclusive:
+            return 1
+        if self.is_multiplex:
+            return 3
+        return 2
+
     def clean(self):
         self.slug = slugify(self.name)
+
+    def sync(self, cinema):
+        """Synchronize data with other cinema object."""
+        if cinema is None:
+            return
+        self.id = cinema.id
 
     def __unicode__(self):
         return u'{}'.format(self.name)

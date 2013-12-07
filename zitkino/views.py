@@ -8,9 +8,9 @@ from collections import OrderedDict
 import times
 from flask import request, render_template, send_from_directory
 
-from . import app
-from .models import Showtime, Film
-from .image import generated_image, Image, PlaceholderImage
+from . import app, parsers
+from .models import Showtime, Film, Cinema
+from .image import render_image, Image, PlaceholderImage
 
 
 @app.context_processor
@@ -25,6 +25,7 @@ def inject_config():
 @app.route('/', defaults={'more': False})
 def index(more):
     less_items = 2
+    cinemas = set()
 
     # prepare data for listing of films
     data = OrderedDict()
@@ -35,32 +36,36 @@ def index(more):
     days = data.keys() if more else data.keys()[:less_items]
     for day, films in data.items():
         if day in days:
-            data[day] = [
-                (
-                    film, sorted(showtimes, key=lambda s: s.starts_at)
-                )
-                for (film, showtimes) in
-                sorted(
-                    films.items(),
-                    key=lambda (f, s): f.rating, reverse=True
-                )
-            ]
+            films = OrderedDict(sorted(
+                films.items(),
+                key=lambda (f, s): f.rating, reverse=True
+            ))
+            for film, showtimes in films.items():
+                films[film] = sorted(showtimes, key=lambda s: s.starts_at)
+                cinemas.update(s.cinema for s in showtimes)
+            data[day] = films
         else:
             del data[day]
 
+    # cinemas
+    cinemas = sorted(
+        (c for c in cinemas if not c.is_multiplex),
+        key=lambda c: (c.priority, c.name)
+    )
+
     # stats for the closest day
     closest_showtimes = list(
-        chain(*[showtimes for (f, showtimes) in data.values()[0]])
+        chain(*[showtimes for (f, showtimes) in data.values()[0].items()])
     )
-    cinemas_count = len(frozenset(s.cinema for s in closest_showtimes))
-    showtimes_count = len(closest_showtimes)
+    closest_cinemas_count = len(frozenset(s.cinema for s in closest_showtimes))
+    closest_showtimes_count = len(closest_showtimes)
     today_any_showtimes = bool(data.get(times.now().date(), False))
 
     # render the template
     return render_template('index.html', data=data, more=more,
-                           less_items=less_items,
-                           cinemas_count=cinemas_count,
-                           showtimes_count=showtimes_count,
+                           cinemas=cinemas, less_items=less_items,
+                           closest_cinemas_count=closest_cinemas_count,
+                           closest_showtimes_count=closest_showtimes_count,
                            today_any_showtimes=today_any_showtimes)
 
 
@@ -83,26 +88,34 @@ def static_files():
     return send_from_directory(static_dir, request.path.lstrip('/'))
 
 
-@app.route('/images/poster/<film_id>.jpg')
-@generated_image
-def poster(film_id):
-    film = Film.objects.get_or_404(id=film_id)
-
-    w, h = request.args.get('resize', 'x').split('x')
+@app.route('/images/poster/<film_slug>.jpg')
+def poster(film_slug):
+    resize = parsers.resize(request.args.get('resize', 'x'))
     crop = request.args.get('crop')
 
-    if not film.url_poster:
-        if w and h:
-            w, h = int(w), int(h)
-        else:
-            w, h = 1, 1
-        return PlaceholderImage('#EEE', width=w, height=h).to_stream('PNG')
+    film = Film.objects.get_or_404(slug=film_slug)
+    if film.url_poster:
+        img = Image.from_url(film.url_poster)
+        return render_image(img, resize=resize, crop=crop)
 
-    img = Image.from_url(film.url_poster)
-    if crop:
-        img.crop(int(crop))
-    if w and h:
-        img.resize_crop(int(w), int(h))
-    img.sharpen()
+    img = PlaceholderImage('#EEE', size=resize)
+    return render_image(img, crop=crop)
 
-    return img.to_stream()
+
+@app.route('/images/photo/<cinema_slug>.jpg')
+def photo(cinema_slug):
+    resize = parsers.resize(request.args.get('resize', 'x'))
+    crop = request.args.get('crop')
+
+    cinema = Cinema.objects.get_or_404(slug=cinema_slug)
+    filename = os.path.join(
+        app.root_path, 'static/images', cinema.slug + '.jpg'
+    )
+
+    if os.path.exists(filename):
+        with open(filename) as f:
+            img = Image(f)
+            return render_image(img, resize=resize, crop=crop)
+
+    img = PlaceholderImage('#EEE', size=resize)
+    return render_image(img, crop=crop)

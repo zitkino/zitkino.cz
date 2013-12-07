@@ -53,26 +53,20 @@ def urlencode(value):
 
 
 @app.template_filter()
-def unique(iterable, attribute=None):
-    """Filters a sequence of objects by looking at either
-    the object or the attribute and only selecting the unique ones.
-    """
-    if attribute:
-        get_value = lambda obj: getattr(obj, attribute)
-    else:
-        get_value = lambda obj: obj
-
-    values = set()
-    for obj in iterable:
-        original_len = len(values)
-        values.add(get_value(obj))
-        if original_len < len(values):
-            yield obj
+def uppercase_first(value):
+    return value[0].upper() + value[1:]
 
 
 @app.template_filter()
-def uppercase_first(value):
-    return value[0].upper() + value[1:]
+def vocalize(preposition, n):
+    """Vocalization of prepositions before numbers, see
+    `the rules <http://prirucka.ujc.cas.cz/?id=770>_`.
+    """
+    if n >= 1000:
+        return vocalize(preposition, int(str(n)[0]))
+    if n < 5 or 11 < n < 15 or 20 <= n < 50 or 100 <= n < 500:
+        return preposition + 'e'
+    return preposition
 
 
 app.template_filter()(slugify)

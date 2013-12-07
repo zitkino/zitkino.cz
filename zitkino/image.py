@@ -2,7 +2,6 @@
 
 
 from hashlib import sha1
-from functools import wraps
 
 try:
     from cStringIO import StringIO
@@ -20,16 +19,20 @@ class BaseImage(object):
     def size(self):
         return self.image.size
 
-    def resize_crop(self, width, height):
+    def resize(self, width, height):
         image = self.image
-        is_rect = width == height
         old_w, old_h = image.size
 
-        # resize by shorter side
-        if width < height or (is_rect and old_w < old_h):
-            size = (width, old_h * width / old_w)
-        else:
+        # resize
+        keep_height = (
+            (old_w < old_h and width > height)
+            or
+            (old_w > old_h and width < height)
+        )
+        if keep_height:
             size = (old_w * height / old_h, height)
+        else:
+            size = (width, old_h * width / old_w)
         image = image.resize(size, PILImage.ANTIALIAS)
 
         # crop the rest, centered
@@ -81,17 +84,24 @@ class Image(BaseImage):
 
 class PlaceholderImage(BaseImage):
 
-    def __init__(self, color='#000', width=1, height=1):
-        image = PILImage.new('RGB', (width, height), color)
+    def __init__(self, color='#000', size=None):
+        image = PILImage.new('RGB', size or (1, 1), color)
         self.image = image
 
 
-def generated_image(f):
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        bytestring = f(*args, **kwargs).read()
-        response = send_file(StringIO(bytestring), mimetype='image/jpeg')
-        response.set_etag(sha1(bytestring).hexdigest())
-        response.make_conditional(request)
-        return response
-    return wrapper
+def render_image(img, image_format='jpeg', resize=None, crop=None,
+                 **format_options):
+    if crop:
+        img.crop(int(crop))
+    if resize:
+        img.resize(*resize)
+    if crop or resize:
+        img.sharpen()
+
+    bytes_ = img.to_stream(image_format.upper(), **format_options).read()
+    mimetype = 'image/' + image_format.lower()
+
+    response = send_file(StringIO(bytes_), mimetype=mimetype)
+    response.set_etag(sha1(bytes_).hexdigest())
+    response.make_conditional(request)
+    return response

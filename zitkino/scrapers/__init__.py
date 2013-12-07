@@ -20,9 +20,9 @@ class ScraperRepository(dict):
         cinema.clean()
         if cinema.slug not in self:
             try:
-                found = Cinema.objects.filter(slug=cinema.slug).first()
-                if found:
-                    cinema.id = found.id
+                cinema.sync(
+                    Cinema.objects.filter(slug=cinema.slug).first()
+                )
                 cinema.save()
             except db.ConnectionError:
                 # sometimes it is necessary to import scrapers without

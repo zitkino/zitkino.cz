@@ -140,26 +140,34 @@ body {
     text-align: center;
 }
 
-.showtimes {
+a.thumbnail {
+    position: relative;
+    text-decoration: none;
+
+    .caption {
+        text-align: center;
+
+        h3 {
+            margin-top: 10px;
+            margin-bottom: 5px;
+        }
+    }
+}
+
+.films {
     .poster {
         width: 100%;
     }
 
     a.thumbnail {
-        position: relative;
-
         .caption {
             width: 98%;
             min-height: 25%;
-            text-align: center;
-            text-decoration: none;
             position: absolute; bottom: 0;
             background: rgba(255, 255, 255, 0.85);
 
             h3 {
                 font-weight: bold;
-                margin-top: 10px;
-                margin-bottom: 5px;
 
                 small {
                     font-size: 90%;

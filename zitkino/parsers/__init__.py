@@ -79,3 +79,11 @@ def date_cs(value):
 
         return datetime.date(year, month, day)
     return None
+
+
+def resize(resize):
+    if resize:
+        width, height = resize.split('x')
+        if width and height:
+            return (int(width), int(height))
+    return None

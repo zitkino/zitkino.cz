@@ -1,27 +1,51 @@
 {% extends 'base.html' %}
 {% block content %}
 
+<div class="cinemas">
+    <div class="page-header page-wide-text">
+        <h2>Omrzel tě Hollywood v multiplexech?</h2>
+        <p class="lead">Vyber si z promítání, která mají duši.</p>
+    </div>
+    <div class="row">
+        {% for cinema in cinemas %}
+            <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                <a href="{{ url_for('cinema', cinema_slug=cinema.slug) }}" class="thumbnail">
+                    <img src="{{ url_for('photo', cinema_slug=cinema.slug, resize='300x100') }}" class="photo">
+                    <div class="caption">
+                        <h3>
+                            {{ cinema.name }}
+                        </h3>
+                    </div>
+                </a>
+            </div>
+            {% if loop.index is divisibleby 4 %}<div class="clearfix visible-lg visible-md"></div>{% endif %}
+            {% if loop.index is divisibleby 2 %}<div class="clearfix visible-sm"></div>{% endif %}
+        {% endfor %}
+    </div>
+</div>
+
 {% for starts_at_day, films in data.items() %}
-    <div class="showtimes"{% if more and loop.index == less_items %} id="more"{% endif %}>
+    <div class="films"{% if more and loop.index == less_items %} id="more"{% endif %}>
         {% if loop.first %}
             <div class="page-header page-wide-text">
                 {% if starts_at_day|date == 'Dnes' %}
-                    <h2>Na&nbsp;co&nbsp;si&nbsp;dnes v&nbsp;Brně můžete zajít do&nbsp;kina?</h2>
+                    <h2>Na co si dnes v Brně můžeš zajít do kina?</h2>
                 {% else %}
                     {% if today_any_showtimes %}
-                        <h2>Dnes už&nbsp;v&nbsp;Brně bohužel nic nestihnete, ale&nbsp;{{ starts_at_day|date|lower }} je&nbsp;taky den</h2>
+                        <h2>Dnes už v Brně bohužel nic nestihneš, ale {{ starts_at_day|date|lower }} je taky den</h2>
                     {% else %}
-                        <h2>V Brně se&nbsp;promítá až&nbsp;{{ starts_at_day|date|lower }}</h2>
+                        <h2>V Brně se promítá až {{ starts_at_day|date|lower }}</h2>
                     {% endif %}
                 {% endif %}
                 <p class="lead">
-                    {{ starts_at_day|date }} na&nbsp;vás
-                    {% if showtimes_count == 1 %}
-                        čeká už&nbsp;jen&nbsp;jedno jediné promítání.
+                    {% if closest_showtimes_count == 1 %}
+                        Čeká na tebe už jen jedno jediné promítání.
                     {% else %}
-                        {% if showtimes_count < 5 %}čekají{% else %}čeká{% endif %}
-                        {{ showtimes_count }}&nbsp;promítání
-                        {% if cinemas_count < 5 %}v{% else %}ve{% endif %}&nbsp;{{ cinemas_count }}&nbsp;kinech.
+                        {% if closest_showtimes_count < 5 %}Čekají{% else %}Čeká{% endif %}
+                        na tebe
+                        {{ closest_showtimes_count }} promítání
+                        {{ 'v'|vocalize(closest_cinemas_count) }}
+                        {{ closest_cinemas_count }} kinech.
                     {% endif %}
                 </p>
             </div>
@@ -30,12 +54,11 @@
                 <h2>{{ starts_at_day|date }}</h2>
             </div>
         {% endif %}
-
         <div class="row">
-            {% for film, showtimes in films %}
+            {% for film, showtimes in films.items() %}
                 <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
                     <a href="{{ url_for('film', film_slug=film.slug) }}" class="thumbnail">
-                        <img src="{{ url_for('poster', film_id=film.id, resize='300x424') }}" class="poster">
+                        <img src="{{ url_for('poster', film_slug=film.slug, resize='300x424') }}" class="poster">
                         <div class="caption">
                             <h3>
                                 {{ film.title_main }}
