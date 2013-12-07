@@ -8,7 +8,7 @@ from collections import OrderedDict
 import times
 from flask import request, render_template, send_from_directory
 
-from . import app, parsers
+from . import app, parsers, log
 from .models import Showtime, Film, Cinema
 from .image import render_image, Image, PlaceholderImage
 
@@ -90,13 +90,16 @@ def static_files():
 
 @app.route('/images/poster/<film_slug>.jpg')
 def poster(film_slug):
-    resize = parsers.resize(request.args.get('resize', 'x'))
-    crop = request.args.get('crop')
+    try:
+        resize = parsers.resize(request.args.get('resize', 'x'))
+        crop = request.args.get('crop')
 
-    film = Film.objects.get_or_404(slug=film_slug)
-    if film.url_poster:
-        img = Image.from_url(film.url_poster)
-        return render_image(img, resize=resize, crop=crop)
+        film = Film.objects.get_or_404(slug=film_slug)
+        if film.url_poster:
+            img = Image.from_url(film.url_poster)
+            return render_image(img, resize=resize, crop=crop)
+    except Exception:
+        log.exception()
 
     img = PlaceholderImage('#EEE', size=resize)
     return render_image(img, crop=crop)
@@ -104,18 +107,21 @@ def poster(film_slug):
 
 @app.route('/images/photo/<cinema_slug>.jpg')
 def photo(cinema_slug):
-    resize = parsers.resize(request.args.get('resize', 'x'))
-    crop = request.args.get('crop')
+    try:
+        resize = parsers.resize(request.args.get('resize', 'x'))
+        crop = request.args.get('crop')
 
-    cinema = Cinema.objects.get_or_404(slug=cinema_slug)
-    filename = os.path.join(
-        app.root_path, 'static/images', cinema.slug + '.jpg'
-    )
+        cinema = Cinema.objects.get_or_404(slug=cinema_slug)
+        filename = os.path.join(
+            app.root_path, 'static/images', cinema.slug + '.jpg'
+        )
 
-    if os.path.exists(filename):
-        with open(filename) as f:
-            img = Image(f)
-            return render_image(img, resize=resize, crop=crop)
+        if os.path.exists(filename):
+            with open(filename) as f:
+                img = Image(f)
+                return render_image(img, resize=resize, crop=crop)
+    except Exception:
+        log.exception()
 
     img = PlaceholderImage('#EEE', size=resize)
     return render_image(img, crop=crop)
