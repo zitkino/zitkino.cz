@@ -21,6 +21,8 @@ class ImdbFilmService(BaseFilmService):
     name = u'IMDb'
     url_attr = 'url_imdb'
 
+    year_re = re.compile(r'(\d{4})')
+
     def lookup(self, url):
         try:
             resp = download(url)
@@ -43,9 +45,11 @@ class ImdbFilmService(BaseFilmService):
         return html.cssselect_first('h1 [itemprop="name"]').text_content()
 
     def _parse_year(self, html):
-        return int(
-            html.cssselect_first('h1 span.nobr').text_content().strip('()')
-        )
+        text = html.cssselect_first('h1 span.nobr').text_content()
+        match = self.year_re.search(text)
+        if match:
+            return int(match.group(1))
+        return None
 
     def _parse_rating(self, html):
         star = html.cssselect_first('.star-box-giga-star')
