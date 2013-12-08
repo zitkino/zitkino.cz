@@ -28,7 +28,7 @@
 </div>
 
 {% for starts_at_day, films in data.items() %}
-    <div class="films"{% if more and loop.index == (less_items + 1) %} id="more"{% endif %}>
+    <div class="films"{% if more and loop.index == (less_items + 1) %} id="continue"{% endif %}>
         {% if loop.first %}
             <div class="page-header page-wide-text">
                 {% if starts_at_day|date == 'Dnes' %}
@@ -81,7 +81,7 @@
 {% if not more %}
 <div class="page-info">
     <ul class="pager">
-        <li><a href="{{ url_for('index', more=True) }}#more">Další dny</a></li>
+        <li><a href="{{ url_for('index', more=True) }}#continue">Další dny</a></li>
     </ul>
 </div>
 {% else %}
