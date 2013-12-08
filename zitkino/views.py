@@ -96,8 +96,8 @@ def poster(film_slug):
     return render_image(img, crop=crop)
 
 
-@app.route('/images/photo/<cinema_slug>.jpg')
-def photo(cinema_slug):
+@app.route('/images/cinema-photo/<cinema_slug>.jpg')
+def cinema_photo(cinema_slug):
     try:
         resize = parsers.resize(request.args.get('resize', 'x'))
         crop = request.args.get('crop')

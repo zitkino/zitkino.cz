@@ -13,11 +13,11 @@
         <meta name="description" content="{% block description %}{{ self.claim()|uppercase_first }}{% endblock %}">
         <meta property="og:description" content="{{ self.description() }}">
 
-        <meta property="og:site_name" content="{% block site_name %}Žít&nbsp;kino{% endblock %} &middot; {% block claim %}program brněnských&nbsp;kin{% endblock %}">
+        <meta property="og:site_name" content="{% block site_name %}Žít&nbsp;kino{% endblock %} - {% block claim %}program brněnských&nbsp;kin{% endblock %}">
         {% if request.path == url_for('index') -%}
-            <title>{{ self.site_name() }} &middot; {{ self.claim() }}</title>
+            <title>{{ self.site_name() }} - {{ self.claim() }}</title>
         {%- else -%}
-            <title>{{ self.title() }} &middot; {{ self.site_name() }}</title>
+            <title>{{ self.title() }} - {{ self.site_name() }}</title>
         {%- endif %}
         <meta property="og:title" content="{% block title %}{{ self.site_name() }}{% endblock %}">
         {% if self.image() %}<meta property="og:image" content="{% block image %}{% endblock %}">
@@ -68,7 +68,12 @@
             </div>
         </footer>
 
-        {% assets filters="rjsmin", output="js/packed.js", "js/jquery-1.10.1.min.js", "js/bootstrap.min.js", "js/main.js" %}
+        {% assets filters="rjsmin", output="js/packed.js",
+            "js/jquery-1.10.1.min.js",
+            "js/bootstrap.min.js",
+            "js/jquery.lazyload.min.js",
+            "js/main.js"
+        %}
             <script type="text/javascript" src="{{ ASSET_URL }}"></script>
         {% endassets %}
 

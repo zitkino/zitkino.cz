@@ -10,7 +10,10 @@
         {% for cinema in cinemas %}
             <div class="box cinema">
                 <a href="{{ url_for('cinema', cinema_slug=cinema.slug) }}" class="thumbnail">
-                    <img src="{{ url_for('photo', cinema_slug=cinema.slug, resize='300x100') }}" class="photo">
+                    <div class="cinema-photo">
+                        <img class="lazy" data-original="{{ url_for('cinema_photo', cinema_slug=cinema.slug, resize='300x100') }}">
+                        <noscript><img src="{{ url_for('cinema_photo', cinema_slug=cinema.slug, resize='300x100') }}"></noscript>
+                    </div>
                     <div class="caption">
                         <h3>
                             {{ cinema.name }}
@@ -47,7 +50,10 @@
             {% for film, showtimes in films.items() %}
                 <div class="box film">
                     <a href="{{ url_for('film', film_slug=film.slug) }}" class="thumbnail">
-                        <img src="{{ url_for('poster', film_slug=film.slug, resize='300x424') }}" class="poster">
+                        <div class="poster">
+                            <img class="lazy" data-original="{{ url_for('poster', film_slug=film.slug, resize='300x424') }}">
+                            <noscript><img src="{{ url_for('poster', film_slug=film.slug, resize='300x424') }}"></noscript>
+                        </div>
                         <div class="caption">
                             <h3>
                                 {{ film.title_main }}

@@ -124,9 +124,36 @@ footer.navbar small a {
     .visible-sm;
 }
 
+.img-aspect-ratio-no-reflow (@width, @height) {
+    // trick to get responsive image without reflow (see http://andmag.se/2012/10/responsive-images-how-to-prevent-reflow/)
+    position: relative;
+    height: 0;
+    overflow: hidden;
+    padding-bottom: (@height / @width * 100%);
+    background: #EEE;
+
+    img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+    }
+}
+
 a.thumbnail {
     position: relative;
     text-decoration: none;
+
+    img.lazy {
+        display: none; // noscript fallback for lazyload jQuery plugin
+    }
+
+    img {
+        max-width: 100%;
+        height: auto;
+        background: #EEE;
+        -ms-interpolation-mode: bicubic;
+    }
 
     .caption {
         text-align: center;
@@ -139,15 +166,27 @@ a.thumbnail {
 }
 
 
+/* Cinemas ***********************************/
+
+
+.cinemas {
+    a.thumbnail {
+        .cinema-photo {
+            .img-aspect-ratio-no-reflow(300, 100);
+        }
+    }
+}
+
+
 /* Films *************************************/
 
 
 .films {
-    .poster {
-        width: 100%;
-    }
-
     a.thumbnail {
+        .poster {
+            .img-aspect-ratio-no-reflow(300, 424);
+        }
+
         .caption {
             width: 98%; // so it does not hide the right border
             min-height: 25%;
