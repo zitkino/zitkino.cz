@@ -4,6 +4,7 @@
 
 
 @dark-grey: #777;
+@light-grey: #EEE;
 
 
 /* Base **************************************/
@@ -130,13 +131,14 @@ footer.navbar small a {
     height: 0;
     overflow: hidden;
     padding-bottom: (@height / @width * 100%);
-    background: #EEE;
+    background: @light-grey;
 
     img {
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
+        background: @light-grey;
     }
 }
 
@@ -151,7 +153,7 @@ a.thumbnail {
     img {
         max-width: 100%;
         height: auto;
-        background: #EEE;
+        background: @light-grey;
         -ms-interpolation-mode: bicubic;
     }
 
