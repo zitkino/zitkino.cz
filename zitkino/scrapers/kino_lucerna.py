@@ -53,8 +53,10 @@ class Scraper(object):
 
     tag_re = (
         # order is not arbitrary!
-        (re.compile(ur'([–\-] )? titulky', re.I), u'titulky'),
-        (re.compile(ur'([–\-] )? (český )?dabing', re.I), u'dabing'),
+        (re.compile(ur'[–\-] titulky', re.I), u'titulky'),
+        (re.compile(ur'[–\-] (český )?dabing', re.I), u'dabing'),
+        (re.compile(ur' titulky', re.I), u'titulky'),
+        (re.compile(ur' (český )?dabing', re.I), u'dabing'),
         (re.compile(r've? 2[dD]$'), '2D'),
         (re.compile(r've? 3[dD]$'), '3D'),
         (re.compile(r' 2[dD]$'), '2D'),
@@ -259,7 +261,7 @@ class Scraper(object):
         for regexp, tag in self.tag_re:
             if regexp.search(title_text):
                 tags.append(tag)
-                title_text = regexp.sub('', title_text)
+                title_text = regexp.sub('', title_text).strip()
             if regexp.search(details_text):
                 tags.append(tag)
 

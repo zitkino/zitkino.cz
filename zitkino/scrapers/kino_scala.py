@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
+import re
 import datetime
 
 import times
@@ -27,6 +28,18 @@ class Scraper(object):
     url = 'http://www.kinoscala.cz/cz/program/'
 
     tz = 'Europe/Prague'
+
+    tag_re = (
+        # order is not arbitrary!
+        (re.compile(ur'[–\-] titulky', re.I), u'titulky'),
+        (re.compile(ur'[–\-] (český )?dabing', re.I), u'dabing'),
+        (re.compile(ur' titulky', re.I), u'titulky'),
+        (re.compile(ur' (český )?dabing', re.I), u'dabing'),
+        (re.compile(r've? 2[dD]$'), '2D'),
+        (re.compile(r've? 3[dD]$'), '3D'),
+        (re.compile(r' 2[dD]$'), '2D'),
+        (re.compile(r' 3[dD]$'), '3D'),
+    )
 
     def __call__(self):
         date = None
@@ -65,9 +78,17 @@ class Scraper(object):
         Returns film object.
         """
         title_main = el.xpath('.//a')[0].text_content()
+
+        tags = []
+        for regexp, tag in self.tag_re:
+            if regexp.search(title_main):
+                tags.append(tag)
+                title_main = regexp.sub('', title_main).strip()
+
         return ScrapedFilm(
             title_scraped=title_main,
             titles=[title_main],
+            tags=tags,
         )
 
     def _parse_tags_from_icons(self, el):
