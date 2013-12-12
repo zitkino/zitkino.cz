@@ -57,4 +57,63 @@ def uppercase_first(value):
     return value[0].upper() + value[1:]
 
 
+@app.template_filter()
+def prettify_url(value):
+    """Make given URL nice so it could be displayed to user."""
+    return re.sub(r'^(https?://)?(www\.)?', '', value).rstrip('/')
+
+
+@app.template_filter()
+def map_link_url(name=None, coords=None):
+    """Construct link to maps."""
+    q = ''
+    if coords:
+        q += '{},{}'.format(*coords)
+        if name:
+            q += ' '
+    if name:
+        q += '({})'.format(name)
+    return 'https://maps.google.com/maps?q={}&hl=cs'.format(urlencode(q))
+
+
+@app.template_filter()
+def map_image_url(coords):
+    return (
+        'https://maps.googleapis.com/maps/api/staticmap'
+        '?zoom=15'
+        '&size=300x300'
+        '&maptype=roadmap'
+        '&markers=color:0xEB2D2E%7C{},{}'
+        '&sensor=false'
+        '&visual_refresh=true'
+        '&language=cs'
+        '&scale=2'
+    ).format(*coords)
+
+
+@app.template_filter()
+def film_length(minutes):
+    hours, minutes = divmod(minutes, 60)
+    if hours:
+        return '{}h {}m'.format(hours, minutes)
+    return '{}m'.format(minutes)
+
+
+@app.template_filter()
+def film_rating_icon_class(rating):
+    if rating >= 85:
+        return 'fa-star'
+    if 85 > rating >= 65:
+        return 'fa-star-half-o'
+    return 'fa-star-o'
+
+
+@app.template_filter()
+def film_ratings(ratings):
+    return u', '.join([
+        u'{}: {} %'.format(name, int(value))
+        for (name, value) in ratings.items()
+    ])
+
+
 app.template_filter()(slugify)

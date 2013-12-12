@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block type %}video.movie{% endblock %}
+{% block title -%}
+    {{ film.title_main }}{% if film.year %} ({{ film.year }}){% endif %}
+{%- endblock %}
+{% block description -%}
+    Všechna promítání filmu {{ film.title_main }} v Brně.
+    {%- if film.titles|length > 1 %} Alternativní názvy filmu: {{ film.titles|join(', ') }}.{% endif %}
+{%- endblock %}
+{% block image %}{{ url_for('poster', film_slug=film.slug, _external=True) }}{% endblock %}
+{% block content %}
+
+<div class="detail">
+    <div class="detail-content">
+        <div class="page-header">
+            <h2>{{ film.title_main }} {% if film.year %} <small>{{ film.year }}</small>{% endif %}</h2>
+            {% if film.title_alt %}
+                <p>{{ film.title_alt }}</p>
+            {% endif %}
+        </div>
+        <ul class="info">
+                <li>
+                    <i class="fa fa-external-link fa-fw fa-2x"></i>
+                    {% for name, url in film.links.items() %}
+                        <a href="{{ url }}" target="_blank">{{ name }}</a>{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                </li>
+                {% if film.length %}
+                <li>
+                    <span title="{{ film.length }}m">
+                        <i class="fa fa-clock-o fa-fw fa-2x"></i>
+                        {{ film.length|film_length }}
+                    </span>
+                </li>
+                {% endif %}
+                {% if not film.rating is none %}
+                <li>
+                    <span title="{{ film.ratings|film_ratings }}">
+                        <i class="fa {{ film.rating|film_rating_icon_class }} fa-fw fa-2x"></i>
+                        {{ film.rating }}&nbsp;%
+                    </span>
+                </li>
+            {% endif %}
+        </ul>
+        <div class="showtimes">
+            tralalalaá
+
+            dodělat trailer a link na stranku predstaveni z kina
+        </div>
+    </div>
+    <div class="media">
+        <div class="thumbnail">
+            <div class="poster">
+                <img class="lazy" data-original="{{ url_for('poster', film_slug=film.slug, resize='300x424') }}">
+                <noscript><img src="{{ url_for('poster', film_slug=film.slug, resize='300x424') }}"></noscript>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -16,17 +16,31 @@ h1, h2, h3, h4, h5, h6, .claim {
     }
 }
 
+i { // icons
+    text-align: center;
+    vertical-align: middle;
+}
+
+[title] {
+    cursor: help;
+}
+
 
 /* Header ************************************/
 
 body {
-    padding-top: @line-height-computed;
+    padding-top: (@line-height-computed * 3);
+
+    #index & {
+        padding-top: 0;  // first .page-header's margin does the job anyway
+    }
 }
 
 .anchor {
     &:before {
         /*
-            trick http://css-tricks.com/hash-tag-links-padding/
+            Trick for anchoring not overlapping with fixed header.
+            http://css-tricks.com/hash-tag-links-padding/
         */
         @anchor-padding: (@line-height-computed * 5);
 
@@ -69,12 +83,16 @@ body {
 
 /* Footer ************************************/
 
-footer.navbar small a {
-    color: @navbar-inverse-link-color;
+footer.navbar {
+    margin-bottom: 0;
 
-    &:hover,
-    &:focus {
-        color: @navbar-inverse-link-hover-color;
+    small a {
+        color: @navbar-inverse-link-color;
+
+        &:hover,
+        &:focus {
+            color: @navbar-inverse-link-hover-color;
+        }
     }
 }
 
@@ -87,7 +105,7 @@ footer.navbar small a {
 
 .page-header {
     text-align: center;
-    margin: (@line-height-computed * 4) 0 (@line-height-computed * 2);
+    margin-bottom: (@line-height-computed * 2) 0 (@line-height-computed * 4) 0;
 
     p {
        .lead;
@@ -167,28 +185,19 @@ a.thumbnail {
     }
 }
 
+.poster {
+    .img-aspect-ratio-no-reflow(300, 424);
+}
 
-/* Cinemas ***********************************/
-
-
-.cinemas {
-    a.thumbnail {
-        .cinema-photo {
-            .img-aspect-ratio-no-reflow(300, 100);
-        }
-    }
+.cinema-photo {
+    .img-aspect-ratio-no-reflow(300, 100);
 }
 
 
 /* Films *************************************/
 
-
 .films {
     a.thumbnail {
-        .poster {
-            .img-aspect-ratio-no-reflow(300, 424);
-        }
-
         .caption {
             width: 98%; // so it does not hide the right border
             min-height: 25%;
@@ -206,5 +215,63 @@ a.thumbnail {
                 }
             }
         }
+    }
+}
+
+
+/* Detail ************************************/
+
+.detail {
+    .make-row();
+    margin: @line-height-computed 0 (@line-height-computed * 2) 0;
+
+    .detail-content {
+        .make-xs-column(12);
+        .make-sm-column(8);
+
+        .page-header, h2 {
+            margin-top: 0;
+            text-align: left;
+        }
+
+        ul.info {
+            .list-group;
+
+            li {
+                .list-group-item;
+                border-color: #FFF;
+                vertical-align: middle;
+
+                i {
+                    margin-right: @line-height-computed;
+                }
+
+                span[title] {
+                    padding-right: @line-height-computed;
+                }
+            }
+        }
+
+        .showtimes {
+            border-top: 1px solid @light-grey;
+            padding-top: (@line-height-computed * 2);
+        }
+    }
+
+    .detail-aside {
+        .hidden-xs;
+        .make-sm-column(4);
+
+        img {
+            width: 100%;
+        }
+    }
+
+    .map, .media {
+        .detail-aside;
+    }
+
+    .media {
+
     }
 }

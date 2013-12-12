@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block type %}place{% endblock %}
+{% block title %}{{ cinema.name }}{% endblock %}
+{% block description %}Program pro {{ cinema.name }}, Brno.{% endblock %}
+{% block image %}{{ url_for('cinema_photo', cinema_slug=cinema.slug, _external=True) }}{% endblock %}
+{% block meta %}
+    <meta property="place:location:latitude" content="{{ cinema.coords.0 }}">
+    <meta property="place:location:longitude" content="{{ cinema.coords.1 }}">
+{% endblock %}
+{% block content %}
+
+<div class="detail">
+    <div class="detail-content">
+        <div class="page-header">
+            <h2>{{ cinema.name }}</h2>
+            <p>{{ cinema.street }}</p>
+        </div>
+        <ul class="info">
+            <li>
+                <i class="fa fa-external-link fa-fw fa-2x"></i>
+                <a href="{{ cinema.url }}" target="_blank">
+                    {{ cinema.url|prettify_url }}
+                </a>
+            </li>
+            <li class="visible-xs">
+                <i class="fa fa-map-marker fa-fw fa-2x"></i>
+                <a href="{{ cinema.coords|map_link_url(cinema.name) }}" target="_blank">
+                    {{ cinema.street }}
+                </a>
+            </li>
+            {% if cinema.is_exclusive %}
+            <li>
+                <span title="výjimečné, dočasné, mimořádné">
+                    <i class="fa fa-heart fa-fw fa-2x"></i>
+                    exkluzivní kino
+                </span>
+            </li>
+            {% endif %}
+        </ul>
+        <div class="showtimes">
+            tralalalaá
+        </div>
+    </div>
+    <div class="map">
+        <a href="{{ cinema.coords|map_link_url(cinema.name) }}" target="_blank" class="thumbnail">
+            <img src="{{ cinema.coords|map_image_url }}">
+        </a>
+
+        <div class="thumbnail">
+            <img class="lazy" data-original="{{ url_for('cinema_photo', cinema_slug=cinema.slug, resize='300x100') }}">
+            <noscript><img src="{{ url_for('cinema_photo', cinema_slug=cinema.slug, resize='300x100') }}"></noscript>
+        </div>
+    </div>
+</div>
+{% endblock %}

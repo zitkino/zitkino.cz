@@ -62,12 +62,14 @@ def index(more):
 
 @app.route('/film/<film_slug>')
 def film(film_slug):
-    raise NotImplementedError
+    film = Film.objects.get_or_404(slug=film_slug)
+    return render_template('film.html', film=film)
 
 
-@app.route('/cinema/<cinema_slug>')
+@app.route('/cinema/<cinema_slug>-brno')
 def cinema(cinema_slug):
-    raise NotImplementedError
+    cinema = Cinema.objects.get_or_404(slug=cinema_slug)
+    return render_template('cinema.html', cinema=cinema)
 
 
 @app.route('/favicon.ico')

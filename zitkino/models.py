@@ -4,8 +4,10 @@
 from __future__ import division
 
 from datetime import timedelta
+from collections import OrderedDict
 
 import times
+from unidecode import unidecode
 from requests import RequestException
 
 from . import db
@@ -73,12 +75,6 @@ class FilmMixin(object):
     url_poster = db.URLField()
     url_trailer = db.URLField()
 
-    @property
-    def length_hours(self):
-        if self.length:
-            return round(self.length / 60, 1)
-        return None
-
     def clean(self):
         self.titles = (
             [self.title_main] +
@@ -106,16 +102,39 @@ class Film(FilmMixin, db.Document):
     url_synopsitv = db.URLField()
 
     @property
+    def title_alt(self):
+        for title in self.titles:
+            if unidecode(title).lower() != unidecode(self.title_main).lower():
+                return title
+        return None
+
+    @property
+    def links(self):
+        links = OrderedDict()
+        if self.url_csfd is not None:
+            links[u'ČSFD'] = self.url_csfd
+        if self.url_imdb is not None:
+            links[u'IMDb'] = self.url_imdb
+        if self.url_synopsitv is not None:
+            links[u'SynopsiTV'] = self.url_synopsitv
+        return links
+
+    @property
+    def ratings(self):
+        ratings = OrderedDict()
+        if self.rating_csfd is not None:
+            ratings[u'ČSFD'] = self.rating_csfd
+        if self.rating_imdb is not None:
+            ratings[u'IMDb'] = self.rating_imdb
+        return ratings
+
+    @property
     def rating(self):
         """Overall rating as percentage."""
-        ratings = []
-        if self.rating_csfd is not None:
-            ratings.append(self.rating_csfd)
-        if self.rating_imdb is not None:
-            ratings.append(self.rating_imdb)
+        ratings = self.ratings
         if not ratings:
             return None
-        return int(round(sum(ratings) / len(ratings), 0))
+        return int(round(sum(ratings.values()) / len(ratings), 0))
 
     @property
     def showtimes(self):
