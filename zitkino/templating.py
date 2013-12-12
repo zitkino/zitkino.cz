@@ -37,6 +37,22 @@ def date(value, relative=True):
 
 
 @app.template_filter()
+def time(value):
+    """Simple, human-readable time."""
+    return times.to_local(value, 'Europe/Prague').strftime('%H:%M')
+
+
+@app.template_filter()
+def datetime_iso(value):
+    return value.strftime('%Y-%m-%dT%H:%M:00+00:00')
+
+
+@app.template_filter()
+def date_iso(value):
+    return value.strftime('%Y-%m-%d')
+
+
+@app.template_filter()
 def email(address):
     """Obfuscate e-mail address."""
     username, server = address.split('@')
@@ -101,7 +117,7 @@ def film_length(minutes):
 
 @app.template_filter()
 def film_rating_icon_class(rating):
-    if rating >= 85:
+    if rating >= 80:
         return 'fa-star'
     if 85 > rating >= 65:
         return 'fa-star-half-o'

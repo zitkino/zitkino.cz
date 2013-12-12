@@ -30,10 +30,6 @@ i { // icons
 
 body {
     padding-top: (@line-height-computed * 3);
-
-    #index & {
-        padding-top: 0;  // first .page-header's margin does the job anyway
-    }
 }
 
 .anchor {
@@ -197,6 +193,10 @@ a.thumbnail {
 /* Films *************************************/
 
 .films {
+    .page-header {
+        .anchor;
+    }
+
     a.thumbnail {
         .caption {
             width: 98%; // so it does not hide the right border
@@ -228,10 +228,23 @@ a.thumbnail {
     .detail-content {
         .make-xs-column(12);
         .make-sm-column(8);
+        padding-left: 0;
 
-        .page-header, h2 {
-            margin-top: 0;
-            text-align: left;
+        .page-header {
+            &, h2 {
+                margin-top: 0;
+                text-align: left;
+            }
+
+            @media (max-width: @screen-xs-max) {
+                border: none;
+            }
+        }
+
+        .thumbnail {
+            @media (max-width: @screen-xs-max) {
+                margin-bottom: (@line-height-computed * 2);
+            }
         }
 
         ul.info {
@@ -253,14 +266,65 @@ a.thumbnail {
         }
 
         .showtimes {
-            border-top: 1px solid @light-grey;
             padding-top: (@line-height-computed * 2);
+
+            .showtime {
+                .anchor;
+            }
+
+            .showtimes-toggle {
+                display: none;
+            }
+
+            table {
+                // magically fixes hover problems with .anchor;
+                position: relative;
+            }
+
+            th, td {
+                vertical-align: middle;
+                border-top-style: dotted;
+            }
+
+            .time {
+                width: 15%;
+                padding: (@line-height-computed / 2) (@line-height-computed / 2);
+            }
+
+            .icons {
+                width: (@line-height-computed * 1.5);
+            }
+
+            td.tags {
+                width: 30%;
+
+                @media (max-width: @screen-xs-max) {
+                    display: none;
+                }
+            }
+
+            span.tags {
+                padding-bottom: (@line-height-computed / 4);
+                font-size: @font-size-small;
+                display: none;
+
+                @media (max-width: @screen-xs-max) {
+                    display: block;
+                }
+            }
+
+            th time {
+                font-size: @font-size-large;
+                color: @dark-grey;
+            }
         }
     }
 
     .detail-aside {
         .hidden-xs;
         .make-sm-column(4);
+        martin-top: 0;
+        padding-right: 0;
 
         img {
             width: 100%;
@@ -269,9 +333,5 @@ a.thumbnail {
 
     .map, .media {
         .detail-aside;
-    }
-
-    .media {
-
     }
 }

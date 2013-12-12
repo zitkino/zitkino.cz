@@ -15,17 +15,14 @@
             <h2>{{ cinema.name }}</h2>
             <p>{{ cinema.street }}</p>
         </div>
+        <a href="{{ cinema.coords|map_link_url(cinema.name) }}" target="_blank" class="thumbnail visible-xs">
+            <img src="{{ cinema.coords|map_image_url }}">
+        </a>
         <ul class="info">
             <li>
                 <i class="fa fa-external-link fa-fw fa-2x"></i>
                 <a href="{{ cinema.url }}" target="_blank">
                     {{ cinema.url|prettify_url }}
-                </a>
-            </li>
-            <li class="visible-xs">
-                <i class="fa fa-map-marker fa-fw fa-2x"></i>
-                <a href="{{ cinema.coords|map_link_url(cinema.name) }}" target="_blank">
-                    {{ cinema.street }}
                 </a>
             </li>
             {% if cinema.is_exclusive %}
@@ -38,7 +35,51 @@
             {% endif %}
         </ul>
         <div class="showtimes">
-            tralalalaá
+            {% for starts_at_day, showtimes in data.items() %}
+                <div class="showtime" id="day-{{ starts_at_day|date_iso }}">
+                    <h3>
+                        <time datetime="{{ starts_at_day|date_iso }}">{{ starts_at_day|date }}</time>
+                    </h3>
+                    <table class="table table-hover">
+                    {% for showtime in showtimes %}
+                        <tr>
+                            <th class="time">
+                                <time datetime="{{ showtime.starts_at|datetime_iso }}">
+                                    {{ showtime.starts_at|time }}
+                                </time>
+                            </th>
+                            <td class="icons">
+                                {% if not showtime.film.rating is none %}
+                                    <i class="fa {{ showtime.film.rating|film_rating_icon_class }} fa-fw" title="{{ showtime.film.ratings|film_ratings }}"></i>
+                                {% endif %}
+                            </td>
+                            <td class="film">
+                                {% if showtime.tags %}
+                                    <span class="tags">
+                                        {% for tag in showtime.tags %}
+                                            <span class="label label-default">{{ tag }}</span>
+                                        {% endfor %}
+                                    </span>
+                                {% endif %}
+                                <a href="{{ url_for('film', film_slug=showtime.film.slug) }}#day-{{ starts_at_day|date_iso }}"{% if showtime.film.title_alt %} title="{{ showtime.film.title_alt }}"{% endif %}>
+                                    {{- showtime.film.title_main -}}
+                                </a>
+                            </td>
+                            <td class="tags">
+                                {% for tag in showtime.tags %}
+                                    <span class="label label-default">{{ tag }}</span>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </table>
+                </div>
+            {% endfor %}
+            <div class="page-info showtimes-toggle">
+                <ul class="pager">
+                    <li><a href="{{ url_for('cinema', cinema_slug=cinema.slug) }}">Všechny dny</a></li>
+                </ul>
+            </div>
         </div>
     </div>
     <div class="map">

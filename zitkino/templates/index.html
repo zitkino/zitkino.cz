@@ -42,14 +42,14 @@
                 {% endif %}
             </div>
         {% else %}
-            <div class="page-header">
-                <h2>{{ starts_at_day|date }}</h2>
+            <div class="page-header" id="day-{{ starts_at_day|date_iso }}">
+                <h2><time datetime="{{ starts_at_day|date_iso }}">{{ starts_at_day|date }}</time></h2>
             </div>
         {% endif %}
         <div class="row">
             {% for film, showtimes in films.items() %}
                 <div class="box film">
-                    <a href="{{ url_for('film', film_slug=film.slug) }}" class="thumbnail">
+                    <a href="{{ url_for('film', film_slug=film.slug) }}#day-{{ starts_at_day|date_iso }}" class="thumbnail">
                         <div class="poster">
                             <img class="lazy" data-original="{{ url_for('poster', film_slug=film.slug, resize='300x424') }}">
                             <noscript><img src="{{ url_for('poster', film_slug=film.slug, resize='300x424') }}"></noscript>
@@ -58,7 +58,7 @@
                             <h3>
                                 {{ film.title_main }}
                                 {% if film.year %}
-                                    <small>{{ film.year }}</small>
+                                    <small><time datetime="{{ film.year }}">{{ film.year }}</time></small>
                                 {% endif %}
                             </h3>
                         </div>

@@ -45,6 +45,14 @@ class Cinema(db.Document):
             return 3
         return 2
 
+    @property
+    def showtimes(self):
+        return Showtime.objects.filter(cinema=self)
+
+    @property
+    def showtimes_upcoming(self):
+        return Showtime.upcoming.filter(cinema=self)
+
     def clean(self):
         self.slug = slugify(self.name)
 
@@ -139,6 +147,10 @@ class Film(FilmMixin, db.Document):
     @property
     def showtimes(self):
         return Showtime.objects.filter(film=self)
+
+    @property
+    def showtimes_upcoming(self):
+        return Showtime.upcoming.filter(film=self)
 
     def clean(self):
         super(Film, self).clean()
@@ -290,6 +302,7 @@ class ScrapedFilm(FilmMixin, db.EmbeddedDocument):
 class Showtime(db.Document):
 
     meta = {'ordering': ['-starts_at']}
+    upcoming_days = 7
 
     cinema = db.ReferenceField(Cinema, dbref=False, required=True)
     film = db.ReferenceField(Film, dbref=False, reverse_delete_rule=db.DENY)
@@ -310,7 +323,7 @@ class Showtime(db.Document):
     @db.queryset_manager
     def upcoming(cls, queryset):
         now = times.now() - timedelta(minutes=20)
-        week_later = now + timedelta(days=7)
+        week_later = now + timedelta(days=cls.upcoming_days)
         return (
             queryset.filter(starts_at__gte=now)
                     .filter(starts_at__lte=week_later)

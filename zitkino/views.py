@@ -63,13 +63,33 @@ def index(more):
 @app.route('/film/<film_slug>')
 def film(film_slug):
     film = Film.objects.get_or_404(slug=film_slug)
-    return render_template('film.html', film=film)
+
+    # prepare data for listing of films
+    data = OrderedDict()
+    for showtime in film.showtimes_upcoming.all():
+        day = showtime.starts_at_day
+        data.setdefault(day, []).append(showtime)
+
+    for day, showtimes in data.items():
+        data[day] = sorted(showtimes, key=lambda s: s.starts_at)
+
+    return render_template('film.html', film=film, data=data)
 
 
 @app.route('/cinema/<cinema_slug>-brno')
 def cinema(cinema_slug):
     cinema = Cinema.objects.get_or_404(slug=cinema_slug)
-    return render_template('cinema.html', cinema=cinema)
+
+    # prepare data for listing of films
+    data = OrderedDict()
+    for showtime in cinema.showtimes_upcoming.all():
+        day = showtime.starts_at_day
+        data.setdefault(day, []).append(showtime)
+
+    for day, showtimes in data.items():
+        data[day] = sorted(showtimes, key=lambda s: s.starts_at)
+
+    return render_template('cinema.html', cinema=cinema, data=data)
 
 
 @app.route('/favicon.ico')
