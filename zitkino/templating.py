@@ -80,15 +80,15 @@ def prettify_url(value):
 
 
 @app.template_filter()
-def map_link_url(name=None, coords=None):
+def map_link_url(coords=None, name=None):
     """Construct link to maps."""
     q = ''
     if coords:
         q += '{},{}'.format(*coords)
         if name:
-            q += ' '
-    if name:
-        q += '({})'.format(name)
+            q += ' ({})'.format(name)
+    elif name:
+        q += '{}, Brno'.format(name)
     return 'https://maps.google.com/maps?q={}&hl=cs'.format(urlencode(q))
 
 
