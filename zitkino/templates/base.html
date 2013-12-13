@@ -34,62 +34,65 @@
         <script src="{{ url_for('static', filename='js/modernizr-2.6.2.min.js') }}"></script>
     </head>
     <body id="{{ request.endpoint }}">
-        <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
-            <header class="container">
-                <div class="navbar-header">
-                    <h1><a class="navbar-brand" href="{{ url_for('index') }}">{{ self.site_name() }}</a></h1>
-                    <p class="navbar-text claim hidden-xs">je&nbsp;{% block claim %}program brněnských&nbsp;kin{% endblock %}</p>
-                </div>
-                <div class="navbar-right hidden-xs">
-                    <a href="https://www.facebook.com/zitkino" class="btn btn-sm btn-primary navbar-btn" target="_blank" rel="nofollow">
-                        <i class="fa fa-facebook fa-fw"></i>
-                        Facebook
-                    </a>
-                    <a href="https://twitter.com/zitkino" class="btn btn-sm btn-primary navbar-btn" target="_blank" rel="nofollow">
-                        <i class="fa fa-twitter fa-fw"></i>
-                        Twitter
-                    </a>
-                </div>
-            </header>
-        </nav>
+        <div class="layout-body">
+            <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+                <header class="container">
+                    <div class="navbar-header">
+                        <h1><a class="navbar-brand" href="{{ url_for('index') }}">{{ self.site_name() }}</a></h1>
+                        <p class="navbar-text claim hidden-xs">je&nbsp;{% block claim %}program brněnských&nbsp;kin{% endblock %}</p>
+                    </div>
+                    <div class="navbar-right hidden-xs">
+                        <a href="https://www.facebook.com/zitkino" class="btn btn-sm btn-primary navbar-btn" target="_blank" rel="nofollow">
+                            <i class="fa fa-facebook fa-fw"></i>
+                            Facebook
+                        </a>
+                        <a href="https://twitter.com/zitkino" class="btn btn-sm btn-primary navbar-btn" target="_blank" rel="nofollow">
+                            <i class="fa fa-twitter fa-fw"></i>
+                            Twitter
+                        </a>
+                    </div>
+                </header>
+            </nav>
 
-        <div class="content container">
-            {% block content %}{% endblock %}
-        </div>
-
-        <footer class="navbar navbar-inverse" role="navigation">
-            <div class="container">
-                <p class="navbar-text">
-                    Od roku 2012 tvoří <a href="http://honzajavorek.cz" target="_blank" class="navbar-link">Honza Javorek</a>.
-                    <br>
-                    <small class="hidden-xs">
-                        Data se stahují jednou denně přímo z webů jednotlivých kin.
-                        Doplňující informace jsou z
-                        <a href="http://www.csfd.cz/" target="_blank" rel="nofollow">ČSFD</a>,
-                        <a href="http://www.imdb.com/" target="_blank" rel="nofollow">IMDb</a>, a
-                        <a href="http://www.synopsi.tv/" target="_blank">SynopsiTV</a>.
-                    </small>
-                </p>
-                <ul class="nav navbar-nav navbar-right hidden-xs">
-                    <li>
-                        <a href="https://www.facebook.com/zitkino" target="_blank" rel="nofollow">
-                            <i class="fa fa-facebook fa-fw"></i> Facebook
-                        </a>
-                    </li>
-                    <li>
-                        <a href="https://twitter.com/zitkino" target="_blank" rel="nofollow">
-                            <i class="fa fa-twitter fa-fw"></i> Twitter
-                        </a>
-                    </li>
-                    <li>
-                        <a href="https://github.com/honzajavorek/zitkino.cz/" target="_blank" rel="nofollow">
-                            <i class="fa fa-github fa-fw"></i>
-                            GitHub
-                        </a>
-                    </li>
-                </ul>
+            <div class="layout-content container">
+                {% block content %}{% endblock %}
             </div>
-        </footer>
+        </div>
+        <div class="layout-footer">
+            <footer class="navbar navbar-inverse" role="navigation">
+                <div class="container">
+                    <p class="navbar-text">
+                        Od roku 2012 tvoří <a href="http://honzajavorek.cz" target="_blank" class="navbar-link">Honza Javorek</a>.
+                        <br>
+                        <small class="hidden-xs">
+                            Data se stahují jednou denně přímo z webů jednotlivých kin.
+                            Doplňující informace jsou z
+                            <a href="http://www.csfd.cz/" target="_blank" rel="nofollow">ČSFD</a>,
+                            <a href="http://www.imdb.com/" target="_blank" rel="nofollow">IMDb</a>, a
+                            <a href="http://www.synopsi.tv/" target="_blank">SynopsiTV</a>.
+                        </small>
+                    </p>
+                    <ul class="nav navbar-nav navbar-right hidden-xs">
+                        <li>
+                            <a href="https://www.facebook.com/zitkino" target="_blank" rel="nofollow">
+                                <i class="fa fa-facebook fa-fw"></i> Facebook
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://twitter.com/zitkino" target="_blank" rel="nofollow">
+                                <i class="fa fa-twitter fa-fw"></i> Twitter
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/honzajavorek/zitkino.cz/" target="_blank" rel="nofollow">
+                                <i class="fa fa-github fa-fw"></i>
+                                GitHub
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </footer>
+        </div>
 
         {% assets filters="rjsmin", output="js/packed.js",
             "js/jquery-1.10.1.min.js",

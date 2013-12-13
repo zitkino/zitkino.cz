@@ -28,8 +28,8 @@ i { // icons
 
 /* Header ************************************/
 
-body {
-    padding-top: (@line-height-computed * 3);
+.layout-content {
+    margin-top: (@line-height-computed * 3);
 }
 
 .anchor {
@@ -77,17 +77,44 @@ body {
 }
 
 
-/* Footer ************************************/
+/* Sticky footer *****************************/
 
-footer.navbar {
-    margin-bottom: 0;
+/*
+    Sticky footer trick.
+    http://pixelsvsbytes.com/blog/2011/09/sticky-css-footers-the-flexible-way/
+*/
 
-    small a {
-        color: @navbar-inverse-link-color;
+html, body {
+    height: 100%;
+}
 
-        &:hover,
-        &:focus {
-            color: @navbar-inverse-link-hover-color;
+body {
+    display: table;
+    width: 100%;
+}
+
+.layout-body {
+    display: table-row;
+    height: auto;
+}
+
+.layout-footer {
+    display: table-row;
+    height: 1px;
+}
+
+footer {
+    &.navbar {
+        border-radius: 0;
+        margin-bottom: 0;
+
+        small a {
+            color: @navbar-inverse-link-color;
+
+            &:hover,
+            &:focus {
+                color: @navbar-inverse-link-hover-color;
+            }
         }
     }
 }
@@ -140,7 +167,10 @@ footer.navbar {
 }
 
 .img-aspect-ratio-no-reflow (@width, @height) {
-    // trick to get responsive image without reflow (see http://andmag.se/2012/10/responsive-images-how-to-prevent-reflow/)
+    /*
+        Trick to get responsive image without reflow.
+        http://andmag.se/2012/10/responsive-images-how-to-prevent-reflow/
+    */
     position: relative;
     height: 0;
     overflow: hidden;
