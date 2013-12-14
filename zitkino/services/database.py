@@ -18,21 +18,23 @@ class DatabaseFilmService(BaseFilmService):
     url_attr = 'id'  # film's ID
 
     def search(self, titles, year=None, directors=None):
-        filter_widenings = []
+        filters = ['titles']
         params = {'titles': titles}
 
         if year is not None:
             params['year'] = year
-            filter_widenings.append('year')
+            filters.append('year')
         if directors:
             params['directors__in'] = directors
-            filter_widenings.append('directors__in')
+            filters.append('directors__in')
 
-        for field in reversed(filter_widenings):
+        for field in reversed(filters):
             try:
-                match = Film.objects.get(**params)
+                match = Film.objects.get(is_ghost=False, **params)
             except (Film.DoesNotExist, Film.MultipleObjectsReturned):
                 del params[field]
+                if not params:
+                    return None
             else:
                 return match
         return None

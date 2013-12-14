@@ -84,6 +84,7 @@ class FilmMixin(object):
     url_trailer = db.URLField()
 
     def clean(self):
+        # cleanup titles
         self.titles = [
             title for title in (
                 [self.title_main] +
@@ -91,7 +92,11 @@ class FilmMixin(object):
             )
             if title  # filter out accidental Nones
         ]
-        self.directors = list(frozenset(self.directors))
+
+        # cleanup directors
+        self.directors = list(frozenset(
+            director for director in self.directors if director
+        ))
 
     def __unicode__(self):
         if self.year:
@@ -164,10 +169,6 @@ class Film(db.SaveOverwriteMixin, FilmMixin, db.Document):
 
     def clean(self):
         super(Film, self).clean()
-        if not self.is_ghost and not self.year:
-            raise db.ValidationError(
-                'Only ghost films can be without release year.'
-            )
         if self.year:
             self.slug = slugify(self.title_main + '-' + str(self.year))
         else:

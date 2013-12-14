@@ -33,7 +33,7 @@ class SyncShowtimes(Command):
                     query.delete()
                 # else it's suspicious situation, better don't delete anything
 
-            log.info('Scraping: created %d showtimes', counter)
+            log.info('Scraping: synchronized %d showtimes', counter)
 
 
 class SyncPairing(Command):

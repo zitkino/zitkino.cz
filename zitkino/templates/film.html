@@ -25,12 +25,15 @@
             </div>
         </div>
         <ul class="info">
+                {% if film.links %}
                 <li>
+
                     <i class="fa fa-external-link fa-fw fa-2x"></i>
                     {% for name, url in film.links.items() %}
                         <a href="{{ url }}" target="_blank">{{ name }}</a>{% if not loop.last %},{% endif %}
                     {% endfor %}
                 </li>
+                {% endif %}
                 {% if film.length %}
                 <li>
                     <span title="{{ film.length }}m">
