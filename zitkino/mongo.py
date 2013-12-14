@@ -152,7 +152,9 @@ class SaveOverwriteMixin(object):
                 continue
             if key in exclude:
                 continue
-            data['set__' + key] = self._get_field(key).to_mongo(value)
+            if value is not None:
+                value = self._get_field(key).to_mongo(value)
+            data['set__' + key] = value
 
         # perform upsert
         query.update_one(upsert=True, **data)

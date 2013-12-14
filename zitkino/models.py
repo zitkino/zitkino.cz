@@ -255,6 +255,7 @@ class ScrapedFilm(FilmMixin, db.EmbeddedDocument):
         )
 
     def to_ghost(self):
+        self.clean()
         film = Film(
             is_ghost=True,
             title_main=self.title_main,
