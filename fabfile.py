@@ -71,7 +71,7 @@ def deploy():
         local('git checkout deploy')
 
         # build and commit static files
-        with shell_env(PYTHONDONTWRITEBYTECODE=1):
+        with shell_env(PYTHONDONTWRITEBYTECODE='1'):
             local('python manage.py assets -q --parse-templates build')
         local('git add --force ' + os.path.join(static_dir, 'css/packed.css'))
         local('git add --force ' + os.path.join(static_dir, 'js/packed.js'))
