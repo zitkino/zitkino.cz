@@ -82,14 +82,14 @@ def prettify_url(value):
 @app.template_filter()
 def map_link_url(coords=None, name=None):
     """Construct link to maps."""
-    q = ''
+    q = u''
     if coords:
-        q += '{},{}'.format(*coords)
+        q += u'{},{}'.format(*coords)
         if name:
-            q += ' ({})'.format(name)
+            q += u' ({})'.format(name)
     elif name:
-        q += '{}, Brno'.format(name)
-    return 'https://maps.google.com/maps?q={}&hl=cs'.format(urlencode(q))
+        q += u'{}, Brno'.format(name)
+    return u'https://maps.google.com/maps?q={}&hl=cs'.format(urlencode(q))
 
 
 @app.template_filter()
@@ -117,6 +117,8 @@ def film_length(minutes):
 
 @app.template_filter()
 def film_rating_icon_class(rating):
+    if rating is None:
+        return 'fa-question'
     if rating >= 80:
         return 'fa-star'
     if 85 > rating >= 65:

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 
+from zitkino import http
 from zitkino import parsers
-from zitkino.utils import download
 from zitkino.models import Cinema, Showtime, ScrapedFilm
 
 from . import scrapers
@@ -22,16 +22,14 @@ class Scraper(object):
 
     url = 'http://www.kultura-brno.cz/cs/film/program-kina-art'
     title_blacklist = [u'Kinové prázdniny', u'KINO NEHRAJE']
-    tags_map = {
-        u'SEN:': 'seniors',
-        u'ART DĚTEM:': 'children',
-    }
+
+    tags = {u'malý sál': None}
 
     def __call__(self):
         return self._parse_table(self._scrape_table())
 
     def _scrape_table(self):
-        resp = download(self.url)
+        resp = http.get(self.url)
         html = parsers.html(resp.content, base_url=resp.url)
         return html.cssselect('#main .film_table tr')
 
@@ -42,7 +40,7 @@ class Scraper(object):
                 if showtime:
                     yield showtime
             for subrow in row[3].split('br'):  # small hall
-                showtime = self._parse_row(row, subrow, tags=['small_hall'])
+                showtime = self._parse_row(row, subrow, tags=[u'malý sál'])
                 if showtime:
                     yield showtime
 
@@ -64,6 +62,14 @@ class Scraper(object):
 
         return elements
 
+    def _parse_tag(self, el):
+        name = el.text_content().strip(':')
+        if name not in self.tags:
+            resp = http.get(el.link())
+            html = parsers.html(resp.content, base_url=resp.url)
+            self.tags[name] = html.cssselect_first('#main h1').text_content()
+        return name, self.tags[name]
+
     def _parse_row(self, row, subrow, tags=None):
         elements = self._parse_subrow(subrow)
 
@@ -82,10 +88,10 @@ class Scraper(object):
         booking_el = elements.get('booking')
         url_booking = booking_el.link() if booking_el is not None else None
 
-        tags = tags or []
+        tags = {tag: self.tags[tag] for tag in (tags or [])}
         tag_el = elements.get('tag')
         if tag_el is not None:
-            tags.append(self.tags_map.get(tag_el.text_content()))
+            tags.update([self._parse_tag(tag_el)])
 
         return Showtime(
             cinema=cinema,

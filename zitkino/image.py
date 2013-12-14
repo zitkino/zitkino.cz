@@ -8,9 +8,10 @@ try:
 except ImportError:
     from StringIO import StringIO
 
-import requests
 from flask import send_file, request
 from PIL import Image as PILImage, ImageEnhance
+
+from . import http
 
 
 class BaseImage(object):
@@ -77,8 +78,7 @@ class Image(BaseImage):
     @classmethod
     def from_url(cls, url):
         """Download an image and provide it as memory stream."""
-        response = requests.get(url)
-        response.raise_for_status()
+        response = http.get(url)
         return cls(StringIO(response.content))
 
 

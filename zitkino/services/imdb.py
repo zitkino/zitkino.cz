@@ -3,11 +3,9 @@
 
 import re
 
-from requests import HTTPError
-
+from zitkino import http
 from zitkino import parsers
 from zitkino.models import Film
-from zitkino.utils import download
 
 from . import BaseFilmID, BaseFilmService
 
@@ -25,8 +23,8 @@ class ImdbFilmService(BaseFilmService):
 
     def lookup(self, url):
         try:
-            resp = download(url)
-        except HTTPError as e:
+            resp = http.get(url)
+        except http.HTTPError as e:
             if e.response.status_code == 404:
                 return None  # there is no match
             raise

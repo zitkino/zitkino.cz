@@ -6,8 +6,8 @@ from datetime import date, time, datetime
 
 import times
 
+from zitkino import http
 from zitkino import parsers
-from zitkino.utils import download
 from zitkino.models import Cinema, Showtime, ScrapedFilm
 
 from . import scrapers
@@ -37,7 +37,7 @@ class Scraper(object):
         return self._parse_html(self._scrape_html())
 
     def _scrape_html(self):
-        resp = download(self.url)
+        resp = http.get(self.url)
         return parsers.html(resp.content, base_url=resp.url)
 
     def _parse_html(self, html):

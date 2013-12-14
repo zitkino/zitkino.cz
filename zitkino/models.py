@@ -8,11 +8,11 @@ from collections import OrderedDict
 
 import times
 from unidecode import unidecode
-from requests import RequestException
 
 from . import db
 from .image import Image
 from .utils import slugify
+from .http import RequestException
 
 
 class Cinema(db.Document):
@@ -308,9 +308,9 @@ class Showtime(db.Document):
     film = db.ReferenceField(Film, dbref=False, reverse_delete_rule=db.DENY)
     film_scraped = db.EmbeddedDocumentField(ScrapedFilm, required=True)
     starts_at = db.DateTimeField(required=True)
-    tags = db.ListField(db.StringField())  # dubbing, 3D, etc.
     url_booking = db.URLField()
     scraped_at = db.DateTimeField(required=True, default=lambda: times.now())
+    tags = db.TagsField(default={})
 
     @property
     def is_paired(self):
@@ -342,9 +342,6 @@ class Showtime(db.Document):
     @classmethod
     def unpaired(cls):
         return (s for s in cls.objects.all() if not s.is_paired)
-
-    def clean(self):
-        self.tags = tuple(frozenset(tag for tag in self.tags if tag))
 
     def __unicode__(self):
         return u'{} | {} | {}'.format(

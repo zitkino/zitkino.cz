@@ -73,8 +73,8 @@
                                 </a>
                             </td>
                             <td class="tags">
-                                {% for tag in showtime.tags %}
-                                    <span class="label label-default">{{ tag }}</span>
+                                {% for tag, description in showtime.tags.items() %}
+                                    <span class="label label-default"{% if description %} title="{{ description }}"{% endif %}>{{ tag }}</span>
                                 {% endfor %}
                             </td>
                         </tr>

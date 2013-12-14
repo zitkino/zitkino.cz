@@ -48,6 +48,7 @@ class SyncPairing(Command):
         for showtime in Showtime.unpaired():
             with log.pass_on_exception():
                 film = showtime.film_scraped
+
                 match = pair(film)
                 if match:
                     log.info(u'Pairing: %s ← %s', film, match)

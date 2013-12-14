@@ -8,8 +8,9 @@ from datetime import datetime, date, time
 import times
 from dateutil import rrule
 
+from zitkino import http
 from zitkino import parsers
-from zitkino.utils import download, clean_whitespace
+from zitkino.utils import clean_whitespace
 from zitkino.models import Cinema, Showtime, ScrapedFilm
 
 from zitkino.scrapers import scrapers
@@ -141,7 +142,7 @@ class Scraper(object):
         """Downloads and scrapes text of HTML elements, each with film
         header line.
         """
-        resp = download(self.url)
+        resp = http.get(self.url)
         html = parsers.html(resp.content, base_url=resp.url)
 
         for el in html.cssselect('.contentpaneopen strong'):
@@ -287,6 +288,6 @@ class Scraper(object):
                     ),
                     starts_at=starts_at,
                     url_booking=self.url_booking,
-                    tags=info.tags,
+                    tags={tag: None for tag in info.tags},
                     directors=info.directors,
                 )
