@@ -60,6 +60,6 @@ Normálně na tom furt bócháme.
 ## License: MIT
 
 © 2012 Jan Javorek &lt;<a
-href="mailto:jan.javorek&#64;gmail.com">jan.javorek&#64;gmail.com</a>&gt;
+href="mailto:mail&#64;honzajavorek.cz">mail&#64;honzajavorek.cz</a>&gt;
 
 Žít kino je licencováno pod [MIT license](https://en.wikipedia.org/wiki/MIT_License).
