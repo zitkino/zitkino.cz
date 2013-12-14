@@ -80,6 +80,8 @@ class Scraper(object):
         if title_main in self.title_blacklist:
             return None
 
+        url = title_el.link()
+
         starts_at = parsers.date_time_year(
             row.cssselect('.film_table_datum')[0].text_content(),
             subrow.cssselect('.cas')[0].text_content(),
@@ -98,8 +100,10 @@ class Scraper(object):
             film_scraped=ScrapedFilm(
                 title_scraped=title_main,
                 titles=[title_main],
+                url=url,
             ),
             starts_at=starts_at,
             tags=tags,
+            url=self.url,
             url_booking=url_booking,
         )

@@ -23,7 +23,10 @@ cinema = Cinema(
 )
 
 
-FilmInfo = namedtuple('FilmInfo', ['title', 'tags'])
+Row = namedtuple('Row', ['element', 'url'])
+
+
+FilmInfo = namedtuple('FilmInfo', ['title', 'tags', 'url'])
 
 
 @scrapers.register(cinema)
@@ -48,10 +51,10 @@ class Scraper(object):
     def __call__(self):
         date = None
         for row in self._scrape_rows():
-            if row.has_class('day'):
-                date = parsers.date_cs(row.text_content())
+            if row.element.has_class('day'):
+                date = parsers.date_cs(row.element.text_content())
             else:
-                yield self._parse_row(row, date)
+                yield self._parse_row(row.element, date, row.url)
 
     def _scrape_rows(self):
         """Generates individual table rows of cinema's calendar."""
@@ -61,7 +64,7 @@ class Scraper(object):
             resp = http.get(url)
             html = parsers.html(resp.content, base_url=url)
             for el in html.cssselect('#content table tr'):
-                yield el
+                yield Row(el, url)
 
             pagination = html.cssselect('#classic-paging a.forward')
             if pagination:
@@ -81,7 +84,9 @@ class Scraper(object):
         """Takes element with film's name and link to a page with details,
         returns object with film's details.
         """
-        title_main = el.xpath('.//a')[0].text_content()
+        title_el = el.xpath('.//a')[0]
+        title_main = title_el.text_content()
+        url = title_el.link()
 
         tags = []
         for regexp, tag in self.tag_re:
@@ -89,7 +94,7 @@ class Scraper(object):
                 tags.append(tag)
                 title_main = regexp.sub('', title_main).strip()
 
-        return FilmInfo(title_main, tags)
+        return FilmInfo(title_main, tags, url)
 
     def _parse_tags_from_icons(self, el):
         """Takes element with icons, turns them into tags."""
@@ -109,11 +114,11 @@ class Scraper(object):
                 icon.cssselect_first('.cycle_name.full_name').text_content()
             )
 
-    def _parse_row(self, row, date):
+    def _parse_row(self, row, date, url):
         """Takes single row and date information, returns
         :class:`~zitkino.models.Showtime` object.
         """
-        st = Showtime(cinema=cinema)
+        st = Showtime(cinema=cinema, url=url)
         tags = {}
 
         for cell in row:
@@ -126,6 +131,7 @@ class Scraper(object):
                 st.film_scraped = ScrapedFilm(
                     title_scraped=info.title,
                     titles=[info.title],
+                    url=info.url,
                 )
                 tags.update({tag: None for tag in info.tags})
 

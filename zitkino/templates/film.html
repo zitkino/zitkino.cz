@@ -62,7 +62,7 @@
                                     {{ showtime.starts_at|time }}
                                 </time>
                             </th>
-                            <td class="icons">
+                            <td class="icon">
                                 {% if showtime.cinema.is_exclusive %}
                                     <i class="fa fa-heart fa-fw" title="výjimečné, dočasné, mimořádné"></i>
                                 {% endif %}
@@ -71,11 +71,23 @@
                                 <a href="{{ url_for('cinema', cinema_slug=showtime.cinema.slug) }}#day-{{ starts_at_day|date_iso }}">
                                     {{ showtime.cinema.name }}
                                 </a>
+                                {% if showtime.tags %}
+                                    <span class="tags">
+                                        {% for tag, description in showtime.tags.items() %}
+                                            <span class="label label-default"{% if description %} title="{{ description }}"{% endif %}>{{ tag }}</span>
+                                        {% endfor %}
+                                    </span>
+                                {% endif %}
                             </td>
                             <td class="tags">
                                 {% for tag, description in showtime.tags.items() %}
                                     <span class="label label-default"{% if description %} title="{{ description }}"{% endif %}>{{ tag }}</span>
                                 {% endfor %}
+                            </td>
+                            <td class="link">
+                                <a href="{{ showtime.url }}" target="_blank" title="ověřit přímo na stránce kina">
+                                    <i class="fa fa-external-link fa-fw"></i>
+                                </a>
                             </td>
                         </tr>
                     {% endfor %}

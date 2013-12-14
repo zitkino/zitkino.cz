@@ -119,12 +119,19 @@ class Film(FilmMixin, db.Document):
     @property
     def links(self):
         links = OrderedDict()
+
+        # data sources
         if self.url_csfd is not None:
             links[u'ČSFD'] = self.url_csfd
         if self.url_imdb is not None:
             links[u'IMDb'] = self.url_imdb
         if self.url_synopsitv is not None:
             links[u'SynopsiTV'] = self.url_synopsitv
+
+        # cinemas
+        for st in self.showtimes_upcoming.filter(film_scraped__url__ne=None):
+            links[st.cinema.name] = st.film_scraped.url
+
         return links
 
     @property
@@ -258,6 +265,7 @@ class ScrapedFilm(FilmMixin, db.EmbeddedDocument):
     """Raw representation of film as it was scraped."""
 
     title_scraped = db.StringField(required=True)
+    url = db.URLField()
 
     def clean(self):
         title = self.title_scraped or self.title_main
@@ -308,6 +316,7 @@ class Showtime(db.Document):
     film = db.ReferenceField(Film, dbref=False, reverse_delete_rule=db.DENY)
     film_scraped = db.EmbeddedDocumentField(ScrapedFilm, required=True)
     starts_at = db.DateTimeField(required=True)
+    url = db.URLField(required=True)
     url_booking = db.URLField()
     scraped_at = db.DateTimeField(required=True, default=lambda: times.now())
     tags = db.TagsField(default={})

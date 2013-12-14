@@ -27,7 +27,7 @@ def index(more):
 
     # prepare data for listing of films
     data = OrderedDict()
-    for showtime in Showtime.upcoming():
+    for showtime in Showtime.upcoming.filter(film__ne=None):
         day = showtime.starts_at_day
         data.setdefault(day, {}).setdefault(showtime.film, []).append(showtime)
 
@@ -66,7 +66,7 @@ def film(film_slug):
 
     # prepare data for listing of films
     data = OrderedDict()
-    for showtime in film.showtimes_upcoming.filter():
+    for showtime in film.showtimes_upcoming.all():
         day = showtime.starts_at_day
         data.setdefault(day, []).append(showtime)
 

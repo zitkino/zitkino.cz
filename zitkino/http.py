@@ -25,7 +25,7 @@ class Session(requests.Session):
         self.headers['User-Agent'] = app.config['USER_AGENT']
 
     def request(self, method, url, *args, **kwargs):
-        log.debug('HTTP: %s - %s.', method.upper(), urlparse(url).netloc)
+        log.debug('HTTP: %s %s', method.upper(), urlparse(url).netloc)
         try:
             # set default timeout
             kwargs.setdefault('timeout', app.config['HTTP_TIMEOUT'])

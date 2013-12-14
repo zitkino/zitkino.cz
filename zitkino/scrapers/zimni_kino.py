@@ -78,4 +78,5 @@ class Scraper(object):
                             titles=[title_main],
                         ),
                         starts_at=starts_at,
+                        url=self.url,
                     )

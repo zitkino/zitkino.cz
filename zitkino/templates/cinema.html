@@ -48,12 +48,15 @@
                                     {{ showtime.starts_at|time }}
                                 </time>
                             </th>
-                            <td class="icons">
+                            <td class="icon">
                                 {% if not showtime.film.rating is none %}
                                     <i class="fa {{ showtime.film.rating|film_rating_icon_class }} fa-fw" title="{{ showtime.film.ratings|film_ratings }}"></i>
                                 {% endif %}
                             </td>
                             <td class="film">
+                                <a href="{{ url_for('film', film_slug=showtime.film.slug) }}#day-{{ starts_at_day|date_iso }}"{% if showtime.film.title_alt %} title="{{ showtime.film.title_alt }}"{% endif %}>
+                                    {{- showtime.film.title_main -}}
+                                </a>
                                 {% if showtime.tags %}
                                     <span class="tags">
                                         {% for tag, description in showtime.tags.items() %}
@@ -61,14 +64,16 @@
                                         {% endfor %}
                                     </span>
                                 {% endif %}
-                                <a href="{{ url_for('film', film_slug=showtime.film.slug) }}#day-{{ starts_at_day|date_iso }}"{% if showtime.film.title_alt %} title="{{ showtime.film.title_alt }}"{% endif %}>
-                                    {{- showtime.film.title_main -}}
-                                </a>
                             </td>
                             <td class="tags">
                                 {% for tag, description in showtime.tags.items() %}
                                     <span class="label label-default"{% if description %} title="{{ description }}"{% endif %}>{{ tag }}</span>
                                 {% endfor %}
+                            </td>
+                            <td class="link">
+                                <a href="{{ showtime.url }}" target="_blank" title="ověřit přímo na stránce kina">
+                                    <i class="fa fa-external-link fa-fw"></i>
+                                </a>
                             </td>
                         </tr>
                     {% endfor %}

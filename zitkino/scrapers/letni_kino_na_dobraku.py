@@ -83,4 +83,5 @@ class Scraper(object):
             ),
             starts_at=starts_at,
             tags={tag: None for tag in tags},
+            url='http://kinonadobraku.cz',
         )
