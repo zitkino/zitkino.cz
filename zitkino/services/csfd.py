@@ -7,11 +7,10 @@ import urlparse
 from collections import namedtuple
 
 from fuzzywuzzy import fuzz
-from requests import HTTPError, TooManyRedirects
 
+from zitkino import http
 from zitkino import parsers
 from zitkino.models import Film
-from zitkino.utils import download
 
 from . import BaseFilmID, BaseFilmService
 
@@ -32,25 +31,11 @@ class CsfdFilmService(BaseFilmService):
     year_re = re.compile(r'(\d{4})')
     length_re = re.compile(r'(\d+)\s*min')
 
-    def _download(self, *args, **kwargs):
-        """Dealing with various ČSFD's network issues and eventually
-        trying to perform requests again.
-        """
-        try:
-            return download(*args, **kwargs)
-
-        except TooManyRedirects:
-            return self._download(*args, **kwargs)
-        except HTTPError as e:
-            if e.response.status_code in (502, 403):
-                return self._download(*args, **kwargs)
-            raise
-
-    def search(self, titles, year=None):
+    def search(self, titles, year=None, directors=None):
         year = int(year) if year else None
 
         for title in titles:
-            resp = self._download(
+            resp = http.get(
                 'http://www.csfd.cz/hledat/complete-films/?q='
                 + urllib.quote_plus(unicode(title).encode('utf-8'))
             )
@@ -68,7 +53,7 @@ class CsfdFilmService(BaseFilmService):
             results = self._iterparse_search_results(html, year)
 
             for result in results:
-                similarity_ratio = fuzz.partial_ratio(
+                similarity_ratio = fuzz.ratio(
                     title,
                     self._parse_matched_title(result)
                 )
@@ -102,8 +87,8 @@ class CsfdFilmService(BaseFilmService):
 
     def lookup(self, url):
         try:
-            resp = self._download(url)
-        except HTTPError as e:
+            resp = http.get(url)
+        except http.HTTPError as e:
             if e.response.status_code == 404:
                 return None  # there is no match
             raise

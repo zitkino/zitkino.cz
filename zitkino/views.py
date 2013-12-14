@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
 
-from collections import OrderedDict
 import os
+from collections import OrderedDict
 
-from flask import request, render_template, send_from_directory, abort
+from flask import request, render_template, send_from_directory
 
-from . import app
-from .image import generated_image, Image
-from .models import Showtime, Film
+from . import app, parsers, log
+from .models import Showtime, Film, Cinema
+from .image import render_image, Image, PlaceholderImage
 
 
 @app.context_processor
@@ -19,18 +19,77 @@ def inject_config():
     }
 
 
-@app.route('/')
-def index():
-    upcoming = Showtime.upcoming().order_by('title_main', 'starts_at')
+@app.route('/more/', defaults={'more': True})
+@app.route('/', defaults={'more': False})
+def index(more):
+    less_items = 2
+    cinemas = set()
+
+    # prepare data for listing of films
     data = OrderedDict()
-    seen = set()
-    for showtime in upcoming:
-        key = showtime.starts_at_day, showtime.cinema.slug, showtime.film
-        if key in seen:
-            continue
-        seen.add(key)
-        data.setdefault(showtime.starts_at_day, []).append(showtime)
-    return render_template('index.html', data=data)
+    for showtime in Showtime.upcoming.filter(film__ne=None):
+        day = showtime.starts_at_day
+        data.setdefault(day, {}).setdefault(showtime.film, []).append(showtime)
+
+    days = data.keys() if more else data.keys()[:less_items]
+    for day, films in data.items():
+        if day in days:
+            films = OrderedDict(sorted(
+                films.items(),
+                key=lambda (f, s): f.rating, reverse=True
+            ))
+            for film, showtimes in films.items():
+                films[film] = sorted(showtimes, key=lambda s: s.starts_at)
+                cinemas.update(s.cinema for s in showtimes)
+            data[day] = films
+        else:
+            del data[day]
+
+    # cinemas
+    cinemas = sorted(
+        (c for c in cinemas if not c.is_multiplex),
+        key=lambda c: (c.priority, c.name)
+    )
+
+    # stats
+    today_any_showtimes = bool(Showtime.today().count())
+
+    # render the template
+    return render_template('index.html', data=data, more=more,
+                           cinemas=cinemas, less_items=less_items,
+                           today_any_showtimes=today_any_showtimes)
+
+
+@app.route('/film/<film_slug>')
+def film(film_slug):
+    film = Film.objects.get_or_404(slug=film_slug)
+
+    # prepare data for listing of films
+    data = OrderedDict()
+    for showtime in film.showtimes_upcoming.all():
+        day = showtime.starts_at_day
+        data.setdefault(day, []).append(showtime)
+
+    for day, showtimes in data.items():
+        data[day] = sorted(showtimes, key=lambda s: s.starts_at)
+
+    return render_template('film.html', film=film, data=data)
+
+
+@app.route('/cinema/<cinema_slug>-brno')
+def cinema(cinema_slug):
+    cinema = Cinema.objects.get_or_404(slug=cinema_slug)
+
+    # prepare data for listing of films
+    data = OrderedDict()
+    for showtime in cinema.showtimes_upcoming.filter(film__ne=None):
+        day = showtime.starts_at_day
+        data.setdefault(day, []).append(showtime)
+
+    for day, showtimes in data.items():
+        data[day] = sorted(showtimes, key=lambda s: s.starts_at)
+
+    return render_template('cinema.html', cinema=cinema, data=data)
 
 
 @app.route('/favicon.ico')
@@ -42,21 +101,40 @@ def static_files():
     return send_from_directory(static_dir, request.path.lstrip('/'))
 
 
-@app.route('/images/poster/<film_id>.jpg')
-@generated_image
-def poster(film_id):
-    film = Film.objects.get_or_404(id=film_id)
-    if not film.url_poster:
-        abort(404)
+@app.route('/images/poster/<film_slug>.jpg')
+def poster(film_slug):
+    try:
+        resize = parsers.resize(request.args.get('resize', 'x'))
+        crop = request.args.get('crop')
 
-    w, h = request.args.get('resize', 'x').split('x')
-    crop = request.args.get('crop')
+        film = Film.objects.get_or_404(slug=film_slug)
+        if film.url_poster:
+            img = Image.from_url(film.url_poster)
+            return render_image(img, resize=resize, crop=crop)
+    except Exception:
+        log.exception()
 
-    img = Image.from_url(film.url_poster)
-    if crop:
-        img.crop(int(crop))
-    if w and h:
-        img.resize_crop(int(w), int(h))
-    img.sharpen()
+    img = PlaceholderImage('#EEE', size=resize)
+    return render_image(img, crop=crop)
 
-    return img.to_stream()
+
+@app.route('/images/cinema-photo/<cinema_slug>.jpg')
+def cinema_photo(cinema_slug):
+    try:
+        resize = parsers.resize(request.args.get('resize', 'x'))
+        crop = request.args.get('crop')
+
+        cinema = Cinema.objects.get_or_404(slug=cinema_slug)
+        filename = os.path.join(
+            app.root_path, 'static/images', cinema.slug + '.jpg'
+        )
+
+        if os.path.exists(filename):
+            with open(filename) as f:
+                img = Image(f)
+                return render_image(img, resize=resize, crop=crop)
+    except Exception:
+        log.exception()
+
+    img = PlaceholderImage('#EEE', size=resize)
+    return render_image(img, crop=crop)

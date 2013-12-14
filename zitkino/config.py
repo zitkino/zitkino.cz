@@ -49,7 +49,7 @@ GA_CODE = 'UA-1316071-11'
 ### Scraping
 
 USER_AGENT = 'zitkino/{0} (+http://zitkino.cz)'.format(version)
-HTTP_TIMEOUT = 30
+HTTP_TIMEOUT = 5
 
 
 ### SynopsiTV credentials

@@ -2,40 +2,38 @@
 
 
 from hashlib import sha1
-from functools import wraps
 
 try:
     from cStringIO import StringIO
 except ImportError:
     from StringIO import StringIO
 
-import requests
 from flask import send_file, request
 from PIL import Image as PILImage, ImageEnhance
 
+from . import http
 
-class Image(object):
 
-    def __init__(self, f):
-        image = PILImage.open(f)
-        if image.mode != 'RGB':
-            image = image.convert('RGB')
-        self.image = image
+class BaseImage(object):
 
     @property
     def size(self):
         return self.image.size
 
-    def resize_crop(self, width, height):
+    def resize(self, width, height):
         image = self.image
-        is_rect = width == height
         old_w, old_h = image.size
 
-        # resize by shorter side
-        if width < height or (is_rect and old_w < old_h):
-            size = (width, old_h * width / old_w)
-        else:
+        # resize
+        keep_height = (
+            (old_w < old_h and width > height)
+            or
+            (old_w > old_h and width < height)
+        )
+        if keep_height:
             size = (old_w * height / old_h, height)
+        else:
+            size = (width, old_h * width / old_w)
         image = image.resize(size, PILImage.ANTIALIAS)
 
         # crop the rest, centered
@@ -60,26 +58,50 @@ class Image(object):
         sharpener = ImageEnhance.Sharpness(self.image)
         self.image = sharpener.enhance(sharpness)
 
-    def to_stream(self):
+    def to_stream(self, image_format='JPEG', **kwargs):
+        if image_format == 'JPEG' and not kwargs:
+            kwargs['quality'] = 100
         img_io = StringIO()
-        self.image.save(img_io, 'JPEG', quality=100)
+        self.image.save(img_io, image_format.upper(), **kwargs)
         img_io.seek(0)
         return img_io
+
+
+class Image(BaseImage):
+
+    def __init__(self, f):
+        image = PILImage.open(f)
+        if image.mode != 'RGB':
+            image = image.convert('RGB')
+        self.image = image
 
     @classmethod
     def from_url(cls, url):
         """Download an image and provide it as memory stream."""
-        response = requests.get(url)
-        response.raise_for_status()
+        response = http.get(url)
         return cls(StringIO(response.content))
 
 
-def generated_image(f):
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        bytestring = f(*args, **kwargs).read()
-        response = send_file(StringIO(bytestring), mimetype='image/jpeg')
-        response.set_etag(sha1(bytestring).hexdigest())
-        response.make_conditional(request)
-        return response
-    return wrapper
+class PlaceholderImage(BaseImage):
+
+    def __init__(self, color='#000', size=None):
+        image = PILImage.new('RGB', size or (1, 1), color)
+        self.image = image
+
+
+def render_image(img, image_format='jpeg', resize=None, crop=None,
+                 **format_options):
+    if crop:
+        img.crop(int(crop))
+    if resize:
+        img.resize(*resize)
+    if crop or resize:
+        img.sharpen()
+
+    bytes_ = img.to_stream(image_format.upper(), **format_options).read()
+    mimetype = 'image/' + image_format.lower()
+
+    response = send_file(StringIO(bytes_), mimetype=mimetype)
+    response.set_etag(sha1(bytes_).hexdigest())
+    response.make_conditional(request)
+    return response

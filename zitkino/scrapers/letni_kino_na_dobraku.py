@@ -5,8 +5,8 @@ import re
 
 import times
 
+from zitkino import http
 from zitkino import parsers
-from zitkino.utils import download
 from zitkino.models import Cinema, Showtime, ScrapedFilm
 
 from . import scrapers
@@ -27,8 +27,8 @@ class Scraper(object):
     url = ('https://www.google.com/calendar/ical/n6a7pqdcgeprq9v7pf'
            '84dk3djo%40group.calendar.google.com/public/basic.ics')
     tags_map = {
-        u'čes. tit.': 'subtitles',
-        u'od 15 let': 'age15',
+        u'čes. tit.': u'české titulky',
+        u'od 15 let': u'od 15 let',
     }
     desc_re = re.compile(r'''
         (?P<title>([^\n]+)\n)?  # first line with alternative title
@@ -45,7 +45,7 @@ class Scraper(object):
             yield self._parse_event(event)
 
     def _scrape_events(self):
-        resp = download(self.url)
+        resp = http.get(self.url)
         cal = parsers.ical(resp.content)
         for event in cal.walk():
             if event.name == 'VEVENT':
@@ -68,17 +68,20 @@ class Scraper(object):
             year = int(match.group('year'))
             length = int(match.group('min'))
 
+            # TODO scrape tags according to new implementation of tags
+            # presented in https://github.com/honzajavorek/zitkino.cz/issues/97
             tags = [self.tags_map.get(t.strip()) for t
                     in match.group('tags').split(',')]
 
         return Showtime(
             cinema=cinema,
             film_scraped=ScrapedFilm(
-                title_main=title_main,
+                title_scraped=title_main,
                 titles=titles,
                 year=year,
                 length=length,
             ),
             starts_at=starts_at,
-            tags=tags,
+            tags={tag: None for tag in tags},
+            url='http://kinonadobraku.cz',
         )

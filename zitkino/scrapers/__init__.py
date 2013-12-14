@@ -20,10 +20,10 @@ class ScraperRepository(dict):
         cinema.clean()
         if cinema.slug not in self:
             try:
-                found = Cinema.objects.filter(slug=cinema.slug).first()
-                if found:
-                    cinema.id = found.id
-                    cinema.save()
+                cinema.sync(
+                    Cinema.objects.filter(slug=cinema.slug).first()
+                )
+                cinema.save()
             except db.ConnectionError:
                 # sometimes it is necessary to import scrapers without
                 # connection to database
@@ -52,7 +52,7 @@ from . import (  # NOQA
     kino_scala,
     kino_art,
     kino_lucerna,
+    zimni_kino,
     # letni_kino_na_dobraku,
     # rwe_letni_kino_na_riviere,
-    zimni_kino,
 )

@@ -12,10 +12,10 @@ Je potřeba MongoDB, které nainstalujete podle návodů na jejich webu
 ([Ubuntu](http://docs.mongodb.org/manual/tutorial/install-mongodb-on-debian-or-ubuntu-linux/),
 [Fedora](http://docs.mongodb.org/manual/tutorial/install-mongodb-on-red-hat-centos-or-fedora-linux/)).
 
-Dále je nutné mít Scss kompilátor - použijte originál napsaný v Ruby:
+Dále je nutné mít LESS kompilátor - použijte originál napsaný v JavaScriptu:
 
 ```bash
-$ gem install sass
+$ sudo apt-get install -y node-less
 ```
 
 No a potom už stačí jen nainstalovat Žít kino ze složky projektu:

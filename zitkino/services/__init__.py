@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
 
+from zitkino.log import pass_on_exception
+
+
 class BaseFilmID(unicode):
     """Film's ID."""
 
@@ -21,7 +24,7 @@ class BaseFilmService(object):
     name = None
     url_attr = None
 
-    def search(self, titles, year=None):
+    def search(self, titles, year=None, directors=None):
         """Find a film by guessing."""
         raise NotImplementedError
 
@@ -32,26 +35,42 @@ class BaseFilmService(object):
     def lookup_obj(self, film):
         """Find a film by :class:`~zitkino.models.Film` object."""
         if self.url_attr:
-            url = getattr(film, self.url_attr)
+            url = getattr(film, self.url_attr, None)
             if url:
                 return self.lookup(url)
-        return self.search(film.titles, film.year)
+        return self.search(film.titles,
+                           year=film.year, directors=film.directors)
 
 
+from .database import DatabaseFilmService
 from .csfd import CsfdFilmService
 from .imdb import ImdbFilmService
 from .synopsitv import SynopsitvFilmService
 
 
-def pair(film):
-    service = CsfdFilmService()
-    if film.url_csfd:
-        service.lookup(film.url_csfd)
-    return service.search([film.title_normalized] + film.titles, film.year)
-
-
 services = [
+    DatabaseFilmService(),
     CsfdFilmService(),
     ImdbFilmService(),
     SynopsitvFilmService(),
 ]
+
+
+def search(film, exclude=None):
+    exclude = exclude or []
+    for service in services:
+        if service.__class__ not in exclude:
+            with pass_on_exception():
+                try:
+                    match = service.lookup_obj(film)
+                    if match:
+                        yield match
+                except NotImplementedError:
+                    pass
+
+
+def pair(*args, **kwargs):
+    try:
+        return next(search(*args, **kwargs))
+    except StopIteration:
+        return None

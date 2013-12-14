@@ -3,11 +3,9 @@
 
 import re
 
-from requests import HTTPError
-
+from zitkino import http
 from zitkino import parsers
 from zitkino.models import Film
-from zitkino.utils import download
 
 from . import BaseFilmID, BaseFilmService
 
@@ -21,10 +19,12 @@ class ImdbFilmService(BaseFilmService):
     name = u'IMDb'
     url_attr = 'url_imdb'
 
+    year_re = re.compile(r'(\d{4})')
+
     def lookup(self, url):
         try:
-            resp = download(url)
-        except HTTPError as e:
+            resp = http.get(url)
+        except http.HTTPError as e:
             if e.response.status_code == 404:
                 return None  # there is no match
             raise
@@ -43,9 +43,11 @@ class ImdbFilmService(BaseFilmService):
         return html.cssselect_first('h1 [itemprop="name"]').text_content()
 
     def _parse_year(self, html):
-        return int(
-            html.cssselect_first('h1 span.nobr').text_content().strip('()')
-        )
+        text = html.cssselect_first('h1 span.nobr').text_content()
+        match = self.year_re.search(text)
+        if match:
+            return int(match.group(1))
+        return None
 
     def _parse_rating(self, html):
         star = html.cssselect_first('.star-box-giga-star')

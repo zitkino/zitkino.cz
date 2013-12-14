@@ -37,6 +37,22 @@ def date(value, relative=True):
 
 
 @app.template_filter()
+def time(value):
+    """Simple, human-readable time."""
+    return times.to_local(value, 'Europe/Prague').strftime('%H:%M')
+
+
+@app.template_filter()
+def datetime_iso(value):
+    return value.strftime('%Y-%m-%dT%H:%M:00+00:00')
+
+
+@app.template_filter()
+def date_iso(value):
+    return value.strftime('%Y-%m-%d')
+
+
+@app.template_filter()
 def email(address):
     """Obfuscate e-mail address."""
     username, server = address.split('@')
@@ -53,26 +69,69 @@ def urlencode(value):
 
 
 @app.template_filter()
-def unique(iterable, attribute=None):
-    """Filters a sequence of objects by looking at either
-    the object or the attribute and only selecting the unique ones.
-    """
-    if attribute:
-        get_value = lambda obj: getattr(obj, attribute)
-    else:
-        get_value = lambda obj: obj
-
-    values = set()
-    for obj in iterable:
-        original_len = len(values)
-        values.add(get_value(obj))
-        if original_len < len(values):
-            yield obj
+def uppercase_first(value):
+    return value[0].upper() + value[1:]
 
 
 @app.template_filter()
-def uppercase_first(value):
-    return value[0].upper() + value[1:]
+def prettify_url(value):
+    """Make given URL nice so it could be displayed to user."""
+    return re.sub(r'^(https?://)?(www\.)?', '', value).rstrip('/')
+
+
+@app.template_filter()
+def map_link_url(coords=None, name=None):
+    """Construct link to maps."""
+    q = u''
+    if coords:
+        q += u'{},{}'.format(*coords)
+        if name:
+            q += u' ({})'.format(name)
+    elif name:
+        q += u'{}, Brno'.format(name)
+    return u'https://maps.google.com/maps?q={}&hl=cs'.format(urlencode(q))
+
+
+@app.template_filter()
+def map_image_url(coords):
+    return (
+        'https://maps.googleapis.com/maps/api/staticmap'
+        '?zoom=15'
+        '&size=300x300'
+        '&maptype=roadmap'
+        '&markers=color:0xEB2D2E%7C{},{}'
+        '&sensor=false'
+        '&visual_refresh=true'
+        '&language=cs'
+        '&scale=2'
+    ).format(*coords)
+
+
+@app.template_filter()
+def film_length(minutes):
+    hours, minutes = divmod(minutes, 60)
+    if hours:
+        return '{}h {}m'.format(hours, minutes)
+    return '{}m'.format(minutes)
+
+
+@app.template_filter()
+def film_rating_icon_class(rating):
+    if rating is None:
+        return 'fa-question'
+    if rating >= 80:
+        return 'fa-star'
+    if 85 > rating >= 65:
+        return 'fa-star-half-o'
+    return 'fa-star-o'
+
+
+@app.template_filter()
+def film_ratings(ratings):
+    return u', '.join([
+        u'{}: {} %'.format(name, int(value))
+        for (name, value) in ratings.items()
+    ])
 
 
 app.template_filter()(slugify)

@@ -4,9 +4,10 @@
 import re
 import json
 
-import requests
+from fuzzywuzzy import fuzz
 
 from zitkino import app
+from zitkino import http
 from zitkino.models import Film
 
 from .imdb import ImdbFilmID
@@ -23,6 +24,8 @@ class SynopsitvFilmService(BaseFilmService):
     name = u'SynopsiTV'
     url_attr = 'url_synopsitv'
 
+    min_similarity_ratio = 90
+
     oauth_key = app.config['SYNOPSITV_OAUTH_KEY']
     oauth_secret = app.config['SYNOPSITV_OAUTH_SECRET']
     username = app.config['SYNOPSITV_USERNAME']
@@ -34,13 +37,13 @@ class SynopsitvFilmService(BaseFilmService):
     ]
 
     def __init__(self):
-        self._token = None
+        self.__token = None
 
     @property
-    def token(self):
+    def _token(self):
         """Lazy token getter."""
-        if not self._token:
-            resp = requests.post(
+        if not self.__token:
+            resp = http.post(
                 'https://api.synopsi.tv/oauth2/token/',
                 data={
                     'grant_type': 'password',
@@ -51,59 +54,72 @@ class SynopsitvFilmService(BaseFilmService):
                 },
                 auth=(self.oauth_key, self.oauth_secret)
             )
-            resp.raise_for_status()
-            self._token = json.loads(resp.content)['access_token']
-        return self._token
+            self.__token = json.loads(resp.content)['access_token']
+        return self.__token
 
-    def search(self, titles, year=None):
+    def search(self, titles, year=None, directors=None):
         for title in titles:
-            resp = requests.get(
-                'https://api.synopsi.tv/1.0/title/identify/',
-                params={
-                    'bearer_token': self.token,
-                    'file_name': title,
-                    'year': year,
-                    'title_property[]': ','.join(self.properties),
-                },
-            )
-            if resp.status_code == 404:
-                continue
-            resp.raise_for_status()
+            try:
+                resp = http.get(
+                    'https://api.synopsi.tv/1.0/title/identify/',
+                    params={
+                        'bearer_token': self._token,
+                        'file_name': title,
+                        'year': year,
+                        'title_property[]': ','.join(self.properties),
+                    },
+                )
+            except http.HTTPError as e:
+                if e.response.status_code == 404:
+                    continue
+                raise
+
             results = json.loads(resp.content)['relevant_results']
-            if results:
-                return self._create_film(results[0])
+            for result in results:
+                similarity_ratio = fuzz.ratio(title, result['name'])
+                if similarity_ratio >= self.min_similarity_ratio:
+                    return self._create_film(result)
         return None
 
     def lookup(self, url):
         title_id = SynopsitvFilmID.from_url(url)
-        resp = requests.get(
-            'https://api.synopsi.tv/1.0/title/{}/'.format(title_id),
-            params={
-                'bearer_token': self.token,
-                'title_property[]': ','.join(self.properties),
-            },
-        )
-        if resp.status_code == 404:
-            return None
-        resp.raise_for_status()
-        return self._create_film(json.loads(resp.content))
 
-    def lookup_obj(self, film):
-        if not film.url_synopsitv and film.url_imdb:
-            imdb_id = ImdbFilmID.from_url(film.url_imdb)
-            resp = requests.get(
-                'https://api.synopsi.tv/1.0/title/identify/',
+        try:
+            resp = http.get(
+                'https://api.synopsi.tv/1.0/title/{}/'.format(title_id),
                 params={
-                    'bearer_token': self.token,
-                    'imdb_id': imdb_id,
+                    'bearer_token': self._token,
                     'title_property[]': ','.join(self.properties),
                 },
             )
-            if resp.status_code != 404:
-                resp.raise_for_status()
+        except http.HTTPError as e:
+            if e.response.status_code == 404:
+                return None
+            raise
+
+        return self._create_film(json.loads(resp.content))
+
+    def lookup_obj(self, film):
+        if not getattr(film, 'url_synopsitv', None) and film.url_imdb:
+            imdb_id = ImdbFilmID.from_url(film.url_imdb)
+
+            try:
+                resp = http.get(
+                    'https://api.synopsi.tv/1.0/title/identify/',
+                    params={
+                        'bearer_token': self._token,
+                        'imdb_id': imdb_id,
+                        'title_property[]': ','.join(self.properties),
+                    },
+                )
+            except http.HTTPError as e:
+                if e.response.status_code != 404:
+                    raise
+            else:
                 results = json.loads(resp.content)['relevant_results']
                 if results:
                     return self._create_film(results[0])
+
         return super(SynopsitvFilmService, self).lookup_obj(film)
 
     def _create_film(self, result):

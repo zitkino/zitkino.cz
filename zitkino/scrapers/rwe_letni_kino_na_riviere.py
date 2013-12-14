@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 
+from zitkino import http
 from zitkino import parsers
-from zitkino.utils import download
 from zitkino.models import Cinema, Showtime, ScrapedFilm
 
 from . import scrapers
@@ -22,8 +22,8 @@ class Scraper(object):
 
     url = 'http://www.kinonariviere.cz/program'
     tags_map = {
-        u'premiéra': 'premiere',
-        u'titulky': 'subtitles',
+        u'premiéra': u'premiéra',
+        u'titulky': u'titulky',
     }
 
     def __call__(self):
@@ -31,7 +31,7 @@ class Scraper(object):
             yield self._parse_row(row)
 
     def _scrape_rows(self):
-        resp = download(self.url)
+        resp = http.get(self.url)
         html = parsers.html(resp.content, base_url=resp.url)
         return html.cssselect('.content table tr')
 
@@ -44,6 +44,8 @@ class Scraper(object):
         title_main = row[3].text_content()
         title_orig = row[4].text_content()
 
+        # TODO scrape tags according to new implementation of tags
+        # presented in https://github.com/honzajavorek/zitkino.cz/issues/97
         tags = [self.tags_map.get(t) for t
                 in (row[5].text_content(), row[6].text_content())]
 
@@ -52,10 +54,11 @@ class Scraper(object):
         return Showtime(
             cinema=cinema,
             film_scraped=ScrapedFilm(
-                title_main=title_main,
+                title_scraped=title_main,
                 titles=[title_main, title_orig],
             ),
             starts_at=starts_at,
-            tags=tags,
+            tags={tag: None for tag in tags},
+            url=self.url,
             url_booking=url_booking,
         )

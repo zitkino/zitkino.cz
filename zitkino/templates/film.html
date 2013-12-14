@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block type %}video.movie{% endblock %}
+{% block title -%}
+    {{ film.title_main }}{% if film.year %} ({{ film.year }}){% endif %}
+{%- endblock %}
+{% block description -%}
+    Všechna promítání filmu {{ film.title_main }} v Brně.
+    {%- if film.titles|length > 1 %} Alternativní názvy filmu: {{ film.titles|join(', ') }}.{% endif %}
+{%- endblock %}
+{% block image %}{{ url_for('poster', film_slug=film.slug, _external=True) }}{% endblock %}
+{% block content %}
+
+<div class="detail">
+    <div class="detail-content">
+        <div class="page-header">
+            <h2>{{ film.title_main }} {% if film.year %} <small><time datetime="{{ film.year }}">{{ film.year }}</time></small>{% endif %}</h2>
+            {% if film.title_alt %}
+                <p>{{ film.title_alt }}</p>
+            {% endif %}
+        </div>
+        <div class="thumbnail visible-xs">
+            <div class="poster">
+                <img class="lazy" data-original="{{ url_for('poster', film_slug=film.slug, resize='300x424') }}">
+                <noscript><img src="{{ url_for('poster', film_slug=film.slug, resize='300x424') }}"></noscript>
+            </div>
+        </div>
+        <ul class="info">
+                <li>
+                    <i class="fa fa-external-link fa-fw fa-2x"></i>
+                    {% for name, url in film.links.items() %}
+                        <a href="{{ url }}" target="_blank">{{ name }}</a>{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                </li>
+                {% if film.length %}
+                <li>
+                    <span title="{{ film.length }}m">
+                        <i class="fa fa-clock-o fa-fw fa-2x"></i>
+                        {{ film.length|film_length }}
+                    </span>
+                </li>
+                {% endif %}
+                {% if not film.rating is none %}
+                <li>
+                    <span title="{{ film.ratings|film_ratings }}">
+                        <i class="fa {{ film.rating|film_rating_icon_class }} fa-fw fa-2x"></i>
+                        {{ film.rating }}&nbsp;%
+                    </span>
+                </li>
+            {% endif %}
+        </ul>
+        <div class="showtimes">
+            {% for starts_at_day, showtimes in data.items() %}
+                <div class="showtime" id="day-{{ starts_at_day|date_iso }}">
+                    <h3>
+                        <time datetime="{{ starts_at_day|date_iso }}">{{ starts_at_day|date }}</time>
+                    </h3>
+                    <table class="table table-hover">
+                    {% for showtime in showtimes %}
+                        <tr>
+                            <th class="time">
+                                <time datetime="{{ showtime.starts_at|datetime_iso }}">
+                                    {{ showtime.starts_at|time }}
+                                </time>
+                            </th>
+                            <td class="icon">
+                                {% if showtime.cinema.is_exclusive %}
+                                    <i class="fa fa-heart fa-fw" title="výjimečné, dočasné, mimořádné"></i>
+                                {% endif %}
+                            </td>
+                            <td class="cinema">
+                                <a href="{{ url_for('cinema', cinema_slug=showtime.cinema.slug) }}#day-{{ starts_at_day|date_iso }}">
+                                    {{ showtime.cinema.name }}
+                                </a>
+                                {% if showtime.tags %}
+                                    <span class="tags">
+                                        {% for tag, description in showtime.tags.items() %}
+                                            <span class="label label-default"{% if description %} title="{{ description }}"{% endif %}>{{ tag }}</span>
+                                        {% endfor %}
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="tags">
+                                {% for tag, description in showtime.tags.items() %}
+                                    <span class="label label-default"{% if description %} title="{{ description }}"{% endif %}>{{ tag }}</span>
+                                {% endfor %}
+                            </td>
+                            <td class="link">
+                                <a href="{{ showtime.url }}" target="_blank" title="ověřit přímo na stránce kina">
+                                    <i class="fa fa-external-link fa-fw"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </table>
+                </div>
+            {% endfor %}
+            <div class="page-info showtimes-toggle">
+                <ul class="pager">
+                    <li><a href="{{ url_for('film', film_slug=film.slug) }}">Všechny dny</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="media">
+        <div class="thumbnail">
+            <div class="poster">
+                <img class="lazy" data-original="{{ url_for('poster', film_slug=film.slug, resize='300x424') }}">
+                <noscript><img src="{{ url_for('poster', film_slug=film.slug, resize='300x424') }}"></noscript>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

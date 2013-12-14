@@ -4,13 +4,15 @@
 from __future__ import division
 
 from datetime import timedelta
+from collections import OrderedDict
 
 import times
-from requests import RequestException
+from unidecode import unidecode
 
 from . import db
 from .image import Image
 from .utils import slugify
+from .http import RequestException
 
 
 class Cinema(db.Document):
@@ -23,6 +25,9 @@ class Cinema(db.Document):
     town = db.StringField(required=True)
     _coords = db.PointField(db_field='coords')
 
+    is_exclusive = db.BooleanField(default=False)
+    is_multiplex = db.BooleanField(default=False)
+
     @property
     def coords(self):
         return self._coords.get('coordinates', None)
@@ -31,8 +36,31 @@ class Cinema(db.Document):
     def coords(self, value):
         self._coords = value
 
+    @property
+    def priority(self):
+        """Priority of this cinema. Lower is better."""
+        if self.is_exclusive:
+            return 1
+        if self.is_multiplex:
+            return 3
+        return 2
+
+    @property
+    def showtimes(self):
+        return Showtime.objects.filter(cinema=self)
+
+    @property
+    def showtimes_upcoming(self):
+        return Showtime.upcoming.filter(cinema=self)
+
     def clean(self):
         self.slug = slugify(self.name)
+
+    def sync(self, cinema):
+        """Synchronize data with other cinema object."""
+        if cinema is None:
+            return
+        self.id = cinema.id
 
     def __unicode__(self):
         return u'{}'.format(self.name)
@@ -48,25 +76,12 @@ class FilmMixin(object):
     title_main = db.StringField(required=True)
     titles = db.ListField(db.StringField())
 
-    year = db.IntField()
+    year = db.IntField(min_value=1877, max_value=times.now().year + 10)
     directors = db.ListField(db.StringField())
-    length = db.IntField()
+    length = db.IntField(min_value=0)
 
     url_poster = db.URLField()
     url_trailer = db.URLField()
-
-    @property
-    def title_normalized(self):
-        title = self.title_main
-        if len(title) > 3 and title.isupper():
-            return title.capitalize()
-        return title
-
-    @property
-    def length_hours(self):
-        if self.length:
-            return round(self.length / 60, 1)
-        return None
 
     def clean(self):
         self.titles = (
@@ -83,8 +98,10 @@ class FilmMixin(object):
 
 class Film(FilmMixin, db.Document):
 
+    is_ghost = db.BooleanField(required=True, default=False)
+
     slug = db.StringField(required=True, unique=True)
-    year = db.IntField(required=True)
+    year = db.IntField(min_value=1877, max_value=times.now().year + 10)
 
     # rating as percentage
     rating_csfd = db.IntField(min_value=0, max_value=100)
@@ -93,18 +110,65 @@ class Film(FilmMixin, db.Document):
     url_synopsitv = db.URLField()
 
     @property
+    def title_alt(self):
+        for title in self.titles:
+            if unidecode(title).lower() != unidecode(self.title_main).lower():
+                return title
+        return None
+
+    @property
+    def links(self):
+        links = OrderedDict()
+
+        # data sources
+        if self.url_csfd is not None:
+            links[u'ČSFD'] = self.url_csfd
+        if self.url_imdb is not None:
+            links[u'IMDb'] = self.url_imdb
+        if self.url_synopsitv is not None:
+            links[u'SynopsiTV'] = self.url_synopsitv
+
+        # cinemas
+        for st in self.showtimes_upcoming.filter(film_scraped__url__ne=None):
+            links[st.cinema.name] = st.film_scraped.url
+
+        return links
+
+    @property
+    def ratings(self):
+        ratings = OrderedDict()
+        if self.rating_csfd is not None:
+            ratings[u'ČSFD'] = self.rating_csfd
+        if self.rating_imdb is not None:
+            ratings[u'IMDb'] = self.rating_imdb
+        return ratings
+
+    @property
     def rating(self):
         """Overall rating as percentage."""
-        ratings = []
-        if self.rating_csfd:
-            ratings.append(self.rating_csfd)
-        if self.rating_imdb:
-            ratings.append(self.rating_imdb)
-        return round(sum(ratings) / len(ratings), 0)
+        ratings = self.ratings
+        if not ratings:
+            return None
+        return int(round(sum(ratings.values()) / len(ratings), 0))
+
+    @property
+    def showtimes(self):
+        return Showtime.objects.filter(film=self)
+
+    @property
+    def showtimes_upcoming(self):
+        return Showtime.upcoming.filter(film=self)
 
     def clean(self):
         super(Film, self).clean()
-        self.slug = slugify(self.title_main + '_' + str(self.year))
+        if not self.is_ghost and not self.year:
+            raise db.ValidationError(
+                'Only ghost films can be without release year.'
+            )
+        if self.year:
+            self.slug = slugify(self.title_main + '-' + str(self.year))
+        else:
+            self.slug = slugify(self.title_main)
 
     def save_overwrite(self):
         """Insert or update, depending on unique fields."""
@@ -144,25 +208,34 @@ class Film(FilmMixin, db.Document):
         if film is None:
             return
 
-        blacklist = [
-            'id', 'slug', 'directors', 'titles', 'title_main', 'url_poster'
+        # exclude special cases and already filled attributes
+        exclude = [
+            'id', 'slug', 'directors', 'titles', 'title_main', 'url_poster',
+            'is_ghost',
         ]
-        for key in self._data.keys():
-            if key not in blacklist:
-                val = getattr(film, key, None)
-                if val is not None:
-                    setattr(self, key, val)  # update
+        attrs = (
+            k for (k, v) in self._data.items()
+            if (
+                (k not in exclude)  # special cases
+                and (v is None)  # value is missing
+                and (getattr(film, k, None) is not None)  # new value != None
+            )
+        )
+
+        # update missing attributes
+        for attr in attrs:
+            setattr(self, attr, getattr(film, attr, None))
 
         # special cases
         self.titles.append(film.title_main)
         self.titles.extend(film.titles)
         self.directors.extend(film.directors)
 
+        if self.is_ghost and not getattr(film, 'is_ghost', True):
+            self.is_ghost = False
+
         if self._is_larger_poster(film.url_poster):
             self.url_poster = film.url_poster
-
-        # save changes
-        self.save()
 
     def _is_larger_poster(self, url):
         """Decides whether given poster URL *url* points to an image which
@@ -179,59 +252,109 @@ class Film(FilmMixin, db.Document):
             return False
         return (size1[0] * size1[1]) < (size2[0] * size2[1])  # compare areas
 
+    def __unicode__(self):
+        s = self.title_main
+        if self.year:
+            s = s + ' ({})'.format(self.year)
+        if self.is_ghost:
+            s = s + ' [ghost]'
+        return s
+
 
 class ScrapedFilm(FilmMixin, db.EmbeddedDocument):
     """Raw representation of film as it was scraped."""
 
+    title_scraped = db.StringField(required=True)
+    url = db.URLField()
+
+    def clean(self):
+        title = self.title_scraped or self.title_main
+
+        if len(title) > 3 and title.isupper():
+            title_normalized = title.capitalize()
+            main_titles = [title_normalized, title]
+        else:
+            title_normalized = title
+            main_titles = [title]
+
+        self.title_main = title_normalized
+        self.title_scraped = title
+
+        super(ScrapedFilm, self).clean()
+
+        self.titles = (
+            main_titles +
+            list(set(t for t in self.titles if t not in main_titles))
+        )
+
+    def to_ghost(self):
+        film = Film(
+            is_ghost=True,
+            title_main=self.title_main,
+        )
+        film.sync(self)
+        return film
+
     def __eq__(self, other):
         if isinstance(other, ScrapedFilm):
-            return self.title_main == other.title_main
+            return self.title_scraped == other.title_scraped
         return False
 
     def __neq__(self, other):
         return not self == other
 
     def __hash__(self):
-        return hash(ScrapedFilm) ^ hash(self.title_main)
+        return hash(ScrapedFilm) ^ hash(self.title_scraped)
 
 
 class Showtime(db.Document):
 
     meta = {'ordering': ['-starts_at']}
+    upcoming_days = 7
 
     cinema = db.ReferenceField(Cinema, dbref=False, required=True)
-    film_paired = db.ReferenceField(Film, dbref=False,
-                                    reverse_delete_rule=db.DENY)
+    film = db.ReferenceField(Film, dbref=False, reverse_delete_rule=db.DENY)
     film_scraped = db.EmbeddedDocumentField(ScrapedFilm, required=True)
     starts_at = db.DateTimeField(required=True)
-    tags = db.ListField(db.StringField())  # dubbing, 3D, etc.
+    url = db.URLField(required=True)
     url_booking = db.URLField()
     scraped_at = db.DateTimeField(required=True, default=lambda: times.now())
+    tags = db.TagsField(default={})
+
+    @property
+    def is_paired(self):
+        return self.film and not self.film.is_ghost
 
     @property
     def starts_at_day(self):
         return self.starts_at.date()
 
-    @property
-    def film(self):
-        return self.film_paired or self.film_scraped
-
     @db.queryset_manager
     def upcoming(cls, queryset):
-        now = times.now()
-        week_later = now + timedelta(days=7)
+        now = times.now() - timedelta(minutes=20)
+        week_later = now + timedelta(days=cls.upcoming_days)
         return (
             queryset.filter(starts_at__gte=now)
                     .filter(starts_at__lte=week_later)
                     .order_by('starts_at')
         )
 
-    def clean(self):
-        self.tags = tuple(frozenset(tag for tag in self.tags if tag))
+    @db.queryset_manager
+    def today(cls, queryset):
+        today = times.now().date()
+        return (
+            queryset.filter(starts_at__gt=today - timedelta(days=1))
+                    .filter(starts_at__lt=today + timedelta(days=1))
+                    .order_by('starts_at')
+        )
+
+    @classmethod
+    def unpaired(cls):
+        return (s for s in cls.objects.all() if not s.is_paired)
 
     def __unicode__(self):
         return u'{} | {} | {}'.format(
             self.starts_at,
             self.cinema.name,
-            self.film.title_main
+            self.film_scraped.title_scraped
         )
