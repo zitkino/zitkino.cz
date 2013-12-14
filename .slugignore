@@ -1,3 +1,8 @@
 fabfile.py
-runserver.py
 README.md
+CONTRIBUTING.md
+LICENSE
+logo
+*.less
+*.min.js
+main.js
