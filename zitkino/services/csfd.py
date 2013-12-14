@@ -37,6 +37,7 @@ class CsfdFilmService(BaseFilmService):
         trying to perform requests again.
         """
         try:
+            kwargs.setdefault('timeout', 3)
             return download(*args, **kwargs)
 
         except TooManyRedirects:

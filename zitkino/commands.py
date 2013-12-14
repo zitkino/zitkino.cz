@@ -28,19 +28,17 @@ class SyncShowtimes(Command):
 
             now = times.now()
             counter = 0
-            try:
+
+            with log.pass_on_exception():
                 for showtime in scraper():
                     if showtime.starts_at >= times.now():
                         log.info('Scraping: %s', showtime)
                         showtime.save()
                     counter += 1
-            except Exception:
-                log.exception()
-            else:
                 query = Showtime.objects(cinema=cinema, scraped_at__lt=now)
                 query.delete()
-            finally:
-                log.info('Scraping: created %d showtimes', counter)
+
+            log.info('Scraping: created %d showtimes', counter)
 
 
 class SyncPairing(Command):
@@ -48,19 +46,20 @@ class SyncPairing(Command):
 
     def run(self):
         for showtime in Showtime.unpaired():
-            film = showtime.film_scraped
-            match = pair(film)
-            if match:
-                log.info(u'Pairing: %s ← %s', film, match)
-                match.sync(film)
-                match.save_overwrite()
-                showtime.film = match
-            else:
-                log.info(u'Pairing: %s ← ?', film)
-                ghost = film.to_ghost()
-                ghost.save_overwrite()
-                showtime.film = ghost
-            showtime.save()
+            with log.pass_on_exception():
+                film = showtime.film_scraped
+                match = pair(film)
+                if match:
+                    log.info(u'Pairing: %s ← %s', film, match)
+                    match.sync(film)
+                    match.save_overwrite()
+                    showtime.film = match
+                else:
+                    log.info(u'Pairing: %s ← ?', film)
+                    ghost = film.to_ghost()
+                    ghost.save_overwrite()
+                    showtime.film = ghost
+                showtime.save()
 
 
 class SyncCleanup(Command):
@@ -78,21 +77,23 @@ class SyncCleanup(Command):
         # delete redundant showtimes
         count = 0
         for showtime in Showtime.objects.all():
-            duplicates = Showtime.objects.filter(
-                id__ne=showtime.id,
-                cinema=showtime.cinema,
-                starts_at=showtime.starts_at,
-                film_scraped__title_main=showtime.film_scraped.title_main
-            )
-            count += duplicates.count()
-            duplicates.delete()
+            with log.pass_on_exception():
+                duplicates = Showtime.objects.filter(
+                    id__ne=showtime.id,
+                    cinema=showtime.cinema,
+                    starts_at=showtime.starts_at,
+                    film_scraped__title_main=showtime.film_scraped.title_main
+                )
+                count += duplicates.count()
+                duplicates.delete()
         log.info('Cleanup: deleted %d redundant showtimes.', count)
 
         # delete redundant films
         for film in Film.objects.all():
-            if not film.showtimes.count():
-                log.info('Cleanup: deleting redundant film %s.', film)
-                film.delete()
+            with log.pass_on_exception():
+                if not film.showtimes.count():
+                    log.info('Cleanup: deleting redundant film %s.', film)
+                    film.delete()
 
 
 class SyncUpdate(Command):
@@ -101,12 +102,10 @@ class SyncUpdate(Command):
     def run(self):
         for film in Film.objects.filter(is_ghost=False):
             for match in search(film, exclude=[DatabaseFilmService]):
-                try:
+                with log.pass_on_exception():
                     log.info(u'Update: %s ← %s', film, match)
                     film.sync(match)
                     film.save()
-                except Exception:
-                    log.exception()
 
 
 class SyncAll(Command):

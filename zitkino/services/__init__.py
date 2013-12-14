@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
 
+from zitkino.log import pass_on_exception
+
+
 class BaseFilmID(unicode):
     """Film's ID."""
 
@@ -57,12 +60,13 @@ def search(film, exclude=None):
     exclude = exclude or []
     for service in services:
         if service.__class__ not in exclude:
-            try:
-                match = service.lookup_obj(film)
-                if match:
-                    yield match
-            except NotImplementedError:
-                pass
+            with pass_on_exception():
+                try:
+                    match = service.lookup_obj(film)
+                    if match:
+                        yield match
+                except NotImplementedError:
+                    pass
 
 
 def pair(*args, **kwargs):

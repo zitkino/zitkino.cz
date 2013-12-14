@@ -4,6 +4,7 @@
 import sys
 import logging
 from functools import wraps
+from contextlib import contextmanager
 
 from raven.contrib.flask import Sentry
 from raven.handlers.logging import SentryHandler
@@ -47,3 +48,11 @@ def log_exceptions(fn):
             exception()
             raise
     return wrapper
+
+
+@contextmanager
+def pass_on_exception():
+    try:
+        yield
+    except Exception:
+        exception()
