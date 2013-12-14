@@ -51,13 +51,9 @@ def index(more):
         key=lambda c: (c.priority, c.name)
     )
 
-    # stats
-    today_any_showtimes = bool(Showtime.today().count())
-
     # render the template
     return render_template('index.html', data=data, more=more,
-                           cinemas=cinemas, less_items=less_items,
-                           today_any_showtimes=today_any_showtimes)
+                           cinemas=cinemas, less_items=less_items)
 
 
 @app.route('/film/<film_slug>')

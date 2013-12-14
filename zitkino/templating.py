@@ -13,7 +13,7 @@ from .utils import slugify
 
 
 @app.template_filter()
-def date(value, relative=True, weekday=True):
+def date(value, relative=True):
     """Simple, human-readable date."""
     date = value.date() if isinstance(value, datetime.datetime) else value
     today = times.to_local(times.now(), 'Europe/Prague').date()
@@ -27,14 +27,11 @@ def date(value, relative=True, weekday=True):
     date_str = value.strftime('%d. %m.')
     date_str = re.sub(r'0+(\d+)', r'\1', date_str)  # strip leading zeros
 
-    if weekday:
-        weekdays = (u'pondělí', u'úterý', u'středa', u'čtvrtek',
-                    u'pátek', u'sobota', u'neděle')
-        weekday_str = weekdays[value.weekday()].capitalize()
-        result = u'{weekday} {date}'.format(weekday=weekday_str, date=date_str)
-    else:
-        result = u'{date}'.format(date=date_str)
+    weekdays = (u'pondělí', u'úterý', u'středa', u'čtvrtek',
+                u'pátek', u'sobota', u'neděle')
+    weekday_str = weekdays[value.weekday()].capitalize()
 
+    result = u'{weekday} {date}'.format(weekday=weekday_str, date=date_str)
     result = result.replace(' ', u'\u00A0')  # no-break spaces
     return result
 

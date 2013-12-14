@@ -34,11 +34,7 @@
                 {% if starts_at_day|date == 'Dnes' %}
                     <h2>Na co si <strong>dnes</strong> můžeš zajít do kina?</h2>
                 {% else %}
-                    {% if today_any_showtimes %}
-                        <h2>Dnes už bohužel nic nestihneš, ale <strong>{{ starts_at_day|date|lower }}</strong> je taky den</h2>
-                    {% else %}
-                        <h2>Promítá se až <strong>{{ starts_at_day|date(weekday=False)|lower }}</strong></h2>
-                    {% endif %}
+                    <h2>Dnes už bohužel nic nestihneš, ale <strong>{{ starts_at_day|date|lower }}</strong> je taky den</h2>
                 {% endif %}
             </div>
         {% else %}
