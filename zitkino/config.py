@@ -6,8 +6,6 @@ import base64
 import logging
 from urlparse import urlparse
 
-from . import __version__ as version
-
 
 DEBUG = bool(os.getenv('ZITKINO_DEBUG', False))
 SENTRY_DSN = os.getenv('SENTRY_DSN')
@@ -48,7 +46,7 @@ GA_CODE = 'UA-1316071-11'
 
 ### Scraping
 
-USER_AGENT = 'zitkino/{0} (+http://zitkino.cz)'.format(version)
+USER_AGENT = 'zitkino/1.0 (+http://zitkino.cz)'
 HTTP_TIMEOUT = 10
 
 

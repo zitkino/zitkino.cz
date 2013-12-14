@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 
 
-__version__ = '2.1.dev'
-
-
 from flask import Flask
 from flask.ext.assets import Environment as Assets
 

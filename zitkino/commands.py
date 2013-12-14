@@ -6,16 +6,8 @@ from flask.ext.script import Manager, Command
 
 from . import log
 from .scrapers import scrapers
-from . import __version__ as version
 from .models import Cinema, Showtime, Film
 from .services import pair, search, DatabaseFilmService
-
-
-class Version(Command):
-    """Print version."""
-
-    def run(self):
-        print version
 
 
 class SyncShowtimes(Command):

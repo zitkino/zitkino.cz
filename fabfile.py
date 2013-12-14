@@ -3,7 +3,6 @@
 
 import re
 import os
-from time import time
 from fabric.api import *  # NOQA
 
 
@@ -23,15 +22,6 @@ def capture(command):
         return local(command, capture=True)
 
 
-def read_version():
-    with open(version_file) as f:
-        code = f.read()
-    try:
-        return re.search(r"__version__ = '([^']+)'", code).group(1)
-    except AttributeError:
-        abort('Unable to detect current version.')
-
-
 def read_branch():
     branches = capture('git branch --no-color 2> /dev/null')
     try:
@@ -44,16 +34,10 @@ def read_branch():
 
 def deploy():
     """Push site to GitHub and deploy it to Heroku."""
-    version = read_version()
     branch = read_branch()
 
-    # tag version
-    assert version.endswith('.dev'), "Version number does not end with '.dev'."
-    tag = 'v' + version + str(int(time()))
-    local('git tag {0}'.format(tag))
-
     # push to GitHub
-    local('git push --tags origin {0}:{0}'.format(branch))
+    local('git push origin {0}:{0}'.format(branch))
 
     # ensure MongoDB
     if 'MONGOLAB_URI' not in capture('heroku config | grep MONGOLAB_URI'):
