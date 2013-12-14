@@ -285,10 +285,10 @@ class Scraper(object):
                     film_scraped=ScrapedFilm(
                         title_scraped=info.title_main,
                         titles=[info.title_main],
+                        directors=info.directors,
                     ),
                     starts_at=starts_at,
                     url=self.url,
                     url_booking=self.url_booking,
                     tags={tag: None for tag in info.tags},
-                    directors=info.directors,
                 )
