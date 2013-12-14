@@ -33,10 +33,13 @@ class SyncShowtimes(Command):
                 for showtime in scraper():
                     if showtime.starts_at >= times.now():
                         log.info('Scraping: %s', showtime)
-                        showtime.save()
+                        showtime.save_overwrite(exclude=['film'])
                     counter += 1
-                query = Showtime.objects(cinema=cinema, scraped_at__lt=now)
-                query.delete()
+
+                if counter != 0:
+                    query = Showtime.objects(cinema=cinema, scraped_at__lt=now)
+                    query.delete()
+                # else it's suspicious situation, better don't delete anything
 
             log.info('Scraping: created %d showtimes', counter)
 

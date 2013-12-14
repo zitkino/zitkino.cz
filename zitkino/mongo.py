@@ -26,6 +26,7 @@ class MongoEngine(object):
     def __init__(self, app=None):
         _include_mongoengine(self)
         self.Document = Document
+        self.SaveOverwriteMixin = SaveOverwriteMixin
         self.TagsField = TagsField
 
         if app is not None:
@@ -73,6 +74,91 @@ class Document(mongoengine.Document):
 
     meta = {'abstract': True,
             'queryset_class': QuerySet}
+
+
+class SaveOverwriteMixin(object):
+
+    meta = {'abstract': True}
+
+    def _has_field(self, attr):
+        """Checks existence of given model attribute. Attribute can
+        be provided also in form of nested dot or double underscore notation.
+        """
+        try:
+            self._get_field(attr)
+        except AttributeError:
+            return False
+        return True
+
+    def _get_field(self, attr):
+        """Returns field object for given model attribute.
+        Attribute can be provided also in form of nested dot or
+        double underscore notation.
+        """
+        obj = self.__class__
+        for part in attr.replace('__', '.').split('.'):
+            obj = getattr(getattr(obj, 'document_type', obj), part)
+        return obj
+
+    def _get_value(self, attr):
+        """Returns value of given model attribute. Attribute can be provided
+        also in form of nested dot or double underscore notation.
+        """
+        obj = self
+        for part in attr.replace('__', '.').split('.'):
+            obj = getattr(obj, part)
+        return obj
+
+    @property
+    def _unique_values(self):
+        """Provides dictionary of unique attributes and their values. Nested
+        unique attributes are returned in double underscore notation.
+        """
+        fields = {}
+        for key in self._data.keys():
+            if self._has_field(key):
+                field = self._get_field(key)
+                if field.unique:
+                    fields[key] = self._get_value(key)
+                for key in (field.unique_with or []):
+                    fields[key.replace('.', '__')] = self._get_value(key)
+            # else there were changes in model, continue
+        return fields
+
+    def save_overwrite(self, exclude=None):
+        """Inserts or updates, depends on unique fields.
+
+        :param exclude: Iterable of field names to be excluded from
+                        inserting/updating (so they'll never be saved
+                        and their existing values are never overwritten).
+        """
+        cls = self.__class__  # model class
+
+        self.clean()  # prepare data as in save
+        unique_values = self._unique_values  # get all unique fields
+
+        # check
+        if not len(unique_values):
+            raise ValidationError('There are no unique constraints.')
+
+        # select the object by its unique fields
+        query = cls.objects(**unique_values)
+
+        # prepare data to set
+        exclude = frozenset(list(exclude or []) + ['id'])
+        data = {}
+        for key, value in self._data.items():
+            if not self._has_field(key):
+                continue
+            if key in exclude:
+                continue
+            data['set__' + key] = self._get_field(key).to_mongo(value)
+
+        # perform upsert
+        query.update_one(upsert=True, **data)
+
+        # set id (not very atomic...)
+        self.id = cls.objects.get(**unique_values).id
 
 
 ### Custom fields

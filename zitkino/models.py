@@ -96,7 +96,7 @@ class FilmMixin(object):
         return u'{}'.format(self.title_main)
 
 
-class Film(FilmMixin, db.Document):
+class Film(db.SaveOverwriteMixin, FilmMixin, db.Document):
 
     is_ghost = db.BooleanField(required=True, default=False)
 
@@ -169,39 +169,6 @@ class Film(FilmMixin, db.Document):
             self.slug = slugify(self.title_main + '-' + str(self.year))
         else:
             self.slug = slugify(self.title_main)
-
-    def save_overwrite(self):
-        """Insert or update, depending on unique fields."""
-        cls = self.__class__  # model class
-
-        # prepare data as in save
-        self.clean()
-
-        # get all unique fields
-        unique_fields = {}
-        for key in self._data.keys():
-            if hasattr(cls, key):  # (in case of changes in model)
-                field = getattr(cls, key)  # field object
-                if field.unique:
-                    unique_fields[key] = getattr(self, key)  # value
-                for key in (field.unique_with or []):
-                    unique_fields[key] = getattr(self, key)  # value
-
-        # select the object by its unique fields
-        query = cls.objects(**unique_fields)
-
-        # prepare data to set
-        data = {}
-        for key, value in self._data.items():
-            if hasattr(cls, key):  # (in case of changes in model)
-                data['set__' + key] = value
-        del data['set__id']
-
-        # perform upsert
-        query.update_one(upsert=True, **data)
-
-        # set id (not very atomic...)
-        self.id = cls.objects.get(**unique_fields).id
 
     def sync(self, film):
         """Synchronize data with other film object."""
@@ -306,13 +273,18 @@ class ScrapedFilm(FilmMixin, db.EmbeddedDocument):
     def __hash__(self):
         return hash(ScrapedFilm) ^ hash(self.title_scraped)
 
+    def __unicode__(self):
+        return self.title_scraped
 
-class Showtime(db.Document):
+
+class Showtime(db.SaveOverwriteMixin, db.Document):
 
     meta = {'ordering': ['-starts_at']}
     upcoming_days = 7
 
-    cinema = db.ReferenceField(Cinema, dbref=False, required=True)
+    cinema = db.ReferenceField(Cinema, dbref=False, required=True,
+                               unique_with=['film_scraped.title_scraped',
+                                            'starts_at'])
     film = db.ReferenceField(Film, dbref=False, reverse_delete_rule=db.DENY)
     film_scraped = db.EmbeddedDocumentField(ScrapedFilm, required=True)
     starts_at = db.DateTimeField(required=True)
