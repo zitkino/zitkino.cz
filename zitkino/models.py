@@ -84,10 +84,13 @@ class FilmMixin(object):
     url_trailer = db.URLField()
 
     def clean(self):
-        self.titles = (
-            [self.title_main] +
-            list(set(t for t in self.titles if t != self.title_main))
-        )
+        self.titles = [
+            title for title in (
+                [self.title_main] +
+                list(set(t for t in self.titles if t != self.title_main))
+            )
+            if title  # filter out accidental Nones
+        ]
         self.directors = list(frozenset(self.directors))
 
     def __unicode__(self):
@@ -174,6 +177,7 @@ class Film(db.SaveOverwriteMixin, FilmMixin, db.Document):
         """Synchronize data with other film object."""
         if film is None:
             return
+        film.clean()
 
         # exclude special cases and already filled attributes
         exclude = [
@@ -194,7 +198,8 @@ class Film(db.SaveOverwriteMixin, FilmMixin, db.Document):
             setattr(self, attr, getattr(film, attr, None))
 
         # special cases
-        self.titles.append(film.title_main)
+        if film.title_main:
+            self.titles.append(film.title_main)
         self.titles.extend(film.titles)
         self.directors.extend(film.directors)
 
