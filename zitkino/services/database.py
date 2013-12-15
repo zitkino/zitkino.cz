@@ -17,7 +17,7 @@ class DatabaseFilmService(BaseFilmService):
     name = u'Database'
     url_attr = 'id'  # film's ID
 
-    def search(self, titles, year=None, directors=None):
+    def search(self, titles, year=None):
         params = {'titles_search__in': [title.lower() for title in titles]}
         if year is not None:
             params['year'] = year

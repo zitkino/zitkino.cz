@@ -180,15 +180,17 @@ class Film(db.SaveOverwriteMixin, FilmMixin, db.Document):
 
         # exclude special cases and already filled attributes
         exclude = [
-            'id', 'slug', 'directors', 'titles', 'title_main', 'title_orig'
-            'url_poster', 'is_ghost',
+            'id', 'slug', 'titles_search', 'title_main', 'title_orig'
+            'url_poster', 'is_ghost', 'directors',
         ]
+
+        is_empty = lambda v: v is not False and v != 0 and not v
         attrs = (
             k for (k, v) in self._data.items()
             if (
                 (k not in exclude)  # special cases
-                and (v is None)  # value is missing
-                and (getattr(film, k, None) is not None)  # new value != None
+                and is_empty(v)  # value is empty
+                and not is_empty(getattr(film, k, None))  # new value not empty
             )
         )
 
@@ -202,8 +204,6 @@ class Film(db.SaveOverwriteMixin, FilmMixin, db.Document):
                                                  film.title_main)
         self.title_orig = self._select_title(self.title_orig, film.title_orig)
         self.titles_search.extend(film.titles_search)
-
-        self.directors.extend(film.directors)
 
         if self.is_ghost and not getattr(film, 'is_ghost', True):
             self.is_ghost = False

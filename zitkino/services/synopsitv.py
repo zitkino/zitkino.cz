@@ -61,7 +61,7 @@ class SynopsitvFilmService(BaseFilmService):
         # return decoded JSON
         return json.loads(content)
 
-    def search(self, titles, year=None, directors=None):
+    def search(self, titles, year=None):
         for title in titles:
             try:
                 resp = http.get(

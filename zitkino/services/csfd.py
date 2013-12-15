@@ -28,7 +28,7 @@ class CsfdFilmService(BaseFilmService):
     year_re = re.compile(r'(\d{4})')
     length_re = re.compile(r'(\d+)\s*min')
 
-    def search(self, titles, year=None, directors=None):
+    def search(self, titles, year=None):
         year = int(year) if year else None
 
         for title in titles:
