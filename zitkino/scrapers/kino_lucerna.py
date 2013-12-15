@@ -283,7 +283,7 @@ class Scraper(object):
                 yield Showtime(
                     cinema=cinema,
                     film_scraped=ScrapedFilm(
-                        title_scraped=info.title_main,
+                        title_main_scraped=info.title_main,
                         directors=info.directors,
                     ),
                     starts_at=starts_at,

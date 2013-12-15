@@ -54,8 +54,8 @@ class Scraper(object):
         return Showtime(
             cinema=cinema,
             film_scraped=ScrapedFilm(
-                title_scraped=title_main,
-                title_scraped_orig=title_orig,
+                title_main_scraped=title_main,
+                title_orig_scraped=title_orig,
             ),
             starts_at=starts_at,
             tags={tag: None for tag in tags},

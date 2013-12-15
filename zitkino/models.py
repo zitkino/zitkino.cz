@@ -201,9 +201,11 @@ class Film(db.SaveOverwriteMixin, FilmMixin, db.Document):
             setattr(self, attr, getattr(film, attr, None))
 
         # special cases
-        if not isinstance(film, ScrapedFilm):
-            self.title_main = self._select_title(self.title_main,
-                                                 film.title_main)
+        if not self.title_main or not isinstance(film, ScrapedFilm):
+            self.title_main = self._select_title(
+                self.title_main,
+                film.title_main
+            )
         self.title_orig = self._select_title(self.title_orig, film.title_orig)
         self.titles_search.extend(film.titles_search)
 
@@ -261,8 +263,8 @@ class Film(db.SaveOverwriteMixin, FilmMixin, db.Document):
 class ScrapedFilm(FilmMixin, db.EmbeddedDocument):
     """Raw representation of film as it was scraped."""
 
-    title_scraped = db.StringField(required=True)
-    title_scraped_orig = db.StringField()
+    title_main_scraped = db.StringField(required=True)
+    title_orig_scraped = db.StringField()
 
     url = db.URLField()
 
@@ -272,36 +274,36 @@ class ScrapedFilm(FilmMixin, db.EmbeddedDocument):
         return title
 
     def clean(self):
-        title_main = self._fix_case(self.title_scraped or self.title_main)
-        self.titles_search.append(title_main)
+        title_main = self._fix_case(self.title_main_scraped or self.title_main)
+        self.title_main = title_main
 
-        title_orig = self._fix_case(self.title_scraped_orig or self.title_orig)
-        self.titles_search.append(title_orig)
+        title_orig = self._fix_case(self.title_orig_scraped or self.title_orig)
+        self.title_orig = title_orig
+
+        self.titles_search.append(self.title_main_scraped)
+        self.titles_search.append(self.title_orig_scraped)
 
         super(ScrapedFilm, self).clean()
 
     def to_ghost(self):
         self.clean()
-        film = Film(
-            is_ghost=True,
-            title_main=self.title_main,
-        )
+        film = Film(is_ghost=True)
         film.sync(self)
         return film
 
     def __eq__(self, other):
         if isinstance(other, ScrapedFilm):
-            return self.title_scraped == other.title_scraped
+            return self.title_main_scraped == other.title_main_scraped
         return False
 
     def __neq__(self, other):
         return not self == other
 
     def __hash__(self):
-        return hash(ScrapedFilm) ^ hash(self.title_scraped)
+        return hash(ScrapedFilm) ^ hash(self.title_main_scraped)
 
     def __unicode__(self):
-        return self.title_scraped
+        return self.title_main_scraped
 
 
 class Showtime(db.SaveOverwriteMixin, db.Document):
@@ -310,7 +312,7 @@ class Showtime(db.SaveOverwriteMixin, db.Document):
     upcoming_days = 7
 
     cinema = db.ReferenceField(Cinema, dbref=False, required=True,
-                               unique_with=['film_scraped.title_scraped',
+                               unique_with=['film_scraped.title_main_scraped',
                                             'starts_at'])
     film = db.ReferenceField(Film, dbref=False, reverse_delete_rule=db.DENY)
     film_scraped = db.EmbeddedDocumentField(ScrapedFilm, required=True)
@@ -355,5 +357,5 @@ class Showtime(db.SaveOverwriteMixin, db.Document):
         return u'{} | {} | {}'.format(
             self.starts_at,
             self.cinema.name,
-            self.film_scraped.title_scraped
+            self.film_scraped.title_main_scraped
         )

@@ -125,7 +125,7 @@ class SaveOverwriteMixin(object):
             # else there were changes in model, continue
         return fields
 
-    def save_overwrite(self, exclude=None):
+    def save_overwrite(self, exclude=None, validate=True, clean=True):
         """Inserts or updates, depends on unique fields.
 
         :param exclude: Iterable of field names to be excluded from
@@ -134,10 +134,11 @@ class SaveOverwriteMixin(object):
         """
         cls = self.__class__  # model class
 
-        self.clean()  # prepare data as in save
-        unique_values = self._unique_values  # get all unique fields
+        if validate:
+            self.validate(clean=clean)
 
-        # check
+        # get all unique fields
+        unique_values = self._unique_values
         if not len(unique_values):
             raise ValidationError('There are no unique constraints.')
 
