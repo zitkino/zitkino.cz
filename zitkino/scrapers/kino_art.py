@@ -99,7 +99,6 @@ class Scraper(object):
             cinema=cinema,
             film_scraped=ScrapedFilm(
                 title_scraped=title_main,
-                titles=[title_main],
                 url=url,
             ),
             starts_at=starts_at,

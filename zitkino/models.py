@@ -75,6 +75,7 @@ class FilmMixin(object):
 
     title_main = db.StringField(required=True)
     titles = db.ListField(db.StringField())
+    titles_search = db.ListField(db.StringField())
 
     year = db.IntField(min_value=1877, max_value=times.now().year + 10)
     directors = db.ListField(db.StringField())
@@ -88,10 +89,15 @@ class FilmMixin(object):
         self.titles = [
             title for title in (
                 [self.title_main] +
-                list(set(t for t in self.titles if t != self.title_main))
+                list(frozenset(t for t in self.titles if t != self.title_main))
             )
             if title  # filter out accidental Nones
         ]
+        self.titles_search = list(frozenset(
+            title.lower() for title in
+            (self.titles + self.titles_search)
+            if title
+        ))
 
         # cleanup directors
         self.directors = list(frozenset(
@@ -169,6 +175,8 @@ class Film(db.SaveOverwriteMixin, FilmMixin, db.Document):
 
     def clean(self):
         super(Film, self).clean()
+
+        # slug
         if self.year:
             self.slug = slugify(self.title_main + '-' + str(self.year))
         else:
@@ -199,9 +207,12 @@ class Film(db.SaveOverwriteMixin, FilmMixin, db.Document):
             setattr(self, attr, getattr(film, attr, None))
 
         # special cases
-        if film.title_main:
-            self.titles.append(film.title_main)
-        self.titles.extend(film.titles)
+        if isinstance(film, ScrapedFilm):
+            self.titles_search.extend(film.titles + film.titles_search)
+        else:
+            self.titles.extend(film.titles)
+            self.titles_search.extend(film.titles_search)
+
         self.directors.extend(film.directors)
 
         if self.is_ghost and not getattr(film, 'is_ghost', True):
@@ -209,6 +220,8 @@ class Film(db.SaveOverwriteMixin, FilmMixin, db.Document):
 
         if self._is_larger_poster(film.url_poster):
             self.url_poster = film.url_poster
+
+        self.clean()
 
     def _is_larger_poster(self, url):
         """Decides whether given poster URL *url* points to an image which

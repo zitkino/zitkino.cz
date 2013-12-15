@@ -4,8 +4,6 @@
 import re
 import json
 
-from fuzzywuzzy import fuzz
-
 from zitkino import app
 from zitkino import http
 from zitkino.models import Film
@@ -23,8 +21,6 @@ class SynopsitvFilmService(BaseFilmService):
 
     name = u'SynopsiTV'
     url_attr = 'url_synopsitv'
-
-    min_similarity_ratio = 90
 
     oauth_key = app.config['SYNOPSITV_OAUTH_KEY']
     oauth_secret = app.config['SYNOPSITV_OAUTH_SECRET']
@@ -84,8 +80,7 @@ class SynopsitvFilmService(BaseFilmService):
 
             results = self._decode_results(resp)['relevant_results']
             for result in results:
-                similarity_ratio = fuzz.ratio(title, result['name'])
-                if similarity_ratio >= self.min_similarity_ratio:
+                if self._match_names(title, result['name']):
                     return self._create_film(result)
         return None
 

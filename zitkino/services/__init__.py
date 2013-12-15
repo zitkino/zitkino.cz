@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
 
+from fuzzywuzzy import fuzz
+
+
 from zitkino.log import pass_on_exception
 
 
@@ -23,6 +26,11 @@ class BaseFilmService(object):
 
     name = None
     url_attr = None
+
+    min_similarity_ratio = 90
+
+    def _match_names(self, name1, name2):
+        return fuzz.ratio(name1, name2) >= self.min_similarity_ratio
 
     def search(self, titles, year=None, directors=None):
         """Find a film by guessing."""

@@ -6,8 +6,6 @@ import urllib
 import urlparse
 from collections import namedtuple
 
-from fuzzywuzzy import fuzz
-
 from zitkino import http
 from zitkino import parsers
 from zitkino.models import Film
@@ -27,7 +25,6 @@ class CsfdFilmService(BaseFilmService):
     name = u'ČSFD'
     url_attr = 'url_csfd'
 
-    min_similarity_ratio = 90
     year_re = re.compile(r'(\d{4})')
     length_re = re.compile(r'(\d+)\s*min')
 
@@ -53,11 +50,7 @@ class CsfdFilmService(BaseFilmService):
             results = self._iterparse_search_results(html, year)
 
             for result in results:
-                similarity_ratio = fuzz.ratio(
-                    title,
-                    self._parse_matched_title(result)
-                )
-                if similarity_ratio >= self.min_similarity_ratio:
+                if self._match_names(title, self._parse_matched_title(result)):
                     return self.lookup(self._parse_film_url(result))
 
         return None  # there is no match

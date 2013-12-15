@@ -130,7 +130,6 @@ class Scraper(object):
                 info = self._parse_info(cell)
                 st.film_scraped = ScrapedFilm(
                     title_scraped=info.title,
-                    titles=[info.title],
                     url=info.url,
                 )
                 tags.update({tag: None for tag in info.tags})

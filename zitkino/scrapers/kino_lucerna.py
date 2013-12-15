@@ -284,7 +284,6 @@ class Scraper(object):
                     cinema=cinema,
                     film_scraped=ScrapedFilm(
                         title_scraped=info.title_main,
-                        titles=[info.title_main],
                         directors=info.directors,
                     ),
                     starts_at=starts_at,
