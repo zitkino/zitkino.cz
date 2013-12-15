@@ -67,7 +67,8 @@ class CsfdFilmService(BaseFilmService):
             if year:
                 # check year
                 year_el = result.cssselect_first('.film-year')
-                if year_el:
+
+                if year_el is not None:
                     year_text = year_el.text_content()
                 else:
                     year_text = result.cssselect_first('p').text_content()
