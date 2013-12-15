@@ -57,6 +57,14 @@ class SynopsitvFilmService(BaseFilmService):
             self.__token = json.loads(resp.content)['access_token']
         return self.__token
 
+    def _decode_results(self, response):
+        # fix SynopsiTV's bug with double backslashes in some special unicode
+        # characters
+        content = re.sub(r'\\(\\u\d+)', r'\1', response.content)
+
+        # return decoded JSON
+        return json.loads(content)
+
     def search(self, titles, year=None, directors=None):
         for title in titles:
             try:
@@ -74,7 +82,7 @@ class SynopsitvFilmService(BaseFilmService):
                     continue
                 raise
 
-            results = json.loads(resp.content)['relevant_results']
+            results = self._decode_results(resp)['relevant_results']
             for result in results:
                 similarity_ratio = fuzz.ratio(title, result['name'])
                 if similarity_ratio >= self.min_similarity_ratio:
@@ -97,7 +105,7 @@ class SynopsitvFilmService(BaseFilmService):
                 return None
             raise
 
-        return self._create_film(json.loads(resp.content))
+        return self._create_film(self._decode_results(resp))
 
     def lookup_obj(self, film):
         if not getattr(film, 'url_synopsitv', None) and film.url_imdb:
@@ -116,7 +124,7 @@ class SynopsitvFilmService(BaseFilmService):
                 if e.response.status_code != 404:
                     raise
             else:
-                results = json.loads(resp.content)['relevant_results']
+                results = self._decode_results(resp)['relevant_results']
                 if results:
                     return self._create_film(results[0])
 
