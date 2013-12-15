@@ -74,7 +74,7 @@ class FilmMixin(object):
     url_imdb = db.URLField()
 
     title_main = db.StringField(required=True)
-    titles = db.ListField(db.StringField())
+    title_orig = db.StringField()
     titles_search = db.ListField(db.StringField())
 
     year = db.IntField(min_value=1877, max_value=times.now().year + 10)
@@ -86,13 +86,6 @@ class FilmMixin(object):
 
     def clean(self):
         # cleanup titles
-        self.titles = [
-            title for title in (
-                [self.title_main] +
-                list(frozenset(t for t in self.titles if t != self.title_main))
-            )
-            if title  # filter out accidental Nones
-        ]
         self.titles_search = list(frozenset(
             title.lower() for title in
             (self.titles + self.titles_search)
@@ -124,11 +117,8 @@ class Film(db.SaveOverwriteMixin, FilmMixin, db.Document):
     url_synopsitv = db.URLField()
 
     @property
-    def title_alt(self):
-        for title in self.titles:
-            if unidecode(title).lower() != unidecode(self.title_main).lower():
-                return title
-        return None
+    def titles(self):
+        return [t for t in (self.title_main, self.title_orig) if t]
 
     @property
     def links(self):
@@ -190,8 +180,8 @@ class Film(db.SaveOverwriteMixin, FilmMixin, db.Document):
 
         # exclude special cases and already filled attributes
         exclude = [
-            'id', 'slug', 'directors', 'titles', 'title_main', 'url_poster',
-            'is_ghost',
+            'id', 'slug', 'directors', 'titles', 'title_main', 'title_orig'
+            'url_poster', 'is_ghost',
         ]
         attrs = (
             k for (k, v) in self._data.items()
@@ -207,11 +197,11 @@ class Film(db.SaveOverwriteMixin, FilmMixin, db.Document):
             setattr(self, attr, getattr(film, attr, None))
 
         # special cases
-        if isinstance(film, ScrapedFilm):
-            self.titles_search.extend(film.titles + film.titles_search)
-        else:
-            self.titles.extend(film.titles)
-            self.titles_search.extend(film.titles_search)
+        if not isinstance(film, ScrapedFilm):
+            self.title_main = self._select_title(self.title_main,
+                                                 film.title_main)
+        self.title_orig = self._select_title(self.title_orig, film.title_orig)
+        self.titles_search.extend(film.titles_search)
 
         self.directors.extend(film.directors)
 
@@ -222,6 +212,25 @@ class Film(db.SaveOverwriteMixin, FilmMixin, db.Document):
             self.url_poster = film.url_poster
 
         self.clean()
+
+    def _select_title(self, title1, title2):
+        """Selects more suitable title from two given.
+
+        Chooses according to presence of diacritics. If titles are equal in
+        ASCII, but differ in unicode, the one with diacritics is returned.
+        """
+        if not all([title1, title2]):
+            return title1 or title2  # one of them is empty
+        if unidecode(title1) == unidecode(title2):
+            try:
+                unicode(title1).encode('ascii')
+            except UnicodeEncodeError:
+                return title1  # title1 has diacritics
+            try:
+                unicode(title2).encode('ascii')
+            except UnicodeEncodeError:
+                return title2  # title1 does not have diacritics, title2 has
+        return title1  # cannot decide, return the first one (does not matter)
 
     def _is_larger_poster(self, url):
         """Decides whether given poster URL *url* points to an image which
@@ -253,25 +262,19 @@ class ScrapedFilm(FilmMixin, db.EmbeddedDocument):
     title_scraped = db.StringField(required=True)
     url = db.URLField()
 
+    def _fix_case(self, title_scraped):
+        if len(title_scraped) > 3 and title_scraped.isupper():
+            return title_scraped.capitalize()
+        return title_scraped
+
     def clean(self):
-        title = self.title_scraped or self.title_main
+        title_main = self._fix_case(self.title_scraped or self.title_main)
+        self.titles_search.append(title_main)
 
-        if len(title) > 3 and title.isupper():
-            title_normalized = title.capitalize()
-            main_titles = [title_normalized, title]
-        else:
-            title_normalized = title
-            main_titles = [title]
-
-        self.title_main = title_normalized
-        self.title_scraped = title
+        title_orig = self._fix_case(self.title_scraped_orig or self.title_orig)
+        self.titles_search.append(title_orig)
 
         super(ScrapedFilm, self).clean()
-
-        self.titles = (
-            main_titles +
-            list(set(t for t in self.titles if t not in main_titles))
-        )
 
     def to_ghost(self):
         self.clean()

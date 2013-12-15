@@ -54,7 +54,6 @@ class Scraper(object):
     def _parse_event(self, event):
         starts_at = times.to_universal(event.get('dtstart').dt)
         title_main = event.get('summary')
-        titles = [title_main]
 
         title_orig = year = length = None
         tags = []
@@ -63,7 +62,6 @@ class Scraper(object):
         if match:
             if match.group('title'):
                 title_orig = match.group('title').strip()
-                titles.append(title_orig)
 
             year = int(match.group('year'))
             length = int(match.group('min'))
@@ -77,7 +75,7 @@ class Scraper(object):
             cinema=cinema,
             film_scraped=ScrapedFilm(
                 title_scraped=title_main,
-                titles=titles,
+                title_scraped_orig=title_orig,
                 year=year,
                 length=length,
             ),
