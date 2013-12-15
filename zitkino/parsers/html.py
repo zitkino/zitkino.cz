@@ -75,6 +75,7 @@ class HTMLElement(lxml.html.HtmlElement):
 
 
 def HTMLParser(*args, **kwargs):
+    kwargs.setdefault('encoding', 'utf-8')
     lookup = etree.ElementDefaultClassLookup(element=HTMLElement)
     parser = etree.HTMLParser(*args, **kwargs)
     parser.set_element_class_lookup(lookup)
