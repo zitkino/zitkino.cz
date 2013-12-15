@@ -72,9 +72,9 @@ def deploy():
         local('git branch -D deploy')
 
 
-def sync():
+def sync(command='all'):
     """Manual synchronization."""
-    local('heroku run python manage.py sync all')
+    local('heroku run python manage.py sync ' + command)
 
 
 def ps():
