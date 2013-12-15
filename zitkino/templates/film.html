@@ -1,11 +1,10 @@
 {% extends 'base.html' %}
 {% block type %}video.movie{% endblock %}
 {% block title -%}
-    {{ film.title_main }}{% if film.year %} ({{ film.year }}){% endif %}
+    {{ film.title_main }}{% if film.title_orig %} / {{ film.title_orig }}{% endif %}{% if film.year %} ({{ film.year }}){% endif %}
 {%- endblock %}
 {% block description -%}
-    Všechna promítání filmu {{ film.title_main }} v Brně.
-    {%- if film.titles|length > 1 %} Alternativní názvy filmu: {{ film.titles|join(', ') }}.{% endif %}
+    Všechna promítání filmu {{ film.title_main }}{% if film.title_orig %} ({{ film.title_orig }}){% endif %} v Brně.
 {%- endblock %}
 {% block image %}{{ url_for('poster', film_slug=film.slug, _external=True) }}{% endblock %}
 {% block content %}
@@ -14,8 +13,8 @@
     <div class="detail-content">
         <div class="page-header">
             <h2>{{ film.title_main }} {% if film.year %} <small><time datetime="{{ film.year }}">{{ film.year }}</time></small>{% endif %}</h2>
-            {% if film.title_alt %}
-                <p>{{ film.title_alt }}</p>
+            {% if film.title_orig %}
+                <p>{{ film.title_orig }}</p>
             {% endif %}
         </div>
         <div class="thumbnail visible-xs">

@@ -54,7 +54,7 @@
                                 {% endif %}
                             </td>
                             <td class="film">
-                                <a href="{{ url_for('film', film_slug=showtime.film.slug) }}#day-{{ starts_at_day|date_iso }}"{% if showtime.film.title_alt %} title="{{ showtime.film.title_alt }}"{% endif %}>
+                                <a href="{{ url_for('film', film_slug=showtime.film.slug) }}#day-{{ starts_at_day|date_iso }}"{% if showtime.film.title_orig %} title="{{ showtime.film.title_orig }}"{% endif %}>
                                     {{- showtime.film.title_main -}}
                                 </a>
                                 {% if showtime.tags %}
