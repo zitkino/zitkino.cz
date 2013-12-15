@@ -135,7 +135,6 @@ class SynopsitvFilmService(BaseFilmService):
             url_synopsitv='http://www.synopsi.tv' + result['url'],
             year=result.get('year'),
             title_main=result['name'],
-            titles=[result['name']],
             directors=[d['name'] for d in result.get('directors', [])],
             length=result.get('runtime'),
             url_poster=url_poster,

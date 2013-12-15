@@ -20,6 +20,9 @@ class CsfdFilmID(BaseFilmID):
 FilmOrigin = namedtuple('FilmOrigin', ['year', 'length'])
 
 
+FilmTitles = namedtuple('FilmTitles', ['main', 'orig', 'others'])
+
+
 class CsfdFilmService(BaseFilmService):
 
     name = u'ČSFD'
@@ -88,18 +91,18 @@ class CsfdFilmService(BaseFilmService):
             raise
 
         html = parsers.html(resp.content, base_url=resp.url)
-        info = html.cssselect_first('.content .info')
 
-        titles = list(self._iterparse_titles(info))
-        origin = self._parse_origin(info)
+        titles = self._parse_titles(html)
+        origin = self._parse_origin(html)
 
         return Film(
             url_csfd=resp.url,
             url_imdb=self._parse_imdb_url(html),
-            title_main=titles[0],
-            titles=titles,
+            title_main=titles.main,
+            title_orig=titles.orig,
+            titles_search=titles.others,
             year=origin.year,
-            directors=list(self._iterparse_directors(info)),
+            directors=list(self._iterparse_directors(html)),
             length=origin.length,
             rating_csfd=self._parse_rating(html),
             url_poster=self._parse_poster_url(html),
@@ -112,12 +115,29 @@ class CsfdFilmService(BaseFilmService):
             return imdb_a.get('href')
         return None
 
-    def _iterparse_titles(self, info):
-        yield info.cssselect_first('h1').text.strip()
-        for title in info.cssselect('.names h3'):
-            yield title.text.strip()
+    def _parse_titles(self, html):
+        info = html.cssselect_first('.content .info')
 
-    def _parse_origin(self, info):
+        # main title
+        h1_el = info.cssselect_first('h1')
+        main = h1_el.text.strip()
+
+        # other titles
+        title_el = html.cssselect_first('title')
+        title_text = title_el.text_content()
+
+        orig = None
+        others = []
+        for title in info.cssselect('.names h3'):
+            other = title.text.strip()
+            if re.search(r'/ ' + re.escape(other) + ' [\(\|]', title_text):
+                orig = other
+            others.append(other)
+
+        return FilmTitles(main, orig, others)
+
+    def _parse_origin(self, html):
+        info = html.cssselect_first('.content .info')
         year = length = None
         origin_text = info.cssselect_first('.origin').text.strip()
         for origin_fragment in origin_text.split(','):
@@ -132,7 +152,8 @@ class CsfdFilmService(BaseFilmService):
                 length = int(length_match.group(1))
         return FilmOrigin(year, length)
 
-    def _iterparse_directors(self, info):
+    def _iterparse_directors(self, html):
+        info = html.cssselect_first('.content .info')
         for creators_h4 in info.cssselect('.creators div h4'):
             if u'Režie' in creators_h4.text_content():
                 wrapper = next(creators_h4.iterancestors(tag='div'))

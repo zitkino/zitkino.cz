@@ -84,8 +84,14 @@ class FilmMixin(object):
     url_poster = db.URLField()
     url_trailer = db.URLField()
 
+    @property
+    def titles(self):
+        return [t for t in (self.title_main, self.title_orig) if t]
+
     def clean(self):
         # cleanup titles
+        if self.title_main == self.title_orig:
+            self.title_orig = None
         self.titles_search = list(frozenset(
             title.lower() for title in
             (self.titles + self.titles_search)
@@ -115,10 +121,6 @@ class Film(db.SaveOverwriteMixin, FilmMixin, db.Document):
     rating_imdb = db.IntField(min_value=0, max_value=100)
 
     url_synopsitv = db.URLField()
-
-    @property
-    def titles(self):
-        return [t for t in (self.title_main, self.title_orig) if t]
 
     @property
     def links(self):
@@ -260,12 +262,14 @@ class ScrapedFilm(FilmMixin, db.EmbeddedDocument):
     """Raw representation of film as it was scraped."""
 
     title_scraped = db.StringField(required=True)
+    title_scraped_orig = db.StringField()
+
     url = db.URLField()
 
-    def _fix_case(self, title_scraped):
-        if len(title_scraped) > 3 and title_scraped.isupper():
-            return title_scraped.capitalize()
-        return title_scraped
+    def _fix_case(self, title):
+        if title and len(title) > 3 and title.isupper():
+            return title.capitalize()
+        return title
 
     def clean(self):
         title_main = self._fix_case(self.title_scraped or self.title_main)

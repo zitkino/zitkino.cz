@@ -34,7 +34,6 @@ class ImdbFilmService(BaseFilmService):
         return Film(
             url_imdb=resp.url,
             title_main=title,
-            titles=[title],
             year=self._parse_year(html),
             rating_imdb=self._parse_rating(html),
         )
