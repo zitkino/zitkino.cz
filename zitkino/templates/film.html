@@ -7,6 +7,7 @@
     Všechna promítání filmu {{ film.title_main }}{% if film.title_orig %} ({{ film.title_orig }}){% endif %} v Brně.
     {%- if film.titles_search %} Alternativní názvy filmu: {{ film.titles_search|join(', ') }}.{% endif -%}
 {%- endblock %}
+{% block canonical_url %}{{ url_for('film', film_slug=film.slug, _external=True) }}{% endblock %}
 {% block image %}{{ url_for('poster', film_slug=film.slug, _external=True) }}{% endblock %}
 {% block content %}
 

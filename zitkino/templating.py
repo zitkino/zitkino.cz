@@ -53,13 +53,16 @@ def date_iso(value):
 
 
 @app.template_filter()
-def email(address):
+def email(address, cls=None):
     """Obfuscate e-mail address."""
     username, server = address.split('@')
-    markup = ('<a href="mailto:{username}&#64;{server}">'
-              '{username}&#64;<!---->{server}</a>').format(username=username,
-                                                           server=server)
-    return Markup(markup)
+
+    markup = '<a href="mailto:{username}&#64;{server}"'
+    if cls:
+        markup += ' class="{}"'.format(cls)
+    markup += '>{username}&#64;<!---->{server}</a>'
+
+    return Markup(markup.format(username=username, server=server))
 
 
 @app.template_filter()

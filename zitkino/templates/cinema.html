@@ -2,6 +2,7 @@
 {% block type %}place{% endblock %}
 {% block title %}{{ cinema.name }}{% endblock %}
 {% block description %}Program pro {{ cinema.name }}, Brno.{% endblock %}
+{% block canonical_url %}{{ url_for('cinema', cinema_slug=cinema.slug, _external=True) }}{% endblock %}
 {% block image %}{{ url_for('cinema_photo', cinema_slug=cinema.slug, _external=True) }}{% endblock %}
 {% block meta %}
     <meta property="place:location:latitude" content="{{ cinema.coords.0 }}">

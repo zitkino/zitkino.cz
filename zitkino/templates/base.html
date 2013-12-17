@@ -16,9 +16,11 @@
         <meta property="og:description" content="{{ self.description() }}">
 
         <meta property="og:site_name" content="{% block site_name %}Žít&nbsp;kino{% endblock %}">
+
+        <link rel="canonical" href="{% block canonical_url %}{% endblock %}">
+        <meta property="og:url" content="{{ self.canonical_url }}">
+
         {% if request.path in [url_for('index'), url_for('index', more=True)] -%}
-            <link rel="canonical" href="{{ url_for('index', _external=True) }}">
-            <meta property="og:url" content="{{ url_for('index', _external=True) }}">
             <title>{{ self.site_name() }} - program kin, Brno</title>
         {%- else -%}
             <title>{{ self.title() }} - {{ self.site_name() }} - program kin, Brno</title>
@@ -61,17 +63,23 @@
         <div class="layout-footer">
             <footer class="navbar navbar-inverse" role="navigation">
                 <div class="container">
-                    <p class="navbar-text">
-                        Od roku 2012 tvoří <a href="http://honzajavorek.cz" target="_blank" class="navbar-link">Honza Javorek</a>.
-                        <br>
-                        <small class="hidden-xs">
-                            Data se stahují jednou denně přímo z webů jednotlivých kin.
-                            Doplňující informace jsou z
-                            <a href="http://www.csfd.cz/" target="_blank" rel="nofollow">ČSFD</a>,
-                            <a href="http://www.imdb.com/" target="_blank" rel="nofollow">IMDb</a>, a
-                            <a href="http://www.synopsi.tv/" target="_blank">SynopsiTV</a>.
-                        </small>
-                    </p>
+                    <div class="navbar-text">
+                        <p>
+                            <a href="{{ url_for('index') }}" class="navbar-link">Žít kino</a> tvoří
+                            <a href="http://honzajavorek.cz" target="_blank" class="navbar-link">Honza</a> a
+                            <a href="http://cz.linkedin.com/pub/zuzana-válková/47/371/a09" target="_blank" class="navbar-link">Zuzka</a>.
+                            Pochvaly nebo stížnosti pište na {{ 'ahoj@zitkino.cz'|email(cls='navbar-link') }}.
+                        </p>
+                        <p>
+                            <small class="hidden-xs">
+                                Data se stahují jednou denně přímo z webů jednotlivých kin.
+                                Doplňující informace jsou z
+                                <a href="http://www.csfd.cz/" target="_blank" rel="nofollow">ČSFD</a>,
+                                <a href="http://www.imdb.com/" target="_blank" rel="nofollow">IMDb</a>, a
+                                <a href="http://www.synopsi.tv/" target="_blank">SynopsiTV</a>.
+                            </small>
+                        </p>
+                    </div>
                     <ul class="nav navbar-nav navbar-right hidden-xs">
                         <li>
                             <a href="https://www.facebook.com/zitkino" target="_blank" rel="nofollow">
