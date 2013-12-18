@@ -62,9 +62,11 @@ class CsfdSession(Session):
             return super(CsfdSession, self).request(*args, **kwargs)
 
         except requests.exceptions.TooManyRedirects:
+            log.debug('HTTP: Too many redirects. Retrying.')
             return self.request(*args, **kwargs)
         except requests.exceptions.HTTPError as e:
             if e.response.status_code in (502, 403):
+                log.debug('HTTP: 502 or 403 status code. Retrying.')
                 return self.request(*args, **kwargs)
             raise
 
@@ -78,6 +80,7 @@ class SynopsitvSession(Session):
         try:
             return super(SynopsitvSession, self).request(*args, **kwargs)
         except requests.exceptions.SSLError:
+            log.debug('HTTP: SSL error. Retrying.')
             return self.request(*args, **kwargs)
 
 
