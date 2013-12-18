@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 
 
-import re
-import time
-import random
 from urlparse import urlparse
 
 import requests
@@ -44,93 +41,6 @@ class Session(requests.Session):
             if 'Connection refused' in unicode(e):
                 raise Banned
             raise
-
-
-class CsfdSession(Session):
-    """Deals with various ČSFD's network issues and eventually
-    tries to perform the same requests again.
-    """
-
-    def wait(self):
-        seconds = random.randrange(1, 5, 1)
-        log.debug('HTTP: Waiting for %d seconds.', seconds)
-        time.sleep(seconds)
-
-    def request(self, *args, **kwargs):
-        try:
-            self.wait()
-            return super(CsfdSession, self).request(*args, **kwargs)
-
-        except requests.exceptions.TooManyRedirects:
-            log.debug('HTTP: Too many redirects. Retrying.')
-            return self.request(*args, **kwargs)
-        except requests.exceptions.HTTPError as e:
-            if e.response.status_code in (502, 403):
-                log.debug('HTTP: 502 or 403 status code. Retrying.')
-                return self.request(*args, **kwargs)
-            raise
-
-
-class SynopsitvSession(Session):
-    """Deals with various SynopsiTV's network issues and eventually
-    tries to perform the same requests again.
-    """
-
-    def request(self, *args, **kwargs):
-        try:
-            return super(SynopsitvSession, self).request(*args, **kwargs)
-        except requests.exceptions.SSLError:
-            log.debug('HTTP: SSL error. Retrying.')
-            return self.request(*args, **kwargs)
-
-
-session_map = (
-    (re.compile(r'^https?://(www\.)?csfd\.cz'), CsfdSession),
-    (re.compile(r'^https?://api\.synopsi\.tv'), SynopsitvSession),
-)
-
-
-def request(method, url, **kwargs):
-    session_cls = Session
-
-    for pattern, cls in session_map:
-        if pattern.search(url):
-            session_cls = cls
-            break
-
-    session = session_cls()
-    return session.request(method=method, url=url, **kwargs)
-
-
-def get(url, **kwargs):
-    kwargs.setdefault('allow_redirects', True)
-    return request('get', url, **kwargs)
-
-
-def options(url, **kwargs):
-    kwargs.setdefault('allow_redirects', True)
-    return request('options', url, **kwargs)
-
-
-def head(url, **kwargs):
-    kwargs.setdefault('allow_redirects', False)
-    return request('head', url, **kwargs)
-
-
-def post(url, data=None, **kwargs):
-    return request('post', url, data=data, **kwargs)
-
-
-def put(url, data=None, **kwargs):
-    return request('put', url, data=data, **kwargs)
-
-
-def patch(url, data=None, **kwargs):
-    return request('patch', url, data=data, **kwargs)
-
-
-def delete(url, **kwargs):
-    return request('delete', url, **kwargs)
 
 
 from requests.exceptions import *  # NOQA

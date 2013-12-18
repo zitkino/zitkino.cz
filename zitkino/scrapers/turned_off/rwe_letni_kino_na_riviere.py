@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
 
-from zitkino import http
 from zitkino import parsers
 from zitkino.models import Cinema, Showtime, ScrapedFilm
 
-from . import scrapers
+from . import scrapers, Scraper
 
 
 cinema = Cinema(
@@ -18,7 +17,7 @@ cinema = Cinema(
 
 
 @scrapers.register(cinema)
-class Scraper(object):
+class RweletnikinonariviereScraper(Scraper):
 
     url = 'http://www.kinonariviere.cz/program'
     tags_map = {
@@ -31,7 +30,7 @@ class Scraper(object):
             yield self._parse_row(row)
 
     def _scrape_rows(self):
-        resp = http.get(self.url)
+        resp = self.session.get(self.url)
         html = parsers.html(resp.content, base_url=resp.url)
         return html.cssselect('.content table tr')
 

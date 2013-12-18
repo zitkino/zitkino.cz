@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
 
-from zitkino import http
 from zitkino import parsers
 from zitkino.models import Cinema, Showtime, ScrapedFilm
 
-from . import scrapers
+from . import scrapers, Scraper
 
 
 cinema = Cinema(
@@ -18,7 +17,7 @@ cinema = Cinema(
 
 
 @scrapers.register(cinema)
-class Scraper(object):
+class KinoartScraper(Scraper):
 
     url = 'http://www.kultura-brno.cz/cs/film/program-kina-art'
     title_blacklist = [u'Kinové prázdniny', u'KINO NEHRAJE']
@@ -29,7 +28,7 @@ class Scraper(object):
         return self._parse_table(self._scrape_table())
 
     def _scrape_table(self):
-        resp = http.get(self.url)
+        resp = self.session.get(self.url)
         html = parsers.html(resp.content, base_url=resp.url)
         return html.cssselect('#main .film_table tr')
 
@@ -65,7 +64,7 @@ class Scraper(object):
     def _parse_tag(self, el):
         name = el.text_content().strip(':')
         if name not in self.tags:
-            resp = http.get(el.link())
+            resp = self.session.get(el.link())
             html = parsers.html(resp.content, base_url=resp.url)
             self.tags[name] = html.cssselect_first('#main h1').text_content()
         return name, self.tags[name]

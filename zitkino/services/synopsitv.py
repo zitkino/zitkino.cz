@@ -5,6 +5,7 @@ import re
 import json
 
 from zitkino import app
+from zitkino import log
 from zitkino import http
 from zitkino.models import Film
 
@@ -17,10 +18,24 @@ class SynopsitvFilmID(BaseFilmID):
     url_re_group = 2
 
 
+class SynopsitvSession(http.Session):
+    """Deals with various SynopsiTV's network issues and eventually
+    tries to perform the same requests again.
+    """
+
+    def request(self, *args, **kwargs):
+        try:
+            return super(SynopsitvSession, self).request(*args, **kwargs)
+        except http.SSLError:
+            log.debug('HTTP: SSL error. Retrying.')
+            return self.request(*args, **kwargs)
+
+
 class SynopsitvFilmService(BaseFilmService):
 
     name = u'SynopsiTV'
     url_attr = 'url_synopsitv'
+    session_cls = SynopsitvSession
 
     oauth_key = app.config['SYNOPSITV_OAUTH_KEY']
     oauth_secret = app.config['SYNOPSITV_OAUTH_SECRET']
@@ -34,12 +49,13 @@ class SynopsitvFilmService(BaseFilmService):
 
     def __init__(self):
         self.__token = None
+        super(SynopsitvFilmService, self).__init__()
 
     @property
     def _token(self):
         """Lazy token getter."""
         if not self.__token:
-            resp = http.post(
+            resp = self.session.post(
                 'https://api.synopsi.tv/oauth2/token/',
                 data={
                     'grant_type': 'password',
@@ -64,7 +80,7 @@ class SynopsitvFilmService(BaseFilmService):
     def search(self, titles, year=None):
         for title in titles:
             try:
-                resp = http.get(
+                resp = self.session.get(
                     'https://api.synopsi.tv/1.0/title/identify/',
                     params={
                         'bearer_token': self._token,
@@ -88,7 +104,7 @@ class SynopsitvFilmService(BaseFilmService):
         title_id = SynopsitvFilmID.from_url(url)
 
         try:
-            resp = http.get(
+            resp = self.session.get(
                 'https://api.synopsi.tv/1.0/title/{}/'.format(title_id),
                 params={
                     'bearer_token': self._token,
@@ -107,7 +123,7 @@ class SynopsitvFilmService(BaseFilmService):
             imdb_id = ImdbFilmID.from_url(film.url_imdb)
 
             try:
-                resp = http.get(
+                resp = self.session.get(
                     'https://api.synopsi.tv/1.0/title/identify/',
                     params={
                         'bearer_token': self._token,

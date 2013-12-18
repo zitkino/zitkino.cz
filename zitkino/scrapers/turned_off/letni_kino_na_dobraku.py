@@ -5,11 +5,10 @@ import re
 
 import times
 
-from zitkino import http
 from zitkino import parsers
 from zitkino.models import Cinema, Showtime, ScrapedFilm
 
-from . import scrapers
+from . import scrapers, Scraper
 
 
 cinema = Cinema(
@@ -22,7 +21,7 @@ cinema = Cinema(
 
 
 @scrapers.register(cinema)
-class Scraper(object):
+class LetnikinonadobrakuScraper(Scraper):
 
     url = ('https://www.google.com/calendar/ical/n6a7pqdcgeprq9v7pf'
            '84dk3djo%40group.calendar.google.com/public/basic.ics')
@@ -45,7 +44,7 @@ class Scraper(object):
             yield self._parse_event(event)
 
     def _scrape_events(self):
-        resp = http.get(self.url)
+        resp = self.session.get(self.url)
         cal = parsers.ical(resp.content)
         for event in cal.walk():
             if event.name == 'VEVENT':

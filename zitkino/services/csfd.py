@@ -2,10 +2,13 @@
 
 
 import re
+import time
 import urllib
+import random
 import urlparse
 from collections import namedtuple
 
+from zitkino import log
 from zitkino import http
 from zitkino import parsers
 from zitkino.models import Film
@@ -23,10 +26,36 @@ FilmOrigin = namedtuple('FilmOrigin', ['year', 'length'])
 FilmTitles = namedtuple('FilmTitles', ['main', 'orig', 'others'])
 
 
+class CsfdSession(http.Session):
+    """Deals with various ČSFD's network issues and eventually
+    tries to perform the same requests again.
+    """
+
+    def wait(self):
+        seconds = random.randrange(1, 5, 1)
+        log.debug('HTTP: Waiting for %d seconds.', seconds)
+        time.sleep(seconds)
+
+    def request(self, *args, **kwargs):
+        try:
+            self.wait()
+            return super(CsfdSession, self).request(*args, **kwargs)
+
+        except http.TooManyRedirects:
+            log.debug('HTTP: Too many redirects. Retrying.')
+            return self.request(*args, **kwargs)
+        except http.HTTPError as e:
+            if e.response.status_code in (502, 403):
+                log.debug('HTTP: 502 or 403 status code. Retrying.')
+                return self.request(*args, **kwargs)
+            raise
+
+
 class CsfdFilmService(BaseFilmService):
 
     name = u'ČSFD'
     url_attr = 'url_csfd'
+    session_cls = CsfdSession
 
     year_re = re.compile(r'(\d{4})')
     length_re = re.compile(r'(\d+)\s*min')
@@ -35,7 +64,7 @@ class CsfdFilmService(BaseFilmService):
         year = int(year) if year else None
 
         for title in titles:
-            resp = http.get(
+            resp = self.session.get(
                 'http://www.csfd.cz/hledat/complete-films/?q='
                 + urllib.quote_plus(unicode(title).encode('utf-8'))
             )
@@ -84,7 +113,7 @@ class CsfdFilmService(BaseFilmService):
 
     def lookup(self, url):
         try:
-            resp = http.get(url)
+            resp = self.session.get(url)
         except http.HTTPError as e:
             if e.response.status_code == 404:
                 return None  # there is no match

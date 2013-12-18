@@ -6,11 +6,10 @@ from datetime import date, time, datetime
 
 import times
 
-from zitkino import http
 from zitkino import parsers
 from zitkino.models import Cinema, Showtime, ScrapedFilm
 
-from . import scrapers
+from . import scrapers, Scraper
 
 
 cinema = Cinema(
@@ -24,7 +23,7 @@ cinema = Cinema(
 
 
 @scrapers.register(cinema)
-class Scraper(object):
+class ZimnikinoScraper(Scraper):
 
     url = 'http://www.brnenskevanoce.cz/cs/program-brnenskych-vanoc'
 
@@ -37,7 +36,7 @@ class Scraper(object):
         return self._parse_html(self._scrape_html())
 
     def _scrape_html(self):
-        resp = http.get(self.url)
+        resp = self.session.get(self.url)
         return parsers.html(resp.content, base_url=resp.url)
 
     def _parse_html(self, html):

@@ -3,7 +3,7 @@
 
 from fuzzywuzzy import fuzz
 
-
+from zitkino.http import Session
 from zitkino.log import pass_on_exception
 
 
@@ -26,8 +26,12 @@ class BaseFilmService(object):
 
     name = None
     url_attr = None
+    session_cls = Session
 
     min_similarity_ratio = 90
+
+    def __init__(self):
+        self.session = self.session_cls()
 
     def _match_names(self, name1, name2):
         return fuzz.ratio(name1, name2) >= self.min_similarity_ratio

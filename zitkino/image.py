@@ -78,7 +78,7 @@ class Image(BaseImage):
     @classmethod
     def from_url(cls, url):
         """Download an image and provide it as memory stream."""
-        response = http.get(url)
+        response = http.Session().get(url)
         return cls(StringIO(response.content))
 
 

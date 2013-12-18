@@ -7,11 +7,10 @@ from collections import namedtuple
 
 import times
 
-from zitkino import http
 from zitkino import parsers
 from zitkino.models import Cinema, Showtime, ScrapedFilm
 
-from . import scrapers
+from . import scrapers, Scraper
 
 
 cinema = Cinema(
@@ -30,7 +29,7 @@ FilmInfo = namedtuple('FilmInfo', ['title', 'tags', 'url'])
 
 
 @scrapers.register(cinema)
-class Scraper(object):
+class KinoscalaScraper(Scraper):
 
     url = 'http://www.kinoscala.cz/cz/program/'
 
@@ -61,7 +60,7 @@ class Scraper(object):
         url = self.url
 
         while True:
-            resp = http.get(url)
+            resp = self.session.get(url)
             html = parsers.html(resp.content, base_url=url)
             for el in html.cssselect('#content table tr'):
                 yield Row(el, url)

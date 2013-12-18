@@ -23,7 +23,7 @@ class ImdbFilmService(BaseFilmService):
 
     def lookup(self, url):
         try:
-            resp = http.get(url)
+            resp = self.session.get(url)
         except http.HTTPError as e:
             if e.response.status_code == 404:
                 return None  # there is no match

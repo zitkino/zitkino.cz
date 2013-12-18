@@ -1,10 +1,20 @@
 # -*- coding: utf-8 -*-
 
 
-import inspect
-
 from zitkino import db, log
+from zitkino.http import Session
 from zitkino.models import Cinema
+
+
+class Scraper(object):
+
+    session_cls = Session
+
+    def __init__(self):
+        self.session = self.session_cls()
+
+    def __call__(self):
+        raise NotImplementedError
 
 
 class ScraperRepository(dict):
@@ -29,18 +39,14 @@ class ScraperRepository(dict):
                 # connection to database
                 log.warning('Cinema %s could not be updated, no db.', cinema)
 
-        def decorator(fn_or_cls):
-            if inspect.isclass(fn_or_cls):
-                # is it already present in repository?
-                # (this prevents classes to be summoned multiple times)
-                if [s for s in self.values() if s.__class__ == fn_or_cls]:
-                    return fn_or_cls
-                # assuming __call__
-                self[cinema.slug] = fn_or_cls()
-            else:
-                # plain function
-                self[cinema.slug] = fn_or_cls
-            return fn_or_cls
+        def decorator(cls):
+            assert issubclass(cls, Scraper)
+            # is it already present in repository?
+            # (this prevents classes to be summoned multiple times)
+            if [s for s in self.values() if s.__class__ == cls]:
+                return cls
+            self[cinema.slug] = cls()  # __call__
+            return cls
         return decorator
 
 
