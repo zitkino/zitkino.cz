@@ -69,8 +69,21 @@ class CsfdSession(Session):
             raise
 
 
+class SynopsitvSession(Session):
+    """Deals with various SynopsiTV's network issues and eventually
+    tries to perform the same requests again.
+    """
+
+    def request(self, *args, **kwargs):
+        try:
+            return super(SynopsitvSession, self).request(*args, **kwargs)
+        except requests.SSLError:
+            return self.request(*args, **kwargs)
+
+
 session_map = (
     (re.compile(r'^https?://(www\.)?csfd\.cz'), CsfdSession),
+    (re.compile(r'^https?://api\.synopsi\.tv'), SynopsitvSession),
 )
 
 
