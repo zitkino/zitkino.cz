@@ -142,9 +142,6 @@ class SaveOverwriteMixin(object):
         if not len(unique_values):
             raise ValidationError('There are no unique constraints.')
 
-        # select the object by its unique fields
-        query = cls.objects(**unique_values)
-
         # prepare data to set
         exclude = frozenset(list(exclude or []) + ['id'])
         data = {}
@@ -157,8 +154,8 @@ class SaveOverwriteMixin(object):
                 value = self._get_field(key).to_mongo(value)
             data['set__' + key] = value
 
-        # perform upsert
-        query.update_one(upsert=True, **data)
+        # select the object by its unique fields, perform upsert
+        cls.objects.filter(**unique_values).update_one(upsert=True, **data)
 
         # set id (not very atomic...)
         self.id = cls.objects.get(**unique_values).id
