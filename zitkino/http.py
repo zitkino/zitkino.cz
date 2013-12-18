@@ -40,7 +40,7 @@ class Session(requests.Session):
                 resp.raise_for_status()
             return resp
 
-        except requests.ConnectionError as e:
+        except requests.exceptions.ConnectionError as e:
             if 'Connection refused' in unicode(e):
                 raise Banned
             raise
@@ -61,9 +61,9 @@ class CsfdSession(Session):
             self.wait()
             return super(CsfdSession, self).request(*args, **kwargs)
 
-        except requests.TooManyRedirects:
+        except requests.exceptions.TooManyRedirects:
             return self.request(*args, **kwargs)
-        except requests.HTTPError as e:
+        except requests.exceptions.HTTPError as e:
             if e.response.status_code in (502, 403):
                 return self.request(*args, **kwargs)
             raise
@@ -77,7 +77,7 @@ class SynopsitvSession(Session):
     def request(self, *args, **kwargs):
         try:
             return super(SynopsitvSession, self).request(*args, **kwargs)
-        except requests.SSLError:
+        except requests.exceptions.SSLError:
             return self.request(*args, **kwargs)
 
 
