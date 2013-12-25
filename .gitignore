@@ -36,3 +36,6 @@ packed.css
 
 # Configuration files
 config
+
+# Cache
+tmp

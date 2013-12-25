@@ -6,7 +6,7 @@ from collections import OrderedDict
 
 from flask import request, render_template, send_from_directory
 
-from . import app, parsers, log
+from . import app, parsers, log, cache
 from .models import Showtime, Film, Cinema
 from .image import render_image, Image, PlaceholderImage
 
@@ -21,6 +21,7 @@ def inject_config():
 
 @app.route('/more/', defaults={'more': True})
 @app.route('/', defaults={'more': False})
+@cache.cached()
 def index(more):
     less_items = 2
     cinemas = set()
@@ -57,6 +58,7 @@ def index(more):
 
 
 @app.route('/film/<film_slug>')
+@cache.cached()
 def film(film_slug):
     film = Film.objects.get_or_404(slug=film_slug)
 
@@ -73,6 +75,7 @@ def film(film_slug):
 
 
 @app.route('/cinema/<cinema_slug>-brno')
+@cache.cached()
 def cinema(cinema_slug):
     cinema = Cinema.objects.get_or_404(slug=cinema_slug)
 
@@ -98,6 +101,7 @@ def static_files():
 
 
 @app.route('/images/poster/<film_slug>.jpg')
+@cache.cached()
 def poster(film_slug):
     try:
         resize = parsers.resize(request.args.get('resize', 'x'))
@@ -115,6 +119,7 @@ def poster(film_slug):
 
 
 @app.route('/images/cinema-photo/<cinema_slug>.jpg')
+@cache.cached()
 def cinema_photo(cinema_slug):
     try:
         resize = parsers.resize(request.args.get('resize', 'x'))

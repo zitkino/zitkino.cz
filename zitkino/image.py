@@ -2,11 +2,7 @@
 
 
 from hashlib import sha1
-
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
+from StringIO import StringIO  # no cStringIO, we need it to be pickleable
 
 from flask import send_file, request
 from PIL import Image as PILImage, ImageEnhance

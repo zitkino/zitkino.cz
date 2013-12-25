@@ -1,4 +1,3 @@
-cython==0.17.4       # Just to be able to compile gevent from tarball
 gevent==1.0          # Parallelism
 uwsgi==1.9.8         # Web server
 flask==0.9           # Web framework

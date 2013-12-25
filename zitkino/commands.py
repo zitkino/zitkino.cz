@@ -4,7 +4,7 @@
 import times
 from flask.ext.script import Manager, Command
 
-from . import log
+from . import app, log, cache
 from .scrapers import scrapers
 from .models import Cinema, Showtime, Film
 from .services import pair, search, DatabaseFilmService
@@ -112,16 +112,7 @@ class SyncAll(Command):
         SyncPairing().run()
         SyncCleanup().run()
         SyncUpdate().run()
-
-
-class SyncPurge(Command):
-    """Maintenance command. Wipes out all showtimes and films."""
-
-    def run(self):
-        Showtime.objects.delete()
-        log.info('Purge: deleted all showtimes.')
-        Film.objects.delete()
-        log.info('Purge: deleted all films.')
+        ClearCache().run()
 
 
 sync = Manager(usage="Run synchronizations.")
@@ -130,4 +121,22 @@ sync.add_command('pairing', SyncPairing())
 sync.add_command('cleanup', SyncCleanup())
 sync.add_command('update', SyncUpdate())
 sync.add_command('all', SyncAll())
-sync.add_command('purge', SyncPurge())
+
+
+class ClearCache(Command):
+    """Cleares the cache."""
+
+    def run(self):
+        with app.app_context():
+            cache.clear()
+        log.info('Cache: cleared.')
+
+
+class Purge(Command):
+    """Maintenance command. Wipes out all showtimes and films."""
+
+    def run(self):
+        Showtime.objects.delete()
+        log.info('Purge: deleted all showtimes.')
+        Film.objects.delete()
+        log.info('Purge: deleted all films.')

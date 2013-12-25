@@ -39,6 +39,14 @@ ASSETS_SASS_DEBUG_INFO = DEBUG
 SEND_FILE_MAX_AGE_DEFAULT = 157680000  # 5 years in seconds
 
 
+### Caching
+
+CACHE_DEFAULT_TIMEOUT = 86400
+CACHE_DIR = os.path.realpath(
+    os.path.join(os.path.dirname(__file__), '..', 'tmp')
+)
+
+
 ### Templates
 
 GA_CODE = 'UA-1316071-11'
