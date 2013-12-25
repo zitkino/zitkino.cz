@@ -32,8 +32,6 @@
         {% assets filters=("less", "cssmin"), output="css/packed.css", "css/main.less" %}
             <link rel="stylesheet" href="{{ ASSET_URL }}">
         {% endassets %}
-
-        <script src="{{ url_for('static', filename='js/modernizr-2.6.2.min.js') }}"></script>
     </head>
     <body id="{{ request.endpoint }}">
         <div class="layout-body">
