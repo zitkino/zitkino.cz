@@ -100,30 +100,30 @@ def static_files():
     return send_from_directory(static_dir, request.path.lstrip('/'))
 
 
-@app.route('/images/poster/<film_slug>.jpg')
+@app.route('/images/poster/<resize>/<film_slug>.jpg')
+@app.route('/images/poster/<film_slug>.jpg', defaults={'resize': 'x'})
 @cache.cached()
-def poster(film_slug):
+def poster(resize, film_slug):
     try:
-        resize = parsers.resize(request.args.get('resize', 'x'))
-        crop = request.args.get('crop')
+        resize = parsers.resize(resize)
 
         film = Film.objects.get_or_404(slug=film_slug)
         if film.url_poster:
             img = Image.from_url(film.url_poster)
-            return render_image(img, resize=resize, crop=crop)
+            return render_image(img, resize=resize)
     except Exception:
         log.exception()
 
     img = PlaceholderImage('#EEE', size=resize)
-    return render_image(img, crop=crop)
+    return render_image(img)
 
 
-@app.route('/images/cinema-photo/<cinema_slug>.jpg')
+@app.route('/images/cinema-photo/<resize>/<cinema_slug>.jpg')
+@app.route('/images/cinema-photo/<cinema_slug>.jpg', defaults={'resize': 'x'})
 @cache.cached()
-def cinema_photo(cinema_slug):
+def cinema_photo(resize, cinema_slug):
     try:
-        resize = parsers.resize(request.args.get('resize', 'x'))
-        crop = request.args.get('crop')
+        resize = parsers.resize(resize)
 
         cinema = Cinema.objects.get_or_404(slug=cinema_slug)
         filename = os.path.join(
@@ -133,9 +133,9 @@ def cinema_photo(cinema_slug):
         if os.path.exists(filename):
             with open(filename) as f:
                 img = Image(f)
-                return render_image(img, resize=resize, crop=crop)
+                return render_image(img, resize=resize)
     except Exception:
         log.exception()
 
     img = PlaceholderImage('#EEE', size=resize)
-    return render_image(img, crop=crop)
+    return render_image(img)
