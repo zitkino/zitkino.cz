@@ -23,7 +23,7 @@ No a potom už stačí jen nainstalovat Žít kino ze složky projektu:
 ```bash
 $ git clone git@github.com:honzajavorek/zitkino.cz.git "zitkino.cz"
 $ cd "zitkino.cz"
-$ pip install -e .
+$ pip install -r requirements.txt
 ```
 
 Aktualizace dat o filmových představeních se spouští jako:
