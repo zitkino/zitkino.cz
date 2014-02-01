@@ -21,7 +21,7 @@ class Session(requests.Session):
         super(Session, self).__init__(*args, **kwargs)
         self.headers['User-Agent'] = app.config['USER_AGENT']
 
-    def request(self, method, url, *args, **kwargs):
+    def request(self, method, url, **kwargs):
         log.debug('HTTP: %s %s', method.upper(), urlparse(url).netloc)
         try:
             # set default timeout
@@ -29,7 +29,7 @@ class Session(requests.Session):
 
             # by default we don't verify certificates
             kwargs.setdefault('verify', False)
-            resp = super(Session, self).request(method, url, *args, **kwargs)
+            resp = super(Session, self).request(method, url, **kwargs)
 
             # implicit exception raising on HTTP errors, can be turned
             # off ad-hoc by extra raise_for_status=False keyword argument

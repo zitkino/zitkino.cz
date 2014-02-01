@@ -31,12 +31,21 @@ class CsfdSession(http.Session):
     tries to perform the same requests again.
     """
 
+    max_redirects = 5
+    default_referer = 'http://www.zitkino.cz'
+
     def wait(self):
         seconds = random.randrange(1, 5, 1)
         log.debug('HTTP: Waiting for %d seconds.', seconds)
         time.sleep(seconds)
 
     def request(self, *args, **kwargs):
+        # set default referer - without this ČSFD can return an infinite loop
+        # of HTTP 302 redirects
+        headers = kwargs.get('headers', {})
+        headers['Referer'] = self.default_referer
+        kwargs['headers'] = headers
+
         try:
             self.wait()
             return super(CsfdSession, self).request(*args, **kwargs)
@@ -44,6 +53,7 @@ class CsfdSession(http.Session):
         except http.TooManyRedirects:
             log.debug('HTTP: Too many redirects. Retrying.')
             return self.request(*args, **kwargs)
+
         except http.HTTPError as e:
             if e.response.status_code in (502, 403):
                 log.debug('HTTP: 502 or 403 status code. Retrying.')
