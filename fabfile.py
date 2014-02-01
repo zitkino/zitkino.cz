@@ -77,6 +77,11 @@ def sync(command='all'):
     local('heroku run python manage.py sync ' + command)
 
 
+def rmcache():
+    """Manual cache clearing."""
+    local('heroku run python manage.py rmcache')
+
+
 def ps():
     """Show remote process list."""
     local('heroku ps')
