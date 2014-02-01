@@ -34,7 +34,8 @@ class BaseFilmService(object):
         self.session = self.session_cls()
 
     def _match_names(self, name1, name2):
-        return fuzz.ratio(name1, name2) >= self.min_similarity_ratio
+        similarity_ratio = fuzz.ratio(name1.lower(), name2.lower())
+        return similarity_ratio >= self.min_similarity_ratio
 
     def search(self, titles, year=None):
         """Find a film by guessing."""
