@@ -24,7 +24,7 @@ class BaseImage(object):
         keep_height = (
             (old_w < old_h and width > height)
             or
-            (old_w > old_h and width < height)
+            (old_w > old_h and width <= height)
         )
         if keep_height:
             size = (old_w * height / old_h, height)
