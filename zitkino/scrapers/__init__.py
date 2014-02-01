@@ -58,5 +58,4 @@ from . import (  # NOQA
     kino_scala,
     kino_art,
     kino_lucerna,
-    zimni_kino,
 )
