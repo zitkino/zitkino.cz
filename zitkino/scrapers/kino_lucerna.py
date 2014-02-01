@@ -38,7 +38,7 @@ class KinolucernaScraper(Scraper):
     tz = 'Europe/Prague'
 
     entry_re = re.compile(r'\d+:\d+')
-    entry_split_re = re.compile(r'[\b\s]+(?=\d+\.)')
+    entry_split_re = re.compile(r'[\b\s]+(?=\d+\.\d+)')
     entry_split_price_re = re.compile(ur'vstupné', re.U | re.I)
 
     range_re = re.compile(
