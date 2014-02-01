@@ -21,7 +21,6 @@ def inject_config():
 
 @app.route('/more/', defaults={'more': True})
 @app.route('/', defaults={'more': False})
-@cache.cached()
 def index(more):
     less_items = 2
     cinemas = set()
@@ -58,7 +57,6 @@ def index(more):
 
 
 @app.route('/film/<film_slug>')
-@cache.cached()
 def film(film_slug):
     film = Film.objects.get_or_404(slug=film_slug)
 
@@ -75,7 +73,6 @@ def film(film_slug):
 
 
 @app.route('/cinema/<cinema_slug>-brno')
-@cache.cached()
 def cinema(cinema_slug):
     cinema = Cinema.objects.get_or_404(slug=cinema_slug)
 
