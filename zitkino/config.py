@@ -41,7 +41,7 @@ SEND_FILE_MAX_AGE_DEFAULT = 157680000  # 5 years in seconds
 
 ### Caching
 
-CACHE_DEFAULT_TIMEOUT = 86400
+CACHE_DEFAULT_TIMEOUT = 10800
 CACHE_DIR = os.path.realpath(
     os.path.join(os.path.dirname(__file__), '..', 'tmp')
 )

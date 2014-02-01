@@ -108,11 +108,13 @@ class SyncAll(Command):
     """Sync all."""
 
     def run(self):
-        SyncShowtimes().run()
-        SyncPairing().run()
-        SyncCleanup().run()
-        SyncUpdate().run()
-        ClearCache().run()
+        try:
+            SyncShowtimes().run()
+            SyncPairing().run()
+            SyncCleanup().run()
+            SyncUpdate().run()
+        finally:
+            ClearCache().run()
 
 
 sync = Manager(usage="Run synchronizations.")
