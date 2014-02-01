@@ -22,4 +22,4 @@ db = MongoEngine(app)
 cache = Cache(app)
 
 
-from zitkino import views, templating  # NOQA
+from . import views, templating  # NOQA
