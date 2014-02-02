@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 
 
+import re
+import datetime
+
+import times
+
 from zitkino import parsers
 from zitkino.models import Cinema, Showtime, ScrapedFilm
 
@@ -19,89 +24,82 @@ cinema = Cinema(
 @scrapers.register(cinema)
 class KinoartScraper(Scraper):
 
-    url = 'http://www.kultura-brno.cz/cs/film/program-kina-art'
+    url = 'http://kinoart.cz/program/'
     title_blacklist = [u'Kinové prázdniny', u'KINO NEHRAJE']
 
-    tags = {u'malý sál': None}
-
     def __call__(self):
-        return self._parse_table(self._scrape_table())
-
-    def _scrape_table(self):
         resp = self.session.get(self.url)
         html = parsers.html(resp.content, base_url=resp.url)
-        return html.cssselect('#main .film_table tr')
 
-    def _parse_table(self, rows):
-        for row in rows[1:]:  # skip header
-            for subrow in row[2].split('br'):
-                showtime = self._parse_row(row, subrow)
-                if showtime:
-                    yield showtime
-            for subrow in row[3].split('br'):  # small hall
-                showtime = self._parse_row(row, subrow, tags=[u'malý sál'])
-                if showtime:
-                    yield showtime
+        for table in html.cssselect('.program'):
+            tag = table.cssselect_first('.title').text_content().lower()
+            for row in table.cssselect('tr'):
+                yield self._parse_row(row, tags={tag: None})
 
-    def _parse_subrow(self, subrow):
-        links = subrow.cssselect('a')
-        elements = {'tag': None, 'title': None, 'booking': None}
+    def _parse_row(self, row, tags=None):
+        movie_el = row.cssselect_first('.movie a:not(.tag)')
+        url = movie_el.link()
+        title = movie_el.text_content()
 
-        for i, link in enumerate(links):
-            if link.text_content() == 'R':
-                elements['booking'] = link
-                links.pop(i)
+        date_el = row.cssselect_first('.date').text_content(whitespace=True)
+        date, time = re.split(r'[\r\n]+', date_el)
 
-        count = len(links)
-        if count == 2:
-            elements['tag'] = links[0]
-            elements['title'] = links[1]
-        if count == 1:
-            elements['title'] = links[0]
+        starts_at = times.to_universal(datetime.datetime.combine(
+            parsers.date_cs(date),
+            datetime.time(*[int(n) for n in time.split(':')])
+        ), 'Europe/Prague')
 
-        return elements
-
-    def _parse_tag(self, el):
-        name = el.text_content().strip(':')
-        if name not in self.tags:
-            resp = self.session.get(el.link())
-            html = parsers.html(resp.content, base_url=resp.url)
-            self.tags[name] = html.cssselect_first('#main h1').text_content()
-        return name, self.tags[name]
-
-    def _parse_row(self, row, subrow, tags=None):
-        elements = self._parse_subrow(subrow)
-
-        title_el = elements.get('title')
-        if title_el is None:
-            return None
-        title_main = title_el.text_content()
-        if title_main in self.title_blacklist:
-            return None
-
-        url = title_el.link()
-
-        starts_at = parsers.date_time_year(
-            row.cssselect('.film_table_datum')[0].text_content(),
-            subrow.cssselect('.cas')[0].text_content(),
-        )
-
-        booking_el = elements.get('booking')
-        url_booking = booking_el.link() if booking_el is not None else None
-
-        tags = {tag: self.tags[tag] for tag in (tags or [])}
-        tag_el = elements.get('tag')
-        if tag_el is not None:
-            tags.update([self._parse_tag(tag_el)])
+        tags = self._parse_tags(row, tags)
+        detail_data = self._parse_detail(url)
 
         return Showtime(
             cinema=cinema,
             film_scraped=ScrapedFilm(
-                title_main_scraped=title_main,
+                title_main_scraped=title,
                 url=url,
+                **detail_data
             ),
             starts_at=starts_at,
             tags=tags,
             url=self.url,
-            url_booking=url_booking,
         )
+
+    def _parse_tags(self, row, tags=None):
+        tags = tags or {}
+        for a in row.cssselect('.movie a.tag'):
+            resp = self.session.get(a.link())
+            html = parsers.html(resp.content, base_url=resp.url)
+            tags[a.text_content()] = html.cssselect_first('h1').text_content()
+        return tags
+
+    def _parse_detail(self, url):
+        data = {}
+
+        resp = self.session.get(url)
+        html = parsers.html(resp.content, base_url=resp.url)
+        content = html.cssselect_first('#content .leftcol')
+
+        image = content.cssselect_first('img.wp-post-image')
+        if image is not None:
+            data['url_poster'] = self._parse_image_link(image)
+
+        csfd_link = content.cssselect_first('a.csfd')
+        if csfd_link is not None and csfd_link.get('href') != 'http://':
+            data['url_csfd'] = csfd_link.get('href')
+
+        imdb_link = content.cssselect_first('a.imdb')
+        if imdb_link is not None and imdb_link.get('href') != 'http://':
+            data['url_imdb'] = imdb_link.get('href')
+
+        if 'trailer' in content.text_content().lower():
+            for iframe in content.cssselect('iframe'):
+                try:
+                    url = parsers.youtube_url(iframe.get('src'))
+                    data['url_trailer'] = url
+                except ValueError:
+                    pass
+
+        return data
+
+    def _parse_image_link(self, image):
+        return re.sub(r'\-\d+x\d+(\.\w+)$', r'\1', image.get('src'))

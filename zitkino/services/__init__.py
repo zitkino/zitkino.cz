@@ -17,7 +17,7 @@ class BaseFilmID(unicode):
     def from_url(cls, url):
         match = cls.url_re.search(url)
         if not match:
-            raise ValueError
+            raise ValueError(url)
         return match.group(cls.url_re_group)
 
 

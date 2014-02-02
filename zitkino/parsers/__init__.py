@@ -9,6 +9,7 @@ import times
 from icalendar import Calendar
 
 from .html import html  # NOQA
+from ..utils import clean_whitespace
 
 
 def ical(text):
@@ -53,21 +54,25 @@ def date_time_year(date, time, year=None, tz='Europe/Prague'):
 
 def date_cs(value):
     """Parses a Czech text to a date object."""
-    match = re.search(r'(\d+)\s*\.?\s+(\w+)(\s+\d{2,4})?', value, re.U)
+    value = clean_whitespace(value)
+    match = re.search(r'(\d+)\s*\.?\s*(\w+)(\s+\d{2,4})?', value, re.U)
     if match:
         # day
         day = int(match.group(1))
 
         # month
-        months = (
-            u'leden', u'únor', u'březen', u'duben',
-            u'květen', u'červen', u'červenec', u'srpen',
-            u'září', u'říjen', u'listopad', u'prosinec',
-            u'ledna', u'února', u'března', u'dubna',
-            u'května', u'června', u'července', u'srpna',
-            u'září', u'října', u'listopadu', u'prosince',
-        )
-        month = (months.index(match.group(2)) % 12) + 1
+        try:
+            month = int(match.group(2))
+        except ValueError:
+            months = (
+                u'leden', u'únor', u'březen', u'duben',
+                u'květen', u'červen', u'červenec', u'srpen',
+                u'září', u'říjen', u'listopad', u'prosinec',
+                u'ledna', u'února', u'března', u'dubna',
+                u'května', u'června', u'července', u'srpna',
+                u'září', u'října', u'listopadu', u'prosince',
+            )
+            month = (months.index(match.group(2)) % 12) + 1
 
         # year
         if not match.group(3):
@@ -87,3 +92,13 @@ def resize(resize):
         if width and height:
             return (int(width), int(height))
     return None
+
+
+def youtube_url(url):
+    if 'youtube' in url:
+        if 'embed' in url:
+            return 'https://www.youtube.com/watch?v={}'.format(
+                re.search(r'embed/([^\?]+)', url).group(1)
+            )
+        raise NotImplementedError
+    raise ValueError
