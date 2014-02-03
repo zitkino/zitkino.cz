@@ -95,6 +95,10 @@ def resize(resize):
 
 
 def youtube_url(url):
+    if 'youtu.be' in url:
+        return 'https://www.youtube.com/watch?v={}'.format(
+            re.search(r'youtu\.be/([^\?]+)', url).group(1)
+        )
     if 'youtube' in url:
         if 'embed' in url:
             return 'https://www.youtube.com/watch?v={}'.format(

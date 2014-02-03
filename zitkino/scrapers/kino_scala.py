@@ -33,8 +33,6 @@ class KinoscalaScraper(Scraper):
 
     url = 'http://www.kinoscala.cz/cz/program/'
 
-    tz = 'Europe/Prague'
-
     tag_re = (
         # order is not arbitrary!
         (re.compile(ur'[–\-] titulky', re.I), u'titulky'),
@@ -77,7 +75,7 @@ class KinoscalaScraper(Scraper):
         """
         time = datetime.time(*[int(t) for t in el.text_content().split(':')])
         dt = datetime.datetime.combine(date, time)
-        return times.to_universal(dt, timezone=self.tz)
+        return times.to_universal(dt, timezone='Europe/Prague')
 
     def _parse_info(self, el):
         """Takes element with film's name and link to a page with details,
@@ -130,6 +128,7 @@ class KinoscalaScraper(Scraper):
                 st.film_scraped = ScrapedFilm(
                     title_main_scraped=info.title,
                     url=info.url,
+                    **self._parse_details(info.url)
                 )
                 tags.update({tag: None for tag in info.tags})
 
@@ -141,3 +140,31 @@ class KinoscalaScraper(Scraper):
 
         st.tags = tags
         return st
+
+    def _parse_details(self, url):
+        data = {}
+
+        resp = self.session.get(url)
+        html = parsers.html(resp.content, base_url=url)
+        html.make_links_absolute()
+        content = html.cssselect_first('.content_main')
+
+        image = content.cssselect_first('.movie_image img')
+        if image is not None:
+            data['url_poster'] = image.get('src')
+
+        for a in content.cssselect('a'):
+            try:
+                url = parsers.youtube_url(a.get('href'))
+                data['url_trailer'] = url
+                break
+            except ValueError:
+                pass
+
+            if 'csfd.cz' in a.get('href'):
+                data['url_csfd'] = a.get('href')
+
+            if 'imdb.com' in a.get('href'):
+                data['url_imdb'] = a.get('href')
+
+        return data

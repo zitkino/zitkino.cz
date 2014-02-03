@@ -50,14 +50,14 @@ class KinoartScraper(Scraper):
         ), 'Europe/Prague')
 
         tags = self._parse_tags(row, tags)
-        detail_data = self._parse_detail(url)
+        details = self._parse_details(url)
 
         return Showtime(
             cinema=cinema,
             film_scraped=ScrapedFilm(
                 title_main_scraped=title,
                 url=url,
-                **detail_data
+                **details
             ),
             starts_at=starts_at,
             tags=tags,
@@ -72,7 +72,7 @@ class KinoartScraper(Scraper):
             tags[a.text_content()] = html.cssselect_first('h1').text_content()
         return tags
 
-    def _parse_detail(self, url):
+    def _parse_details(self, url):
         data = {}
 
         resp = self.session.get(url)
