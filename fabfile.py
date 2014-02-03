@@ -11,7 +11,7 @@ static_dir = os.path.join(project_dir, 'zitkino/static')
 version_file = os.path.join(project_dir, 'zitkino/__init__.py')
 
 
-__all__ = ('deploy', 'ps', 'logs', 'sync')
+__all__ = ('deploy', 'ps', 'logs', 'sync', 'rmcache')
 
 
 ### Helpers
