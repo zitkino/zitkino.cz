@@ -59,4 +59,5 @@ from . import (  # NOQA
     kino_art,
     kino_lucerna,
     kinokavarna,
+    cinema_city,
 )
