@@ -98,12 +98,13 @@ class SyncUpdate(Command):
     """Find paired films and try to get newer/more complete data for them."""
 
     def run(self):
-        for film in Film.objects.filter(is_ghost=False):
-            for match in search(film, exclude=[DatabaseFilmService]):
-                with log.pass_on_exception():
-                    log.info(u'Update: %s ← %s', film, match)
-                    film.sync(match)
-                    film.save()
+        for film in Film.objects.all():
+            if 'Cesta' in film.title_main:
+                for match in search(film, exclude=[DatabaseFilmService]):
+                    with log.pass_on_exception():
+                        log.info(u'Update: %s ← %s', film, match)
+                        film.sync(match)
+                        film.save()
 
 
 class SyncAll(Command):

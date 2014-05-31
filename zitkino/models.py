@@ -104,9 +104,10 @@ class PosterFile(ImageMixin, db.EmbeddedDocument):
             kwargs.setdefault('width', size[0])
             kwargs.setdefault('height', size[1])
         image = kwargs.pop('image', None)
+
+        super(PosterFile, self).__init__(*args, **kwargs)
         if image:
             self.image = image
-        super(PosterFile, self).__init__(*args, **kwargs)
 
     def clean(self):
         super(PosterFile, self).clean()
@@ -140,6 +141,8 @@ class Poster(ImageMixin, db.EmbeddedDocument):
     tn_sizes = app.config['POSTER_SIZES']
 
     url = db.StringField(required=True)
+    width = db.IntField(required=True)  # original size
+    height = db.IntField(required=True)  # original size
     files = db.MapField(db.EmbeddedDocumentField(PosterFile), required=True)
 
     @classmethod
@@ -154,23 +157,22 @@ class Poster(ImageMixin, db.EmbeddedDocument):
                                      image=create_thumbnail(image, size))
             files['{}x{}'.format(*size)] = poster_file
 
-        return cls(url=url, files=files)
+        return cls(url=url, files=files,
+                   width_original=image.size[0], height_original=image.size[1])
 
     @cached_property
     def largest(self):
         return sorted(self.files.values(),
                       key=lambda x: x.area, reverse=True)[0]
 
-    @property
-    def width(self):
-        return self.largest.width
-
-    @property
-    def height(self):
-        return self.largest.height
+    def clean(self):
+        if not self.width or not self.height:  # sort of migration
+            image = Image.open(StringIO(Session().get(self.url).content))
+            self.width, self.height = image.size
+        super(Poster, self).clean()
 
     def __unicode__(self):
-        return u'{} ({}x{})'.format(self.url, *self.largest.size)
+        return u'{} (originally {}x{})'.format(self.url, *self.size)
 
 
 class FilmMixin(object):
