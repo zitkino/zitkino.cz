@@ -129,7 +129,6 @@ class Poster(ImageMixin, db.EmbeddedDocument):
     tn_dir = app.config['THUMBNAILS_DIR']
 
     url = db.StringField(required=True)
-    original_size = db.StringField(required=True)
     files = db.MapField(db.EmbeddedDocumentField(PosterFile), required=True)
 
     @classmethod
@@ -140,10 +139,9 @@ class Poster(ImageMixin, db.EmbeddedDocument):
         image = Image.open(StringIO(Session().get(url).content))
         if image.mode != 'RGB':
             image = image.convert('RGB')
-        original_size = image.size
 
         files = {}
-        for size in (cls.tn_sizes + [original_size]):
+        for size in cls.tn_sizes:
             image_tn = create_thumbnail(image, size)
 
             name_hash = sha1(u'{}-{}x{}'.format(url, *size).encode('utf-8'))
@@ -157,15 +155,7 @@ class Poster(ImageMixin, db.EmbeddedDocument):
                 path=path,
             )
 
-        return cls(
-            url=url,
-            original_size='{}x{}'.format(*original_size),
-            files=files
-        )
-
-    @cached_property
-    def original(self):
-        return self.files[self.original_size]
+        return cls(url=url, files=files)
 
     @cached_property
     def largest(self):
@@ -174,14 +164,14 @@ class Poster(ImageMixin, db.EmbeddedDocument):
 
     @property
     def width(self):
-        return self.original.width
+        return self.largest.width
 
     @property
     def height(self):
-        return self.original.height
+        return self.largest.height
 
     def __unicode__(self):
-        return u'{} ({})'.format(self.url, self.original_size)
+        return u'{} ({}x{})'.format(self.url, *self.largest.size)
 
 
 class FilmMixin(object):
