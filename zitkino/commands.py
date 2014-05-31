@@ -99,12 +99,11 @@ class SyncUpdate(Command):
 
     def run(self):
         for film in Film.objects.all():
-            if 'Cesta' in film.title_main:
-                for match in search(film, exclude=[DatabaseFilmService]):
-                    with log.pass_on_exception():
-                        log.info(u'Update: %s ← %s', film, match)
-                        film.sync(match)
-                        film.save()
+            for match in search(film, exclude=[DatabaseFilmService]):
+                with log.pass_on_exception():
+                    log.info(u'Update: %s ← %s', film, match)
+                    film.sync(match)
+                    film.save()
 
 
 class SyncAll(Command):
