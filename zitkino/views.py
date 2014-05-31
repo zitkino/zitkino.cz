@@ -106,9 +106,9 @@ def poster(size, film_slug):
         if not size:
             abort(404)
 
-        poster = film.select_poster_file(size=size)
-        if poster:
-            return send_file(poster.path, mimetype='image/jpeg',
+        poster_file = film.select_poster_file(size=size)
+        if poster_file:
+            return send_file(poster_file.content, mimetype='image/jpeg',
                              conditional=True)
 
     except Exception:

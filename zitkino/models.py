@@ -3,8 +3,6 @@
 
 from __future__ import division
 
-import re
-import os
 from hashlib import sha1
 from datetime import timedelta
 from collections import OrderedDict
@@ -18,7 +16,7 @@ import times
 from PIL import Image
 from unidecode import unidecode
 
-from . import app, db, parsers
+from . import app, db
 from .http import RequestException, Session
 from .utils import slugify, create_thumbnail, cached_property
 
@@ -97,77 +95,43 @@ class PosterFile(ImageMixin, db.EmbeddedDocument):
 
     width = db.IntField(required=True)
     height = db.IntField(required=True)
-    path = db.StringField(required=True)
+    content = db.FileField(required=True)
+    etag = db.StringField(required=True)
 
     def __init__(self, *args, **kwargs):
         size = kwargs.pop('size', None)
         if size:
             kwargs.setdefault('width', size[0])
             kwargs.setdefault('height', size[1])
-        super(ImageMixin, self).__init__(*args, **kwargs)
-
-    def __unicode__(self):
-        return u'{} ({}x{})'.format(self.path, self.width, self.height)
-
-
-def _scan_templates_for_poster_sizes():
-    path = os.path.join(app.root_path, app.template_folder)
-    size_re = re.compile(r"url_for\('poster'[^\d\)]+(\d+x\d+)")
-    sizes = []
-
-    templates = []
-    for root, dirs, files in os.walk(path):
-        for filename in files:
-            if filename.endswith('.html'):
-                templates.append(os.path.join(root, filename))
-
-    for template in templates:
-        with open(template) as f:
-            for line in f:  # not bulletproof, but fast & good enough
-                sizes.extend(m.group(1) for m in size_re.finditer(line))
-
-    return [parsers.size(size) for size in frozenset(sizes)]
+        super(PosterFile, self).__init__(*args, **kwargs)
 
 
 class Poster(ImageMixin, db.EmbeddedDocument):
     """Poster representation."""
 
-    tn_sizes = _scan_templates_for_poster_sizes()
-    tn_dir = app.config['THUMBNAILS_DIR']
+    tn_sizes = app.config['POSTER_SIZES']
 
     url = db.StringField(required=True)
     files = db.MapField(db.EmbeddedDocumentField(PosterFile), required=True)
 
     @classmethod
     def from_url(cls, url):
-        if not os.path.exists(cls.tn_dir):
-            os.makedirs(cls.tn_dir)
+        image = Image.open(StringIO(Session().get(url).content))
+        if image.mode != 'RGB':
+            image = image.convert('RGB')
 
         files = {}
-        missing_sizes = []
-
         for size in cls.tn_sizes:
-            size_key = '{}x{}'.format(*size)
+            poster_file = PosterFile(size=size)
+            poster_file.content.new_file()
 
-            name_hash = sha1(u'{}-{}x{}'.format(url, *size).encode('utf-8'))
-            path = os.path.join(cls.tn_dir, name_hash.hexdigest() + '.jpg')
+            image_tn = create_thumbnail(image, size)
+            image_tn.save(poster_file.content, 'JPEG', quality=100)
 
-            if os.path.exists(path):
-                files[size_key] = PosterFile(size=size, path=path)
-            else:
-                missing_sizes.append((size_key, size, path))
+            poster_file.content.close()
+            poster_file.etag = sha1(poster_file.content.read()).hexdigest()
 
-        if missing_sizes:
-            image = Image.open(StringIO(Session().get(url).content))
-            if image.mode != 'RGB':
-                image = image.convert('RGB')
-
-            for size_key, size, path in missing_sizes:
-                image_tn = create_thumbnail(image, size)
-                with open(path, 'w') as f:
-                    image_tn.save(f, 'JPEG', quality=100)
-
-                files[size_key] = PosterFile(size=size, path=path)
+            files['{}x{}'.format(*size)] = poster_file
 
         return cls(url=url, files=files)
 
