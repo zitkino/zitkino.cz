@@ -50,13 +50,11 @@ class SyncPairing(Command):
                     match.sync(film)
                     match.save_overwrite()
                     showtime.film = match
-                elif not showtime.film:
+                else:
                     log.info(u'Pairing: %s ← ?', film)
                     ghost = film.to_ghost()
                     ghost.save_overwrite()
                     showtime.film = ghost
-                else:
-                    log.info(u'Pairing: %s ← ?', film)
                 showtime.save()
 
 
