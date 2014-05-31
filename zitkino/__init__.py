@@ -5,7 +5,6 @@ from flask import Flask
 from flask.ext.assets import Environment as Assets
 
 from . import log
-from .cache import Cache
 from .mongo import MongoEngine
 
 
@@ -19,7 +18,6 @@ log.init_app(app, **app.config['LOGGING'])
 
 assets = Assets(app)
 db = MongoEngine(app)
-cache = Cache(app)
 
 
 from . import views, templating  # NOQA

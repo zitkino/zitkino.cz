@@ -39,10 +39,9 @@ ASSETS_SASS_DEBUG_INFO = DEBUG
 SEND_FILE_MAX_AGE_DEFAULT = 157680000  # 5 years in seconds
 
 
-### Caching
+### Image thumbnails
 
-CACHE_DEFAULT_TIMEOUT = 10800
-CACHE_DIR = os.path.realpath(
+THUMBNAILS_DIR = os.path.realpath(
     os.path.join(os.path.dirname(__file__), '..', 'tmp')
 )
 

@@ -86,9 +86,9 @@ def date_cs(value):
     return None
 
 
-def resize(resize):
-    if resize:
-        width, height = resize.split('x')
+def size(size):
+    if size:
+        width, height = size.split('x')
         if width and height:
             return (int(width), int(height))
     return None

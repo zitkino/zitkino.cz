@@ -3,16 +3,24 @@
 
 from __future__ import division
 
+import re
+import os
+from hashlib import sha1
 from datetime import timedelta
 from collections import OrderedDict
 
+try:
+    from cStringIO import cStringIO as StringIO
+except ImportError:
+    from StringIO import StringIO  # NOQA
+
 import times
+from PIL import Image
 from unidecode import unidecode
 
-from . import db
-from .image import Image
-from .utils import slugify
-from .http import RequestException
+from . import app, db, parsers
+from .http import RequestException, Session
+from .utils import slugify, create_thumbnail, cached_property
 
 
 class Cinema(db.Document):
@@ -66,6 +74,116 @@ class Cinema(db.Document):
         return u'{}'.format(self.name)
 
 
+class ImageMixin(object):
+
+    @property
+    def size(self):
+        return self.width, self.height
+
+    @property
+    def area(self):
+        return self.width * self.height
+
+    @property
+    def is_landscape(self):
+        return self.width >= self.height
+
+    @property
+    def is_portrait(self):
+        return self.height >= self.width
+
+
+class PosterFile(ImageMixin, db.EmbeddedDocument):
+
+    width = db.IntField(required=True)
+    height = db.IntField(required=True)
+    path = db.StringField(required=True)
+
+    def __unicode__(self):
+        return u'{} ({}x{})'.format(self.path, self.width, self.height)
+
+
+def _scan_templates_for_poster_sizes():
+    path = os.path.join(app.root_path, app.template_folder)
+    size_re = re.compile(r"url_for\('poster'[^\d\)]+(\d+x\d+)")
+    sizes = []
+
+    templates = []
+    for root, dirs, files in os.walk(path):
+        for filename in files:
+            if filename.endswith('.html'):
+                templates.append(os.path.join(root, filename))
+
+    for template in templates:
+        with open(template) as f:
+            for line in f:  # not bulletproof, but fast & good enough
+                sizes.extend(m.group(1) for m in size_re.finditer(line))
+
+    return [parsers.size(size) for size in frozenset(sizes)]
+
+
+class Poster(ImageMixin, db.EmbeddedDocument):
+    """Poster representation."""
+
+    tn_sizes = _scan_templates_for_poster_sizes()
+    tn_dir = app.config['THUMBNAILS_DIR']
+
+    url = db.StringField(required=True)
+    original_size = db.StringField(required=True)
+    files = db.MapField(db.EmbeddedDocumentField(PosterFile), required=True)
+
+    @classmethod
+    def from_url(cls, url):
+        if not os.path.exists(cls.tn_dir):
+            os.makedirs(cls.tn_dir)
+
+        image = Image.open(StringIO(Session().get(url).content))
+        if image.mode != 'RGB':
+            image = image.convert('RGB')
+        original_size = image.size
+
+        files = {}
+        for size in (cls.tn_sizes + [original_size]):
+            image_tn = create_thumbnail(image, size)
+
+            name_hash = sha1(u'{}-{}x{}'.format(url, *size).encode('utf-8'))
+            path = os.path.join(cls.tn_dir, name_hash.hexdigest() + '.jpg')
+            with open(path, 'w') as f:
+                image_tn.save(f, 'JPEG', quality=100)
+
+            files['{}x{}'.format(*size)] = PosterFile(
+                width=size[0],
+                height=size[1],
+                path=path,
+            )
+
+        return cls(
+            url=url,
+            original_size='{}x{}'.format(*original_size),
+            files=files
+        )
+
+    @cached_property
+    def original(self):
+        return self.files[self.original_size]
+
+    @cached_property
+    def largest(self):
+        return sorted(self.files.values(),
+                      key=lambda x: x.area, reverse=True)[0]
+
+    @property
+    def width(self):
+        return self.original.width
+
+    @property
+    def height(self):
+        return self.original.height
+
+    def __unicode__(self):
+        return u'{} ({})'.format(self.url, self.original_size)
+
+
 class FilmMixin(object):
 
     meta = {'abstract': True}
@@ -81,7 +199,7 @@ class FilmMixin(object):
     directors = db.ListField(db.StringField())
     length = db.IntField(min_value=0)
 
-    url_poster = db.URLField()
+    url_posters = db.ListField(db.URLField())
     url_trailer = db.URLField()
 
     @property
@@ -116,11 +234,12 @@ class Film(db.SaveOverwriteMixin, FilmMixin, db.Document):
     slug = db.StringField(required=True, unique=True)
     year = db.IntField(min_value=1877, max_value=times.now().year + 10)
 
-    # rating as percentage
-    rating_csfd = db.IntField(min_value=0, max_value=100)
-    rating_imdb = db.IntField(min_value=0, max_value=100)
+    rating_csfd = db.IntField(min_value=0, max_value=100)  # rating as %
+    rating_imdb = db.IntField(min_value=0, max_value=100)  # rating as %
 
     url_synopsitv = db.URLField()
+
+    posters = db.ListField(db.EmbeddedDocumentField(Poster))
 
     @property
     def links(self):
@@ -165,6 +284,26 @@ class Film(db.SaveOverwriteMixin, FilmMixin, db.Document):
     def showtimes_upcoming(self):
         return Showtime.upcoming.filter(film=self)
 
+    def select_poster_file(self, size=None):
+        if not self.posters:
+            return None
+        if not size:
+            posters = sorted(self.posters, key=lambda x: x.area, reverse=True)
+            return posters[0].largest  # the largest file of the largest poster
+
+        width, height = size
+        orientation = 'is_portrait' if height >= width else 'is_landscape'
+
+        def key(poster):
+            # bigger or True is better, because sorting is reversed
+            return (
+                poster.width >= width and poster.height >= height,
+                getattr(poster, orientation),  # True / False
+                poster.area
+            )
+        posters = sorted(self.posters, key=key, reverse=True)
+        return posters[0].files.get('{}x{}'.format(*size))
+
     def clean(self):
         super(Film, self).clean()
 
@@ -173,6 +312,17 @@ class Film(db.SaveOverwriteMixin, FilmMixin, db.Document):
             self.slug = slugify(self.title_main + '-' + str(self.year))
         else:
             self.slug = slugify(self.title_main)
+
+        # posters
+        urls = list(frozenset(url for url in self.url_posters if url))
+        already_processed_urls = [poster.url for poster in self.posters]
+        for url in urls:
+            if url not in already_processed_urls:
+                try:
+                    self.posters.append(Poster.from_url(url))
+                except RequestException:
+                    pass  # the link is probably broken, nothing we can do
+        self.url_posters = urls
 
     def sync(self, film):
         """Synchronize data with other film object."""
@@ -183,7 +333,7 @@ class Film(db.SaveOverwriteMixin, FilmMixin, db.Document):
         # exclude special cases and already filled attributes
         exclude = [
             'id', 'slug', 'titles_search', 'title_main', 'title_orig'
-            'url_poster', 'is_ghost', 'directors',
+            'url_posters', 'is_ghost', 'directors',
         ]
 
         is_empty = lambda v: v is not False and v != 0 and not v
@@ -212,8 +362,7 @@ class Film(db.SaveOverwriteMixin, FilmMixin, db.Document):
         if self.is_ghost and not getattr(film, 'is_ghost', True):
             self.is_ghost = False
 
-        if self._is_larger_poster(film.url_poster):
-            self.url_poster = film.url_poster
+        self.url_posters = (self.url_posters or []) + film.url_posters
 
         self.clean()
 
@@ -235,21 +384,6 @@ class Film(db.SaveOverwriteMixin, FilmMixin, db.Document):
             except UnicodeEncodeError:
                 return title2  # title1 does not have diacritics, title2 has
         return title1  # cannot decide, return the first one (does not matter)
-
-    def _is_larger_poster(self, url):
-        """Decides whether given poster URL *url* points to an image which
-        is larger than the one represented by already present poster URL.
-        """
-        if not url:
-            return False
-        if not self.url_poster:
-            return True
-        try:
-            size1 = Image.from_url(self.url_poster).size
-            size2 = Image.from_url(url).size
-        except RequestException:
-            return False
-        return (size1[0] * size1[1]) < (size2[0] * size2[1])  # compare areas
 
     def __unicode__(self):
         s = self.title_main

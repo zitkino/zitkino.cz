@@ -4,7 +4,7 @@
 import times
 from flask.ext.script import Manager, Command
 
-from . import app, log, cache
+from . import log
 from .scrapers import scrapers
 from .models import Cinema, Showtime, Film
 from .services import pair, search, DatabaseFilmService
@@ -50,11 +50,13 @@ class SyncPairing(Command):
                     match.sync(film)
                     match.save_overwrite()
                     showtime.film = match
-                else:
+                elif not showtime.film:
                     log.info(u'Pairing: %s ← ?', film)
                     ghost = film.to_ghost()
                     ghost.save_overwrite()
                     showtime.film = ghost
+                else:
+                    log.info(u'Pairing: %s ← ?', film)
                 showtime.save()
 
 
@@ -108,13 +110,10 @@ class SyncAll(Command):
     """Sync all."""
 
     def run(self):
-        try:
-            SyncShowtimes().run()
-            SyncPairing().run()
-            SyncCleanup().run()
-            SyncUpdate().run()
-        finally:
-            ClearCache().run()
+        SyncShowtimes().run()
+        SyncPairing().run()
+        SyncCleanup().run()
+        SyncUpdate().run()
 
 
 sync = Manager(usage="Run synchronizations.")
@@ -123,15 +122,6 @@ sync.add_command('pairing', SyncPairing())
 sync.add_command('cleanup', SyncCleanup())
 sync.add_command('update', SyncUpdate())
 sync.add_command('all', SyncAll())
-
-
-class ClearCache(Command):
-    """Cleares the cache."""
-
-    def run(self):
-        with app.app_context():
-            cache.clear()
-        log.info('Cache: cleared.')
 
 
 class Purge(Command):

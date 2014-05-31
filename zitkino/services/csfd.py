@@ -144,7 +144,7 @@ class CsfdFilmService(BaseFilmService):
             directors=list(self._iterparse_directors(html)),
             length=origin.length,
             rating_csfd=self._parse_rating(html),
-            url_poster=self._parse_poster_url(html),
+            url_posters=[self._parse_poster_url(html)],
         )
 
     def _parse_imdb_url(self, html):

@@ -81,7 +81,7 @@ class KinoartScraper(Scraper):
 
         image = content.cssselect_first('img.wp-post-image')
         if image is not None:
-            data['url_poster'] = self._parse_image_link(image)
+            data['url_posters'] = [self._parse_image_link(image)]
 
         csfd_link = content.cssselect_first('a.csfd')
         if csfd_link is not None and csfd_link.get('href') != 'http://':

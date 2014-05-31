@@ -151,7 +151,7 @@ class KinoscalaScraper(Scraper):
 
         image = content.cssselect_first('.movie_image img')
         if image is not None:
-            data['url_poster'] = image.get('src')
+            data['url_posters'] = [image.get('src')]
 
         for a in content.cssselect('a'):
             try:

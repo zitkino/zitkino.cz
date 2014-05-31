@@ -12,8 +12,8 @@
             <div class="box cinema">
                 <a href="{{ url_for('cinema', cinema_slug=cinema.slug) }}" class="thumbnail">
                     <div class="cinema-photo">
-                        <img class="lazy" data-original="{{ url_for('cinema_photo', cinema_slug=cinema.slug, resize='300x100') }}">
-                        <noscript><img src="{{ url_for('cinema_photo', cinema_slug=cinema.slug, resize='300x100') }}"></noscript>
+                        <img class="lazy" data-original="{{ url_for('cinema_photo', cinema_slug=cinema.slug, size='300x100') }}">
+                        <noscript><img src="{{ url_for('cinema_photo', cinema_slug=cinema.slug, size='300x100') }}"></noscript>
                     </div>
                     <div class="caption">
                         <h3>
@@ -48,8 +48,8 @@
                 <div class="box film">
                     <a href="{{ url_for('film', film_slug=film.slug) }}#day-{{ starts_at_day|date_iso }}" class="thumbnail">
                         <div class="poster">
-                            <img class="lazy" data-original="{{ url_for('poster', film_slug=film.slug, resize='300x424') }}">
-                            <noscript><img src="{{ url_for('poster', film_slug=film.slug, resize='300x424') }}"></noscript>
+                            <img class="lazy" data-original="{{ url_for('poster', film_slug=film.slug, size='300x424') }}">
+                            <noscript><img src="{{ url_for('poster', film_slug=film.slug, size='300x424') }}"></noscript>
                         </div>
                         <div class="caption">
                             <h3>

@@ -21,8 +21,8 @@
         </div>
         <div class="thumbnail visible-xs">
             <div class="poster">
-                <img class="lazy" data-original="{{ url_for('poster', film_slug=film.slug, resize='300x424') }}">
-                <noscript><img src="{{ url_for('poster', film_slug=film.slug, resize='300x424') }}"></noscript>
+                <img class="lazy" data-original="{{ url_for('poster', film_slug=film.slug, size='300x424') }}">
+                <noscript><img src="{{ url_for('poster', film_slug=film.slug, size='300x424') }}"></noscript>
             </div>
         </div>
         <ul class="info">
@@ -108,8 +108,8 @@
     <div class="media">
         <div class="thumbnail">
             <div class="poster">
-                <img class="lazy" data-original="{{ url_for('poster', film_slug=film.slug, resize='300x424') }}">
-                <noscript><img src="{{ url_for('poster', film_slug=film.slug, resize='300x424') }}"></noscript>
+                <img class="lazy" data-original="{{ url_for('poster', film_slug=film.slug, size='300x424') }}">
+                <noscript><img src="{{ url_for('poster', film_slug=film.slug, size='300x424') }}"></noscript>
             </div>
         </div>
     </div>

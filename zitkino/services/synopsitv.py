@@ -153,6 +153,6 @@ class SynopsitvFilmService(BaseFilmService):
             title_main=result['name'],
             directors=[d['name'] for d in result.get('directors', [])],
             length=result.get('runtime'),
-            url_poster=url_poster,
+            url_posters=[url_poster],
             url_trailer=result.get('trailer') or None,
         )

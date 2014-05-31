@@ -4,11 +4,11 @@
 import os
 from collections import OrderedDict
 
-from flask import request, render_template, send_from_directory
+from flask import (request, render_template, send_from_directory, send_file,
+                   abort)
 
-from . import app, parsers, log, cache
+from . import app, log, parsers
 from .models import Showtime, Film, Cinema
-from .image import render_image, Image, PlaceholderImage
 
 
 @app.context_processor
@@ -97,42 +97,43 @@ def static_files():
     return send_from_directory(static_dir, request.path.lstrip('/'))
 
 
-@app.route('/images/poster/<resize>/<film_slug>.jpg')
-@app.route('/images/poster/<film_slug>.jpg', defaults={'resize': 'x'})
-@cache.cached()
-def poster(resize, film_slug):
+@app.route('/images/poster/<size>/<film_slug>.jpg')
+@app.route('/images/poster/<film_slug>.jpg', defaults={'size': 'x'})
+def poster(size, film_slug):
+    film = Film.objects.get_or_404(slug=film_slug)
     try:
-        resize = parsers.resize(resize)
+        size = parsers.size(size)
+        if not size:
+            abort(404)
 
-        film = Film.objects.get_or_404(slug=film_slug)
-        if film.url_poster:
-            img = Image.from_url(film.url_poster)
-            return render_image(img, resize=resize)
+        poster = film.select_poster_file(size=size)
+        if poster:
+            return send_file(poster.path, mimetype='image/jpeg',
+                             conditional=True)
+
     except Exception:
         log.exception()
 
-    img = PlaceholderImage('#EEE', size=resize)
-    return render_image(img)
+    path = os.path.join(app.root_path, 'static/placeholder.png')
+    return send_file(path, mimetype='image/png', conditional=True)
 
 
-@app.route('/images/cinema-photo/<resize>/<cinema_slug>.jpg')
-@app.route('/images/cinema-photo/<cinema_slug>.jpg', defaults={'resize': 'x'})
-@cache.cached()
-def cinema_photo(resize, cinema_slug):
+@app.route('/images/cinema-photo/<size>/<cinema_slug>.jpg')
+@app.route('/images/cinema-photo/<cinema_slug>.jpg', defaults={'size': 'x'})
+def cinema_photo(size, cinema_slug):
+    cinema = Cinema.objects.get_or_404(slug=cinema_slug)
     try:
-        resize = parsers.resize(resize)
+        size = parsers.size(size)
+        if not size:
+            abort(404)
 
-        cinema = Cinema.objects.get_or_404(slug=cinema_slug)
-        filename = os.path.join(
-            app.root_path, 'static/images', cinema.slug + '.jpg'
-        )
+        filename = '{}-{}x{}.jpg'.format(cinema.slug, *size)
+        path = os.path.join(app.root_path, 'static/images', filename)
+        if os.path.exists(path):
+            return send_file(path, mimetype='image/jpeg', conditional=True)
 
-        if os.path.exists(filename):
-            with open(filename) as f:
-                img = Image(f)
-                return render_image(img, resize=resize)
     except Exception:
         log.exception()
 
-    img = PlaceholderImage('#EEE', size=resize)
-    return render_image(img)
+    path = os.path.join(app.root_path, 'static/placeholder.png')
+    return send_file(path, mimetype='image/png', conditional=True)
