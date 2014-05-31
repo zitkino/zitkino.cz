@@ -18,7 +18,7 @@
         <meta property="og:site_name" content="{% block site_name %}Žít&nbsp;kino{% endblock %}">
 
         <link rel="canonical" href="{% block canonical_url %}{% endblock %}">
-        <meta property="og:url" content="{{ self.canonical_url }}">
+        <meta property="og:url" content="{{ self.canonical_url() }}">
 
         {% if request.path in [url_for('index'), url_for('index', more=True)] -%}
             <title>{{ self.site_name() }} - program kin, Brno</title>
