@@ -1,6 +1,6 @@
 gevent==1.0          # Parallelism
 uwsgi==1.9.8         # Web server
-flask==0.9           # Web framework
+flask==0.10.1        # Web framework
 jinja2==2.7          # Templates
 mongoengine==0.8.6   # MongoDB
 lxml==3.2.1          # Fastest XML/HTML parser, scraping
