@@ -76,16 +76,6 @@ class Cinema(db.Document):
 
 class ImageMixin(object):
 
-    def __init__(self, *args, **kwargs):
-        assert self.width
-        assert self.height
-
-        size = kwargs.pop('size', None)
-        if size:
-            kwargs.setdefault('width', size[0])
-            kwargs.setdefault('height', size[1])
-        super(ImageMixin, self).__init__(*args, **kwargs)
-
     @property
     def size(self):
         return self.width, self.height
@@ -103,11 +93,18 @@ class ImageMixin(object):
         return self.height >= self.width
 
 
-class PosterFile(db.EmbeddedDocument, ImageMixin):
+class PosterFile(ImageMixin, db.EmbeddedDocument):
 
     width = db.IntField(required=True)
     height = db.IntField(required=True)
     path = db.StringField(required=True)
+
+    def __init__(self, *args, **kwargs):
+        size = kwargs.pop('size', None)
+        if size:
+            kwargs.setdefault('width', size[0])
+            kwargs.setdefault('height', size[1])
+        super(ImageMixin, self).__init__(*args, **kwargs)
 
     def __unicode__(self):
         return u'{} ({}x{})'.format(self.path, self.width, self.height)
@@ -132,7 +129,7 @@ def _scan_templates_for_poster_sizes():
     return [parsers.size(size) for size in frozenset(sizes)]
 
 
-class Poster(db.EmbeddedDocument, ImageMixin):
+class Poster(ImageMixin, db.EmbeddedDocument):
     """Poster representation."""
 
     tn_sizes = _scan_templates_for_poster_sizes()
