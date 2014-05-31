@@ -76,6 +76,16 @@ class Cinema(db.Document):
 
 class ImageMixin(object):
 
+    def __init__(self, *args, **kwargs):
+        assert self.width
+        assert self.height
+
+        size = kwargs.pop('size', None)
+        if size:
+            kwargs.setdefault('width', size[0])
+            kwargs.setdefault('height', size[1])
+        super(ImageMixin, self).__init__(*args, **kwargs)
+
     @property
     def size(self):
         return self.width, self.height
@@ -93,7 +103,7 @@ class ImageMixin(object):
         return self.height >= self.width
 
 
-class PosterFile(ImageMixin, db.EmbeddedDocument):
+class PosterFile(db.EmbeddedDocument, ImageMixin):
 
     width = db.IntField(required=True)
     height = db.IntField(required=True)
@@ -122,7 +132,7 @@ def _scan_templates_for_poster_sizes():
     return [parsers.size(size) for size in frozenset(sizes)]
 
 
-class Poster(ImageMixin, db.EmbeddedDocument):
+class Poster(db.EmbeddedDocument, ImageMixin):
     """Poster representation."""
 
     tn_sizes = _scan_templates_for_poster_sizes()
@@ -136,24 +146,31 @@ class Poster(ImageMixin, db.EmbeddedDocument):
         if not os.path.exists(cls.tn_dir):
             os.makedirs(cls.tn_dir)
 
-        image = Image.open(StringIO(Session().get(url).content))
-        if image.mode != 'RGB':
-            image = image.convert('RGB')
-
         files = {}
+        missing_sizes = []
+
         for size in cls.tn_sizes:
-            image_tn = create_thumbnail(image, size)
+            size_key = '{}x{}'.format(*size)
 
             name_hash = sha1(u'{}-{}x{}'.format(url, *size).encode('utf-8'))
             path = os.path.join(cls.tn_dir, name_hash.hexdigest() + '.jpg')
-            with open(path, 'w') as f:
-                image_tn.save(f, 'JPEG', quality=100)
 
-            files['{}x{}'.format(*size)] = PosterFile(
-                width=size[0],
-                height=size[1],
-                path=path,
-            )
+            if os.path.exists(path):
+                files[size_key] = PosterFile(size=size, path=path)
+            else:
+                missing_sizes.append((size_key, size, path))
+
+        if missing_sizes:
+            image = Image.open(StringIO(Session().get(url).content))
+            if image.mode != 'RGB':
+                image = image.convert('RGB')
+
+            for size_key, size, path in missing_sizes:
+                image_tn = create_thumbnail(image, size)
+                with open(path, 'w') as f:
+                    image_tn.save(f, 'JPEG', quality=100)
+
+                files[size_key] = PosterFile(size=size, path=path)
 
         return cls(url=url, files=files)
 
