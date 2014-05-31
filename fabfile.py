@@ -11,7 +11,7 @@ static_dir = os.path.join(project_dir, 'zitkino/static')
 version_file = os.path.join(project_dir, 'zitkino/__init__.py')
 
 
-__all__ = ('deploy', 'ps', 'logs', 'sync', 'rmcache')
+__all__ = ('deploy', 'ps', 'logs', 'sync')
 
 
 ### Helpers
@@ -75,11 +75,6 @@ def deploy():
 def sync(command='all'):
     """Manual synchronization."""
     local('heroku run python manage.py sync ' + command)
-
-
-def rmcache():
-    """Manual cache clearing."""
-    local('heroku run python manage.py rmcache')
 
 
 def ps():
