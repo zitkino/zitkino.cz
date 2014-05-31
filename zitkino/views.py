@@ -4,6 +4,11 @@
 import os
 from collections import OrderedDict
 
+try:
+    from cStringIO import cStringIO as StringIO
+except ImportError:
+    from StringIO import StringIO  # NOQA
+
 from flask import (request, render_template, send_from_directory, send_file,
                    abort)
 
@@ -108,8 +113,10 @@ def poster(size, film_slug):
 
         poster_file = film.select_poster_file(size=size)
         if poster_file:
-            return send_file(poster_file.content, mimetype='image/jpeg',
-                             conditional=True)
+            resp = send_file(poster_file.file, mimetype='image/jpeg')
+            # resp.set_etag(poster_file.etag)
+            # resp.make_conditional(request)
+            return resp
 
     except Exception:
         log.exception()

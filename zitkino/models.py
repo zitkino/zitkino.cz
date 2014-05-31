@@ -103,7 +103,35 @@ class PosterFile(ImageMixin, db.EmbeddedDocument):
         if size:
             kwargs.setdefault('width', size[0])
             kwargs.setdefault('height', size[1])
+        image = kwargs.pop('image', None)
+        if image:
+            self.image = image
         super(PosterFile, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        super(PosterFile, self).clean()
+        self.etag = sha1(self.content.read()).hexdigest()
+
+    @property
+    def image(self):
+        return Image.open(self.content)
+
+    @image.setter
+    def image(self, value=None):
+        if value is None:
+            self.content.delete()
+        else:
+            self.content.new_file()
+            value.save(self.content, 'JPEG', quality=100)
+            self.content.close()
+
+    @property
+    def file(self):
+        # pure GridFS file-like objects don't play well with uWSGI
+        # and I lost hope there is a way to find out why, so this is workaround
+        s = StringIO(self.content.read())
+        self.content.seek(0)
+        return s
 
 
 class Poster(ImageMixin, db.EmbeddedDocument):
@@ -122,15 +150,8 @@ class Poster(ImageMixin, db.EmbeddedDocument):
 
         files = {}
         for size in cls.tn_sizes:
-            poster_file = PosterFile(size=size)
-            poster_file.content.new_file()
-
-            image_tn = create_thumbnail(image, size)
-            image_tn.save(poster_file.content, 'JPEG', quality=100)
-
-            poster_file.content.close()
-            poster_file.etag = sha1(poster_file.content.read()).hexdigest()
-
+            poster_file = PosterFile(size=size,
+                                     image=create_thumbnail(image, size))
             files['{}x{}'.format(*size)] = poster_file
 
         return cls(url=url, files=files)
@@ -352,6 +373,12 @@ class Film(db.SaveOverwriteMixin, FilmMixin, db.Document):
             except UnicodeEncodeError:
                 return title2  # title1 does not have diacritics, title2 has
         return title1  # cannot decide, return the first one (does not matter)
+
+    def delete(self):
+        for poster in self.posters:
+            for poster_file in poster.files.values():
+                poster_file.image = None
+        super(Film, self).delete()
 
     def __unicode__(self):
         s = self.title_main
