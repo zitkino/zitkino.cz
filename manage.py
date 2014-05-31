@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 
+import os
+
 from zitkino import app
 from zitkino.log import log_exceptions
 from zitkino.commands import sync, Purge
@@ -19,7 +21,8 @@ class Manager(BaseManager):
 
 manager = Manager(app)
 
-manager.add_command('runserver', Server(host='0.0.0.0'))
+manager.add_command('runserver', Server(host='0.0.0.0',
+                                        port=os.getenv('PORT', 5000)))
 manager.add_command('assets', ManageAssets())
 manager.add_command('sync', sync)
 manager.add_command('purge', Purge())
