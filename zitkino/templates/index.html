@@ -2,18 +2,44 @@
 {% block canonical_url %}{{ url_for('index', _external=True) }}{% endblock %}
 {% block content %}
 
+<div class="films">
+    <div class="page-header">
+        <h2>Co se hraje <strong>v Brně</strong> v kinech?</h2>
+    </div>
+    <div class="row">
+        {% for film, showtimes in films.items() %}
+            <div class="box-4 film">
+                <a href="{{ url_for('film', film_slug=film.slug) }}" class="thumbnail">
+                    <div class="poster">
+                        <img class="lazy" data-original="{{ url_for('poster', film_slug=film.slug, size='300x424') }}">
+                        <noscript><img src="{{ url_for('poster', film_slug=film.slug, size='300x424') }}"></noscript>
+                    </div>
+                    <div class="caption">
+                        <h3>
+                            {{ film.title_main }}
+                            {% if film.year %}
+                                <small><time datetime="{{ film.year }}">{{ film.year }}</time></small>
+                            {% endif %}
+                        </h3>
+                    </div>
+                </a>
+            </div>
+            {% if loop.index is divisibleby 4 %}<div class="box-4-clearfix"></div>{% endif %}
+            {% if loop.index is divisibleby 2 %}<div class="box-4-clearfix-sm"></div>{% endif %}
+        {% endfor %}
+    </div>
+</div>
 <div class="cinemas">
     <div class="page-header">
-        <h2>Omrzel tě Hollywood v multiplexech?</h2>
-        <p>Vyber si z promítání, která mají duši.</p>
+        <h2>Kina v Brně</h2>
     </div>
     <div class="row">
         {% for cinema in cinemas %}
-            <div class="box cinema">
+            <div class="box-6 cinema">
                 <a href="{{ url_for('cinema', cinema_slug=cinema.slug) }}" class="thumbnail">
                     <div class="cinema-photo">
-                        <img class="lazy" data-original="{{ url_for('cinema_photo', cinema_slug=cinema.slug, size='300x100') }}">
-                        <noscript><img src="{{ url_for('cinema_photo', cinema_slug=cinema.slug, size='300x100') }}"></noscript>
+                        <img class="lazy" data-original="{{ url_for('cinema_photo', cinema_slug=cinema.slug, size='300x300') }}">
+                        <noscript><img src="{{ url_for('cinema_photo', cinema_slug=cinema.slug, size='300x300') }}"></noscript>
                     </div>
                     <div class="caption">
                         <h3>
@@ -22,64 +48,10 @@
                     </div>
                 </a>
             </div>
-            {% if loop.index is divisibleby 4 %}<div class="box-clearfix-4"></div>{% endif %}
-            {% if loop.index is divisibleby 2 %}<div class="box-clearfix-2"></div>{% endif %}
+            {% if loop.index is divisibleby 6 %}<div class="box-6-clearfix"></div>{% endif %}
+            {% if loop.index is divisibleby 4 %}<div class="box-6-clearfix-sm"></div>{% endif %}
         {% endfor %}
     </div>
 </div>
-
-{% for starts_at_day, films in data.items() %}
-    <div class="films"{% if more and loop.index == (less_items + 1) %} id="continue"{% endif %}>
-        {% if loop.first %}
-            <div class="page-header page-wide-text">
-                {% if starts_at_day|date == 'Dnes' %}
-                    <h2>Na co si <strong>dnes</strong> můžeš zajít do kina?</h2>
-                {% else %}
-                    <h2>Dnes už bohužel nic nestihneš, ale <strong>{{ starts_at_day|date|lower }}</strong> je taky den</h2>
-                {% endif %}
-            </div>
-        {% else %}
-            <div class="page-header" id="day-{{ starts_at_day|date_iso }}">
-                <h2><time datetime="{{ starts_at_day|date_iso }}">{{ starts_at_day|date }}</time></h2>
-            </div>
-        {% endif %}
-        <div class="row">
-            {% for film, showtimes in films.items() %}
-                <div class="box film">
-                    <a href="{{ url_for('film', film_slug=film.slug) }}#day-{{ starts_at_day|date_iso }}" class="thumbnail">
-                        <div class="poster">
-                            <img class="lazy" data-original="{{ url_for('poster', film_slug=film.slug, size='300x424') }}">
-                            <noscript><img src="{{ url_for('poster', film_slug=film.slug, size='300x424') }}"></noscript>
-                        </div>
-                        <div class="caption">
-                            <h3>
-                                {{ film.title_main }}
-                                {% if film.year %}
-                                    <small><time datetime="{{ film.year }}">{{ film.year }}</time></small>
-                                {% endif %}
-                            </h3>
-                        </div>
-                    </a>
-                </div>
-                {% if loop.index is divisibleby 4 %}<div class="box-clearfix-4"></div>{% endif %}
-                {% if loop.index is divisibleby 2 %}<div class="box-clearfix-2"></div>{% endif %}
-            {% endfor %}
-        </div>
-    </div>
-{% endfor %}
 <hr>
-{% if not more %}
-<div class="page-info">
-    <ul class="pager">
-        <li><a href="{{ url_for('index', more=True) }}#continue">Další dny</a></li>
-    </ul>
-</div>
-{% else %}
-<div class="page-info">
-    <p>
-        Dál do budoucnosti vidí už jedině
-        <a href="http://www.fffilm.name/2009/10/recenze-knezna-libuse-pagan-queen-0.html">kněžna Libuše</a>.
-    </p>
-</div>
-{% endif %}
 {% endblock %}

@@ -24,41 +24,23 @@ def inject_config():
     }
 
 
-@app.route('/more/', defaults={'more': True})
-@app.route('/', defaults={'more': False})
-def index(more):
-    less_items = 2
+@app.route('/')
+def index():
+    films = []
     cinemas = set()
 
-    # prepare data for listing of films
-    data = OrderedDict()
+    showtimes_by_film = {}
     for showtime in Showtime.upcoming.filter(film__ne=None):
-        day = showtime.starts_at_day
-        data.setdefault(day, {}).setdefault(showtime.film, []).append(showtime)
+        showtimes_by_film.setdefault(showtime.film, []).append(showtime)
+        cinemas.add(showtime.cinema)
 
-    days = data.keys() if more else data.keys()[:less_items]
-    for day, films in data.items():
-        if day in days:
-            films = OrderedDict(sorted(
-                films.items(),
-                key=lambda (f, s): f.rating, reverse=True
-            ))
-            for film, showtimes in films.items():
-                films[film] = sorted(showtimes, key=lambda s: s.starts_at)
-                cinemas.update(s.cinema for s in showtimes)
-            data[day] = films
-        else:
-            del data[day]
+    films = OrderedDict(sorted(
+        showtimes_by_film.items(),
+        key=lambda (f, s): f.rating, reverse=True
+    ))
+    cinemas = sorted(cinemas, key=lambda c: (c.priority, c.name))
 
-    # cinemas
-    cinemas = sorted(
-        (c for c in cinemas if not c.is_multiplex),
-        key=lambda c: (c.priority, c.name)
-    )
-
-    # render the template
-    return render_template('index.html', data=data, more=more,
-                           cinemas=cinemas, less_items=less_items)
+    return render_template('index.html', films=films, cinemas=cinemas)
 
 
 @app.route('/film/<film_slug>')

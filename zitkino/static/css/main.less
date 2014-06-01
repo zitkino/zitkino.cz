@@ -148,20 +148,38 @@ footer {
 
 /* Thumbnails ********************************/
 
-.box {
+.box-4 {
     .make-xs-column(12);
     .make-sm-column(6);
     .make-md-column(3);
     .make-lg-column(3);
 }
 
-.box-clearfix-4 {
+.box-4-clearfix {
     .clearfix;
     .visible-lg;
     .visible-md;
 }
 
-.box-clearfix-2 {
+.box-4-clearfix-sm {
+    .clearfix;
+    .visible-sm;
+}
+
+.box-6 {
+    .make-xs-column(12);
+    .make-sm-column(4);
+    .make-md-column(2);
+    .make-lg-column(2);
+}
+
+.box-6-clearfix {
+    .clearfix;
+    .visible-lg;
+    .visible-md;
+}
+
+.box-6-clearfix-sm {
     .clearfix;
     .visible-sm;
 }
@@ -203,12 +221,28 @@ a.thumbnail {
 
     .caption {
         text-align: center;
+        width: 98%; // so it does not hide the right border
+        min-height: 25%;
+        position: absolute; bottom: 0;
+        background: #FFF; background: rgba(255, 255, 255, 0.85);
 
         h3 {
+            font-weight: bold;
             margin-top: (@line-height-computed / 2);
             margin-bottom: (@line-height-computed / 4);
+
+            small {
+                font-size: @font-size-large;
+                display: block;
+                color: @dark-grey;
+                margin-top: (@line-height-computed / 3);
+            }
         }
     }
+}
+
+.box-6 .caption h3 {
+    font-size: @font-size-h4;
 }
 
 .poster {
@@ -216,36 +250,7 @@ a.thumbnail {
 }
 
 .cinema-photo {
-    .img-aspect-ratio-no-reflow(300, 100);
-}
-
-
-/* Films *************************************/
-
-.films {
-    .page-header {
-        .anchor;
-    }
-
-    a.thumbnail {
-        .caption {
-            width: 98%; // so it does not hide the right border
-            min-height: 25%;
-            position: absolute; bottom: 0;
-            background: #FFF; background: rgba(255, 255, 255, 0.85);
-
-            h3 {
-                font-weight: bold;
-
-                small {
-                    font-size: @font-size-large;
-                    display: block;
-                    color: @dark-grey;
-                    margin-top: (@line-height-computed / 3);
-                }
-            }
-        }
-    }
+    .img-aspect-ratio-no-reflow(300, 300);
 }
 
 
