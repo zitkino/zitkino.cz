@@ -21,7 +21,7 @@ cinema = Cinema(
 
 
 @scrapers.register(cinema)
-class RweletnikinonariviereScraper(Scraper):
+class LetniKinoMDBScraper(Scraper):
 
     url = 'http://www.letnikinobrno.cz/program-kina/'
 
