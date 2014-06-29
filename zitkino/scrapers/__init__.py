@@ -62,4 +62,5 @@ from . import (  # NOQA
     cinema_city,
     letni_kino_na_dobraku,
     rwe_letni_kino_na_riviere,
+    letni_kino_mdb,
 )
