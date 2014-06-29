@@ -79,6 +79,6 @@ class LetnikinonadobrakuScraper(Scraper):
                 length=length,
             ),
             starts_at=starts_at,
-            tags={tag: None for tag in tags},
+            tags={tag: None for tag in tags if tag},
             url='http://kinonadobraku.cz',
         )
