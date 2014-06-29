@@ -57,7 +57,7 @@ class RweletnikinonariviereScraper(Scraper):
                 title_orig_scraped=title_orig,
             ),
             starts_at=starts_at,
-            tags={tag: None for tag in tags},
+            tags={tag: None for tag in tags if tag},
             url=self.url,
             url_booking=url_booking,
         )
