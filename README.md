@@ -21,7 +21,7 @@ $ sudo apt-get install -y node-less
 No a potom už stačí jen nainstalovat Žít kino ze složky projektu:
 
 ```bash
-$ git clone git@github.com:honzajavorek/zitkino.cz.git "zitkino.cz"
+$ git clone git@github.com:zitkino/zitkino.cz.git "zitkino.cz"
 $ cd "zitkino.cz"
 $ pip install -r requirements.txt
 ```
@@ -51,7 +51,7 @@ cestu k vašemu konfiguračnímu souboru (viz
 ## Pravidla pro přispívání
 
 Žít kino je open source, což znamená, že se na něm může volně podílet kdokoli
-má chuť. Pravidla pro přispívání k projektu jsou [zde](https://github.com/honzajavorek/zitkino.cz/blob/master/CONTRIBUTING.md).
+má chuť. Pravidla pro přispívání k projektu jsou [zde](https://github.com/zitkino/zitkino.cz/blob/master/CONTRIBUTING.md).
 
 ## Status: AKTIVNÍ
 
