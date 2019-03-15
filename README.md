@@ -1,3 +1,10 @@
+
+# Status: ARCHIV
+
+Tento repozitář je archivní.
+
+zitkino.cz teď jede z kódu na https://github.com/zitkino/zitkino (bez `.cz`), který má s tímto repozitářem společnou myšlenku a jméno, ale to je tak všechno.
+
 # Žít kino (in Czech)
 
 Nejpřehlednější program brněnských kin.
@@ -52,10 +59,6 @@ cestu k vašemu konfiguračnímu souboru (viz
 
 Žít kino je open source, což znamená, že se na něm může volně podílet kdokoli
 má chuť. Pravidla pro přispívání k projektu jsou [zde](https://github.com/zitkino/zitkino.cz/blob/master/CONTRIBUTING.md).
-
-## Status: AKTIVNÍ
-
-Normálně na tom furt bócháme.
 
 ## License: MIT
 
